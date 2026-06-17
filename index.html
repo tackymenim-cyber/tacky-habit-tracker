@@ -399,6 +399,14 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
+/* 🔧 إصلاح رئيسي: منع التمرير عندما تكون authOverlay نشطة */
+body.auth-active {
+  overflow: hidden !important;
+  height: 100vh !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -407,12 +415,54 @@ body {
 
 /* ===== AUTH OVERLAY (Login Screen) ===== */
 #authOverlay {
-  position: fixed; inset: 0; z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99998;
   background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
   gap: 0;
+  /* 🔧 تأكيد الاستقرار الكامل */
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
+/* ===== AUTH OVERLAY (Login Screen) ===== */
+#authOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99998;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0;
+  /* 🔧 تأكيد الاستقرار الكامل */
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#authOverlay.hidden {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
 .auth-card {
   background: var(--white);
   border: 1px solid var(--border);
@@ -423,6 +473,8 @@ body {
   max-width: 400px;
   width: 92%;
   animation: fadeUp 0.4s ease both;
+  position: relative;
+  z-index: 99999;
 }
 .auth-logo-icon {
   width: 64px; height: 64px;
@@ -6653,10 +6705,17 @@ function _updateNavUserUI(user) {
   const userBadge  = document.getElementById('navUserBadge');
   const avatarEl   = document.getElementById('navUserAvatar');
   const nameEl     = document.getElementById('navUserName');
+  const body       = document.body;
 
   if (user) {
     // Hide the auth overlay
-    if (overlay) overlay.style.display = 'none';
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+    // إزالة منع التمرير من body
+    body.classList.remove('auth-active');
+    
     // Show user badge
     if (signInBtn)  signInBtn.style.display  = 'none';
     if (userBadge)  userBadge.style.display  = 'flex';
@@ -6673,7 +6732,13 @@ function _updateNavUserUI(user) {
     if (nameEl) nameEl.textContent = user.displayName || user.email || '';
   } else {
     // Show auth overlay
-    if (overlay) overlay.style.display = 'flex';
+    if (overlay) {
+      overlay.classList.remove('hidden');
+      overlay.style.display = 'flex';
+    }
+    // إضافة منع التمرير على body
+    body.classList.add('auth-active');
+    
     // Reset Google sign-in button
     const btn = document.getElementById('googleSignInBtn');
     if (btn) {
