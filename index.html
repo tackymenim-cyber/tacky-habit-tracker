@@ -1801,12 +1801,19 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   }
   .nav-tab { padding: 5px 10px; font-size: 0.75rem; }
 
-  .nav-right { gap: 5px; }
+  .nav-right {
+    gap: 5px;
+    width: 100%;
+    order: 2;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
   .month-nav { padding: 3px 4px; }
   .month-label { font-size: 0.78rem; min-width: 80px; }
   .mnav-btn { width: 24px; height: 24px; }
   .theme-btn, .settings-nav-btn { width: 32px; height: 32px; font-size: 0.9rem; }
   .lang-opt { padding: 3px 6px; font-size: 0.7rem; }
+  .nav-user-name { max-width: 70px; }
 
   .main { padding: 14px 10px 60px; }
 
@@ -4175,8 +4182,9 @@ function _applyFirestoreData(d) {
 // Real-time sync: listens to the user's Firestore document continuously,
 // so changes made on another device (phone ⇄ computer) appear here within
 // a second or two, without needing to refresh or re-login.
-async function _loadFromFirestore(user) {
+async function _loadFromFirestore(user, _retryCount) {
   if (!user || !window._fbDb) return;
+  _retryCount = _retryCount || 0;
 
   // Stop any previous listener (e.g. from a prior sign-in this session)
   if (_firestoreUnsubscribe) { _firestoreUnsubscribe(); _firestoreUnsubscribe = null; }
@@ -4194,9 +4202,9 @@ async function _loadFromFirestore(user) {
         // change written by another device/tab.
         if (isFirstSnapshot || d._writerId !== _sessionId) {
           _applyFirestoreData(d);
-          renderAll();
-          renderQuickTasks();
-          updateQuickTasksText();
+          try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
+          try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
+          try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
         }
       } else if (isFirstSnapshot) {
         // Brand-new user: seed with starter defaults and create the doc
@@ -4213,7 +4221,14 @@ async function _loadFromFirestore(user) {
     isFirstSnapshot = false;
   }, (e) => {
     console.error('Firestore listen error:', e);
-    showToast('⚠️ فشل تحميل البيانات من السحاب');
+    // Transient failures right after a fresh sign-in (token not fully
+    // propagated yet) usually resolve themselves a moment later — retry
+    // a few times automatically instead of requiring a manual refresh.
+    if (_retryCount < 3 && window._currentUser && window._currentUser.uid === user.uid) {
+      setTimeout(() => _loadFromFirestore(user, _retryCount + 1), 1000 * (_retryCount + 1));
+    } else {
+      showToast('⚠️ فشل تحميل البيانات من السحاب');
+    }
   });
 }
 
