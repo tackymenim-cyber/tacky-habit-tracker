@@ -402,9 +402,6 @@ body {
 /* 🔧 إصلاح رئيسي: منع التمرير عندما تكون authOverlay نشطة */
 body.auth-active {
   overflow: hidden !important;
-  height: 100vh !important;
-  position: fixed !important;
-  width: 100% !important;
 }
 
 /* ===== SCROLLBAR ===== */
@@ -429,6 +426,8 @@ body.auth-active {
   justify-content: center;
   flex-direction: column;
   gap: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   /* 🔧 تأكيد الاستقرار الكامل */
   pointer-events: auto !important;
   visibility: visible !important;
@@ -450,6 +449,8 @@ body.auth-active {
   justify-content: center;
   flex-direction: column;
   gap: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   /* 🔧 تأكيد الاستقرار الكامل */
   pointer-events: auto !important;
   visibility: visible !important;
@@ -541,6 +542,8 @@ body.auth-active {
   justify-content: center;
   flex-direction: column;
   pointer-events: auto !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 #accessLockOverlay.visible {
   display: flex !important;
@@ -556,8 +559,6 @@ body.auth-active {
   text-align: center;
   max-width: 420px;
   width: 92%;
-  max-height: 90vh;
-  overflow-y: auto;
   animation: fadeUp 0.4s ease both;
   position: relative;
   z-index: 999999;
@@ -1454,6 +1455,8 @@ table { border-collapse: collapse; min-width: 100%; }
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
   overflow-y: auto; display: flex; flex-direction: column;
   box-shadow: var(--shadow-lg);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .settings-panel.open { transform: translateX(0); }
 .settings-header {
