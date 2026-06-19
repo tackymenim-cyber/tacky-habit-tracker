@@ -2257,9 +2257,14 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 <!-- ===== AUTH OVERLAY (shown when not logged in) ===== -->
 <div id="authOverlay">
   <div class="auth-card">
+    <div class="lang-switcher" style="position:absolute; top:16px; left:16px;">
+      <button class="lang-opt" id="authLangAr" data-lang="ar" onclick="setLang('ar')">ع</button>
+      <button class="lang-opt" id="authLangFr" data-lang="fr" onclick="setLang('fr')">FR</button>
+      <button class="lang-opt" id="authLangEn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
     <div class="auth-logo-icon">🎯</div>
     <div class="auth-title">TACKY<span> Habit</span> Pro</div>
-    <div class="auth-subtitle">
+    <div class="auth-subtitle" id="authSubtitleText">
       سجّل دخولك لحفظ عاداتك على السحاب ☁️<br>ومزامنتها على جميع أجهزتك
     </div>
     <button class="auth-google-btn" onclick="signInWithGoogle()" id="googleSignInBtn">
@@ -2270,16 +2275,16 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
         <path fill="none" d="M0 0h48v48H0z"/>
       </svg>
-      تسجيل الدخول باستخدام Google
+      <span id="googleSignInBtnText">تسجيل الدخول باستخدام Google</span>
     </button>
     <div class="auth-error" id="authError">حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.</div>
     <div class="auth-info" id="fbConnectStatus">⏳ جارٍ الاتصال بخادم تسجيل الدخول...</div>
     <div id="fileProtocolWarning" style="display:none;background:#1c1500;border:1px solid #eab308;border-radius:10px;padding:12px 14px;font-size:0.82rem;color:#fbbf24;margin-top:14px;line-height:1.7;text-align:right;">
-      ⚠️ <strong>الملف مفتوح محلياً (file://)</strong><br>
-      تسجيل الدخول بـ Google يتطلب رفع الملف على استضافة ويب.<br>
-      <strong>الحل السريع:</strong> ارفعه على <a href="https://app.netlify.com/drop" target="_blank" style="color:#60a5fa">Netlify Drop</a> مجاناً (اسحب الملف وأفلته).
+      ⚠️ <strong id="authFileWarnTitle">الملف مفتوح محلياً (file://)</strong><br>
+      <span id="authFileWarnBody">تسجيل الدخول بـ Google يتطلب رفع الملف على استضافة ويب.</span><br>
+      <strong id="authFileWarnFix">الحل السريع:</strong> ارفعه على <a href="https://app.netlify.com/drop" target="_blank" style="color:#60a5fa" id="authFileWarnHost">Netlify Drop</a> <span id="authFileWarnEnd">مجاناً (اسحب الملف وأفلته).</span>
     </div>
-    <div class="auth-note">
+    <div class="auth-note" id="authNoteText">
       🔒 بياناتك محمية وخاصة بك فقط.<br>
       لن يتمكن أي مستخدم آخر من رؤية عاداتك.
     </div>
@@ -2289,29 +2294,34 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 <!-- ===== ACCESS LOCK OVERLAY (shown when account is not an active subscriber) ===== -->
 <div id="accessLockOverlay">
   <div class="lock-card">
+    <div class="lang-switcher" style="position:absolute; top:16px; left:16px;">
+      <button class="lang-opt" id="lockLangAr" data-lang="ar" onclick="setLang('ar')">ع</button>
+      <button class="lang-opt" id="lockLangFr" data-lang="fr" onclick="setLang('fr')">FR</button>
+      <button class="lang-opt" id="lockLangEn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
     <div class="lock-icon">🔒</div>
     <div class="lock-title">TACKY<span style="color:var(--blue-500)"> Habit</span> Pro</div>
-    <div class="lock-message">
+    <div class="lock-message" id="lockMessageText">
       عذراً، هذا الحساب غير مفعل! أنت لست مشتركاً في الخدمة.<br><br>
       للاشتراك في الخدمة، يرجى التواصل معنا وإرسال بريدك الإلكتروني عبر الروابط التالية و بعد الدفع سيتم تفعيل حسابك على الفور ⚡
     </div>
-    <div class="lock-contacts-label">📞 تواصل معنا للاشتراك</div>
+    <div class="lock-contacts-label" id="lockContactsLabelText">📞 تواصل معنا للاشتراك</div>
     <div class="lock-contacts">
-      <a class="lock-contact-btn telegram" href="https://t.me/Tacky_menim" target="_blank" rel="noopener">
+      <a class="lock-contact-btn telegram" href="https://t.me/Tacky_menim" target="_blank" rel="noopener" id="lockTelegramText">
         ✈️ تيليغرام — tacky_menim
       </a>
-      <a class="lock-contact-btn instagram" href="https://www.instagram.com/tacky_menim?igsh=ejM3ZGdqamo3NnFh&utm_source=qr" target="_blank" rel="noopener">
+      <a class="lock-contact-btn instagram" href="https://www.instagram.com/tacky_menim?igsh=ejM3ZGdqamo3NnFh&utm_source=qr" target="_blank" rel="noopener" id="lockInstagramText">
         📸 إنستغرام — tacky_menim
       </a>
-      <a class="lock-contact-btn phone" href="tel:+213795104614" target="_blank" rel="noopener">
+      <a class="lock-contact-btn phone" href="tel:+213795104614" target="_blank" rel="noopener" id="lockPhoneText">
         ☎️ الهاتف — ‎+213795104614‎
       </a>
-      <a class="lock-contact-btn gmail" href="mailto:tackymenim@gmail.com" target="_blank" rel="noopener">
+      <a class="lock-contact-btn gmail" href="mailto:tackymenim@gmail.com" target="_blank" rel="noopener" id="lockEmailText">
         📧 البريد — tackymenim@gmail.com
       </a>
     </div>
     <div class="lock-divider"></div>
-    <button class="lock-logout-btn" onclick="doSignOut()">⬡ تسجيل الخروج أو تبديل الحساب</button>
+    <button class="lock-logout-btn" onclick="doSignOut()" id="lockLogoutBtnText">⬡ تسجيل الخروج أو تبديل الحساب</button>
     <div class="lock-checking" id="lockCheckingMsg" style="display:none;">⏳ جارٍ التحقق من حالة الاشتراك...</div>
   </div>
 </div>
@@ -2337,9 +2347,9 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     </div>
     <button class="theme-btn" onclick="toggleTheme()" title="وضع ليلي / نهاري" id="themeBtn">🌙</button>
     <div class="lang-switcher">
-      <button class="lang-opt active" id="langAr" onclick="setLang('ar')">ع</button>
-      <button class="lang-opt" id="langFr" onclick="setLang('fr')">FR</button>
-      <button class="lang-opt" id="langEn" onclick="setLang('en')">EN</button>
+      <button class="lang-opt active" id="langAr" data-lang="ar" onclick="setLang('ar')">ع</button>
+      <button class="lang-opt" id="langFr" data-lang="fr" onclick="setLang('fr')">FR</button>
+      <button class="lang-opt" id="langEn" data-lang="en" onclick="setLang('en')">EN</button>
     </div>
     <button class="settings-nav-btn" onclick="openSettings()" id="settingsNavBtn" title="الإعدادات">⚙️</button>
     <!-- AUTH SECTION IN NAVBAR -->
@@ -3506,6 +3516,35 @@ const T = {
     confirmClear2: '🔴 تأكيد أخير: سيتم حذف كل شيء!',
     moodCurveEmpty: 'سجّل مزاجك لرؤية المنحنى',
     monthNames: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    // AUTH OVERLAY (Login Screen)
+    authSubtitle: 'سجّل دخولك لحفظ عاداتك على السحاب ☁️<br>ومزامنتها على جميع أجهزتك',
+    authGoogleBtn: 'تسجيل الدخول باستخدام Google',
+    authSigningIn: 'جارٍ تسجيل الدخول...',
+    authErrorPrefix: 'حدث خطأ:',
+    authError: 'حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.',
+    authConnecting: '⏳ جارٍ الاتصال بخادم تسجيل الدخول...',
+    authFileWarnTitle: '⚠️ الملف مفتوح محلياً (file://)',
+    authFileWarnBody: 'تسجيل الدخول بـ Google يتطلب رفع الملف على استضافة ويب.',
+    authFileWarnFix: 'الحل السريع: ارفعه على',
+    authFileWarnHost: 'Netlify Drop',
+    authFileWarnEnd: 'مجاناً (اسحب الملف وأفلته).',
+    authNote: '🔒 بياناتك محمية وخاصة بك فقط.<br>لن يتمكن أي مستخدم آخر من رؤية عاداتك.',
+    // ACCESS LOCK OVERLAY (Subscription Gate)
+    lockMessage: 'عذراً، هذا الحساب غير مفعل! أنت لست مشتركاً في الخدمة.<br><br>للاشتراك في الخدمة، يرجى التواصل معنا وإرسال بريدك الإلكتروني عبر الروابط التالية و بعد الدفع سيتم تفعيل حسابك على الفور ⚡',
+    lockContactsLabel: '📞 تواصل معنا للاشتراك',
+    lockTelegram: '✈️ تيليغرام — tacky_menim',
+    lockInstagram: '📸 إنستغرام — tacky_menim',
+    lockPhone: '☎️ الهاتف — ‎+213795104614‎',
+    lockEmail: '📧 البريد — tackymenim@gmail.com',
+    lockLogoutBtn: '⬡ تسجيل الخروج أو تبديل الحساب',
+    lockChecking: '⏳ جارٍ التحقق من حالة الاشتراك...',
+    firebaseInitError: '⚠️ تعذر الاتصال بخادم تسجيل الدخول، تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة',
+    cloudSaveFail: '⚠️ فشل الحفظ على السحاب',
+    cloudLoadFail: '⚠️ فشل تحميل البيانات من السحاب',
+    confirmSignOut: 'هل تريد تسجيل الخروج؟',
+    signingOutBtn: '... جارٍ الخروج',
+    signOutBtn: '⬡ خروج',
+    signOutFail: '⚠️ فشل تسجيل الخروج، حاول مرة أخرى',
   },
   fr: {
     dir: 'ltr', lang: 'fr',
@@ -3693,6 +3732,35 @@ const T = {
     confirmClear2: '🔴 Dernière confirmation: Tout sera supprimé!',
     moodCurveEmpty: 'Enregistrez votre humeur pour voir la courbe',
     monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
+    // AUTH OVERLAY (Login Screen)
+    authSubtitle: 'Connectez-vous pour sauvegarder vos habitudes sur le cloud ☁️<br>et les synchroniser sur tous vos appareils',
+    authGoogleBtn: 'Se connecter avec Google',
+    authSigningIn: 'Connexion en cours...',
+    authErrorPrefix: 'Erreur:',
+    authError: "Une erreur s'est produite lors de la connexion. Réessayez.",
+    authConnecting: '⏳ Connexion au serveur en cours...',
+    authFileWarnTitle: '⚠️ Fichier ouvert localement (file://)',
+    authFileWarnBody: 'La connexion avec Google nécessite que le fichier soit hébergé en ligne.',
+    authFileWarnFix: 'Solution rapide: déposez-le sur',
+    authFileWarnHost: 'Netlify Drop',
+    authFileWarnEnd: 'gratuitement (glissez-déposez le fichier).',
+    authNote: '🔒 Vos données sont protégées et privées.<br>Aucun autre utilisateur ne peut voir vos habitudes.',
+    // ACCESS LOCK OVERLAY (Subscription Gate)
+    lockMessage: "Désolé, ce compte n'est pas activé! Vous n'êtes pas abonné au service.<br><br>Pour vous abonner, veuillez nous contacter et envoyer votre e-mail via les liens ci-dessous. Après paiement, votre compte sera activé immédiatement ⚡",
+    lockContactsLabel: '📞 Contactez-nous pour vous abonner',
+    lockTelegram: '✈️ Telegram — tacky_menim',
+    lockInstagram: '📸 Instagram — tacky_menim',
+    lockPhone: '☎️ Téléphone — ‎+213795104614‎',
+    lockEmail: '📧 E-mail — tackymenim@gmail.com',
+    lockLogoutBtn: '⬡ Déconnexion / changer de compte',
+    lockChecking: "⏳ Vérification de l'abonnement en cours...",
+    firebaseInitError: '⚠️ Impossible de se connecter au serveur de connexion, vérifiez votre connexion internet puis rechargez la page',
+    cloudSaveFail: '⚠️ Échec de la sauvegarde dans le cloud',
+    cloudLoadFail: '⚠️ Échec du chargement des données depuis le cloud',
+    confirmSignOut: 'Voulez-vous vous déconnecter ?',
+    signingOutBtn: '... Déconnexion en cours',
+    signOutBtn: '⬡ Déconnexion',
+    signOutFail: '⚠️ Échec de la déconnexion, réessayez',
   },
   en: {
     dir: 'ltr', lang: 'en',
@@ -3880,6 +3948,35 @@ const T = {
     confirmClear2: '🔴 Final confirmation: Everything will be deleted!',
     moodCurveEmpty: 'Log your mood to see the curve',
     monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    // AUTH OVERLAY (Login Screen)
+    authSubtitle: 'Sign in to save your habits to the cloud ☁️<br>and sync them across all your devices',
+    authGoogleBtn: 'Sign in with Google',
+    authSigningIn: 'Signing in...',
+    authErrorPrefix: 'Error:',
+    authError: 'An error occurred while signing in. Please try again.',
+    authConnecting: '⏳ Connecting to sign-in server...',
+    authFileWarnTitle: '⚠️ File opened locally (file://)',
+    authFileWarnBody: 'Signing in with Google requires the file to be hosted online.',
+    authFileWarnFix: 'Quick fix: upload it to',
+    authFileWarnHost: 'Netlify Drop',
+    authFileWarnEnd: 'for free (drag and drop the file).',
+    authNote: '🔒 Your data is protected and private to you.<br>No other user can see your habits.',
+    // ACCESS LOCK OVERLAY (Subscription Gate)
+    lockMessage: "Sorry, this account is not activated! You are not a subscriber to the service.<br><br>To subscribe, please contact us and send your email via the links below. After payment, your account will be activated immediately ⚡",
+    lockContactsLabel: '📞 Contact us to subscribe',
+    lockTelegram: '✈️ Telegram — tacky_menim',
+    lockInstagram: '📸 Instagram — tacky_menim',
+    lockPhone: '☎️ Phone — ‎+213795104614‎',
+    lockEmail: '📧 Email — tackymenim@gmail.com',
+    lockLogoutBtn: '⬡ Sign out / switch account',
+    lockChecking: '⏳ Checking subscription status...',
+    firebaseInitError: '⚠️ Could not connect to the sign-in server, check your internet connection then reload the page',
+    cloudSaveFail: '⚠️ Failed to save to the cloud',
+    cloudLoadFail: '⚠️ Failed to load data from the cloud',
+    confirmSignOut: 'Do you want to sign out?',
+    signingOutBtn: '... Signing out',
+    signOutBtn: '⬡ Sign out',
+    signOutFail: '⚠️ Sign-out failed, please try again',
   },
 };
 
@@ -3899,10 +3996,46 @@ function setLang(lang) {
   document.documentElement.setAttribute('dir', tr.dir || 'rtl');
   document.documentElement.setAttribute('lang', tr.lang || 'ar');
   document.body.style.fontFamily = lang === 'ar' ? "'Tajawal', sans-serif" : "'Tajawal', sans-serif";
-  document.querySelectorAll('.lang-opt').forEach(b => b.classList.remove('active'));
-  const map = { ar: 'langAr', fr: 'langFr', en: 'langEn' };
-  const btn = document.getElementById(map[lang]);
-  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.lang-opt').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+  });
+  // ===== AUTH OVERLAY & ACCESS LOCK OVERLAY translations =====
+  const authSub = document.getElementById('authSubtitleText');
+  if (authSub) authSub.innerHTML = tr.authSubtitle;
+  const gBtnText = document.getElementById('googleSignInBtnText');
+  if (gBtnText) gBtnText.textContent = tr.authGoogleBtn;
+  const authErr = document.getElementById('authError');
+  if (authErr) authErr.textContent = tr.authError;
+  const authConn = document.getElementById('fbConnectStatus');
+  if (authConn) authConn.textContent = tr.authConnecting;
+  const fwTitle = document.getElementById('authFileWarnTitle');
+  if (fwTitle) fwTitle.textContent = tr.authFileWarnTitle;
+  const fwBody = document.getElementById('authFileWarnBody');
+  if (fwBody) fwBody.textContent = tr.authFileWarnBody;
+  const fwFix = document.getElementById('authFileWarnFix');
+  if (fwFix) fwFix.textContent = tr.authFileWarnFix;
+  const fwHost = document.getElementById('authFileWarnHost');
+  if (fwHost) fwHost.textContent = tr.authFileWarnHost;
+  const fwEnd = document.getElementById('authFileWarnEnd');
+  if (fwEnd) fwEnd.textContent = tr.authFileWarnEnd;
+  const authNote = document.getElementById('authNoteText');
+  if (authNote) authNote.innerHTML = tr.authNote;
+  const lockMsg = document.getElementById('lockMessageText');
+  if (lockMsg) lockMsg.innerHTML = tr.lockMessage;
+  const lockLabel = document.getElementById('lockContactsLabelText');
+  if (lockLabel) lockLabel.textContent = tr.lockContactsLabel;
+  const lockTg = document.getElementById('lockTelegramText');
+  if (lockTg) lockTg.textContent = tr.lockTelegram;
+  const lockIg = document.getElementById('lockInstagramText');
+  if (lockIg) lockIg.textContent = tr.lockInstagram;
+  const lockPh = document.getElementById('lockPhoneText');
+  if (lockPh) lockPh.textContent = tr.lockPhone;
+  const lockEm = document.getElementById('lockEmailText');
+  if (lockEm) lockEm.textContent = tr.lockEmail;
+  const lockOut = document.getElementById('lockLogoutBtnText');
+  if (lockOut) lockOut.textContent = tr.lockLogoutBtn;
+  const lockChk = document.getElementById('lockCheckingMsg');
+  if (lockChk) lockChk.textContent = tr.lockChecking;
   const tabs = document.querySelectorAll('.nav-tab');
   if (tabs[0]) tabs[0].innerHTML = tr.navTracker;
   if (tabs[1]) tabs[1].innerHTML = tr.navMood;
@@ -6722,10 +6855,6 @@ function init() {
   if (settings.accent) setAccent(settings.accent, settings.accentDark || '#1d4ed8');
   const savedLang = settings.lang || 'ar';
   setLang(savedLang);
-  document.querySelectorAll('.lang-opt').forEach(b => b.classList.remove('active'));
-  const map = { ar: 'langAr', fr: 'langFr', en: 'langEn' };
-  const btn = document.getElementById(map[savedLang]);
-  if (btn) btn.classList.add('active');
   // Data will be loaded after auth
 
   // Sign-in starts disabled until Firebase finishes connecting, so a click
@@ -6786,7 +6915,8 @@ function signInWithGoogle() {
 
   const btn = document.getElementById('googleSignInBtn');
   if (btn) {
-    btn.innerHTML = '<div class="auth-spinner"></div> جارٍ تسجيل الدخول...';
+    const trS = T[currentLang] || T.ar;
+    btn.innerHTML = '<div class="auth-spinner"></div> ' + trS.authSigningIn;
     btn.disabled = true;
   }
   document.getElementById('authError').style.display = 'none';
@@ -6806,12 +6936,13 @@ function signInWithGoogle() {
     .catch(err => {
       console.error('Sign-in error:', err);
       const errEl = document.getElementById('authError');
+      const trE = T[currentLang] || T.ar;
       if (errEl) {
-        errEl.textContent = 'حدث خطأ: ' + (err.message || 'حاول مرة أخرى');
+        errEl.textContent = trE.authErrorPrefix + ' ' + (err.message || trE.authError);
         errEl.style.display = 'block';
       }
       if (btn) {
-        btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> تسجيل الدخول باستخدام Google`;
+        btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> <span id="googleSignInBtnText">${trE.authGoogleBtn}</span>`;
         btn.disabled = false;
       }
     });
@@ -6899,7 +7030,8 @@ function _updateNavUserUI(user) {
     // Reset Google sign-in button
     const btn = document.getElementById('googleSignInBtn');
     if (btn) {
-      btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> تسجيل الدخول باستخدام Google`;
+      const trB = T[currentLang] || T.ar;
+      btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> <span id="googleSignInBtnText">${trB.authGoogleBtn}</span>`;
     }
     _refreshSignInAvailability();
     if (signInBtn)  signInBtn.style.display  = 'none';
