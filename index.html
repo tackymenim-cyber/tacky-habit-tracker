@@ -6536,7 +6536,7 @@ function renderQuickTasks() {
     return `
     <div class="qt-item${task.done ? ' done-item' : ''}" data-id="${task.id}">
       <div class="qt-checkbox${task.done ? ' checked' : ''}" onclick="toggleQuickTask(${task.id})">${task.done ? '✓' : ''}</div>
-      <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditTask(${task.id}, this)">${task.text}</div>
+      <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${task.text}</div>
       ${task.done ? `<div class="qt-done-label">${doneLabel}</div>` : ''}
       <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0">
         <button class="qt-move-btn" onclick="moveQuickTask(${task.id},-1)" ${upDis ? 'disabled' : ''} title="▲">▲</button>
@@ -6563,10 +6563,10 @@ function moveQuickTask(id, dir) {
 // ---- Inline Edit ----
 function startEditTaskById(id) {
   const el = document.querySelector(`.qt-item[data-id="${id}"] .qt-item-text`);
-  if (el) startEditTask(id, el);
+  if (el) startEditQuickTask(id, el);
 }
 
-function startEditTask(id, textEl) {
+function startEditQuickTask(id, textEl) {
   if (textEl.querySelector('input')) return;
   const task = quickTasks.find(t => t.id === id);
   if (!task) return;
