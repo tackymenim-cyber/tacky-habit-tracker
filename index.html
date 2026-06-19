@@ -4163,6 +4163,32 @@ function save() {
   // Always save settings locally (device preferences)
   localStorage.setItem('hb2_settings', JSON.stringify(settings));
 
+  // 🔥 BACKUP: save everything to localStorage too
+  try {
+    const allData = {
+      habits: JSON.parse(JSON.stringify(habits)),
+      checks: JSON.parse(JSON.stringify(checks)),
+      moodData: JSON.parse(JSON.stringify(moodData)),
+      waterData: JSON.parse(JSON.stringify(waterData)),
+      sleepData: JSON.parse(JSON.stringify(sleepData)),
+      thoughtsData: JSON.parse(JSON.stringify(thoughtsData)),
+      weeklyTasks: JSON.parse(JSON.stringify(weeklyTasks)),
+      gymSchedule: JSON.parse(JSON.stringify(gymSchedule || {})),
+      gymExercises: JSON.parse(JSON.stringify(gymExercises || [])),
+      gymLogs: JSON.parse(JSON.stringify(gymLogs || [])),
+      quickTasks: JSON.parse(JSON.stringify(quickTasks || [])),
+      bodyWeightData: JSON.parse(JSON.stringify(bodyWeightData || {})),
+      workoutNotesData: JSON.parse(JSON.stringify(workoutNotesData || {})),
+      bmiSavedData: bmiSavedData ? JSON.parse(JSON.stringify(bmiSavedData)) : null,
+      measurementsData: JSON.parse(JSON.stringify(measurementsData || {})),
+      nutritionData: JSON.parse(JSON.stringify(nutritionData || {})),
+      _timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('hb2_data_backup', JSON.stringify(allData));
+  } catch(e) {
+    console.warn('localStorage full, continuing anyway');
+  }
+
   // Save data to Firestore if user is logged in
   const user = window._currentUser;
   if (!user) return;
@@ -6760,6 +6786,55 @@ window._onAuthReady = function(user) {
 
 // Kick off non-data init immediately (theme, lang, etc.)
 init();
+
+// 🔥 RESTORE from localStorage backup on load
+window.addEventListener('load', function() {
+  setTimeout(() => {
+    const backup = localStorage.getItem('hb2_data_backup');
+    if (backup && window._currentUser) {
+      try {
+        const d = JSON.parse(backup);
+        // استرجع فقط إذا كانت البيانات فارغة
+        if (!habits || habits.length === 0) {
+          _applyFirestoreData(d);
+          renderAll();
+          renderQuickTasks();
+          updateQuickTasksText();
+        }
+      } catch(e) {
+        console.error('Failed to restore backup:', e);
+      }
+    }
+  }, 1000);
+});
+
+// 🔥 EMERGENCY SAVE before closing
+window.addEventListener('beforeunload', function() {
+  if (window._currentUser) {
+    try {
+      const emergencyData = {
+        habits: JSON.parse(JSON.stringify(habits)),
+        checks: JSON.parse(JSON.stringify(checks)),
+        moodData: JSON.parse(JSON.stringify(moodData)),
+        waterData: JSON.parse(JSON.stringify(waterData)),
+        sleepData: JSON.parse(JSON.stringify(sleepData)),
+        thoughtsData: JSON.parse(JSON.stringify(thoughtsData)),
+        weeklyTasks: JSON.parse(JSON.stringify(weeklyTasks)),
+        gymSchedule: JSON.parse(JSON.stringify(gymSchedule || {})),
+        gymExercises: JSON.parse(JSON.stringify(gymExercises || [])),
+        gymLogs: JSON.parse(JSON.stringify(gymLogs || [])),
+        quickTasks: JSON.parse(JSON.stringify(quickTasks || [])),
+        bodyWeightData: JSON.parse(JSON.stringify(bodyWeightData || {})),
+        workoutNotesData: JSON.parse(JSON.stringify(workoutNotesData || {})),
+        bmiSavedData: bmiSavedData ? JSON.parse(JSON.stringify(bmiSavedData)) : null,
+        measurementsData: JSON.parse(JSON.stringify(measurementsData || {})),
+        nutritionData: JSON.parse(JSON.stringify(nutritionData || {})),
+        _timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('hb2_data_backup', JSON.stringify(emergencyData));
+    } catch(e) {}
+  }
+});
 </script>
 </body>
 </html>
