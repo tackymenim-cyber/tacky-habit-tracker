@@ -4133,8 +4133,22 @@ let currentPage = 'tracker';
 let quoteIdx = 0;
 let soundEnabled = false;
 
+
+// Safe localStorage wrapper (works in private/incognito mode)
+const _ls = (() => {
+  try {
+    localStorage.setItem('__test__', '1');
+    localStorage.removeItem('__test__');
+    return localStorage;
+  } catch(e) {
+    // Fallback to in-memory store when localStorage is blocked
+    const _mem = {};
+    return { getItem: k => _mem[k] ?? null, setItem: (k,v) => { _mem[k]=v; }, removeItem: k => { delete _mem[k]; } };
+  }
+})();
+
 // Settings stay in localStorage (they are device-specific preferences)
-let settings = JSON.parse(localStorage.getItem('hb2_settings') || '{}');
+let settings = JSON.parse(_ls.getItem('hb2_settings') || '{}');
 settings = Object.assign({
   theme: 'light',
   fontSize: 'medium',
@@ -4156,38 +4170,12 @@ let _saveDebounceTimer = null;
 // Unique ID for this browser tab/session — lets us tell our own writes
 // apart from changes made on another device, so we don't re-render and
 // disrupt active typing every time our own save round-trips back to us.
-const _sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+const _sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9) + '_' + Math.random().toString(36).slice(2, 9);
 let _firestoreUnsubscribe = null;
 
 function save() {
   // Always save settings locally (device preferences)
-  localStorage.setItem('hb2_settings', JSON.stringify(settings));
-
-  // 🔥 BACKUP: save everything to localStorage too
-  try {
-    const allData = {
-      habits: JSON.parse(JSON.stringify(habits)),
-      checks: JSON.parse(JSON.stringify(checks)),
-      moodData: JSON.parse(JSON.stringify(moodData)),
-      waterData: JSON.parse(JSON.stringify(waterData)),
-      sleepData: JSON.parse(JSON.stringify(sleepData)),
-      thoughtsData: JSON.parse(JSON.stringify(thoughtsData)),
-      weeklyTasks: JSON.parse(JSON.stringify(weeklyTasks)),
-      gymSchedule: JSON.parse(JSON.stringify(gymSchedule || {})),
-      gymExercises: JSON.parse(JSON.stringify(gymExercises || [])),
-      gymLogs: JSON.parse(JSON.stringify(gymLogs || [])),
-      quickTasks: JSON.parse(JSON.stringify(quickTasks || [])),
-      bodyWeightData: JSON.parse(JSON.stringify(bodyWeightData || {})),
-      workoutNotesData: JSON.parse(JSON.stringify(workoutNotesData || {})),
-      bmiSavedData: bmiSavedData ? JSON.parse(JSON.stringify(bmiSavedData)) : null,
-      measurementsData: JSON.parse(JSON.stringify(measurementsData || {})),
-      nutritionData: JSON.parse(JSON.stringify(nutritionData || {})),
-      _timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('hb2_data_backup', JSON.stringify(allData));
-  } catch(e) {
-    console.warn('localStorage full, continuing anyway');
-  }
+  _ls.setItem('hb2_settings', JSON.stringify(settings));
 
   // Save data to Firestore if user is logged in
   const user = window._currentUser;
@@ -4238,6 +4226,23 @@ async function _saveToFirestore(expectedUid) {
   }
 }
 
+// ── Fix: حفظ فوري عند إغلاق الصفحة (beforeunload) ──────────────────────────
+window.addEventListener('beforeunload', () => {
+  if (_saveDebounceTimer && window._currentUser) {
+    clearTimeout(_saveDebounceTimer);
+    _saveToFirestore(window._currentUser.uid);
+  }
+});
+
+// ── Fix: اكتشاف انقطاع/اتصال الإنترنت ───────────────────────────────────────
+window.addEventListener('online', () => {
+  showToast('✅ الإنترنت متصل — جارٍ مزامنة البيانات');
+  if (window._currentUser) _saveToFirestore(window._currentUser.uid);
+});
+window.addEventListener('offline', () => {
+  showToast('⚠️ الإنترنت منقطع — البيانات محفوظة محلياً');
+});
+
 function _applyFirestoreData(d) {
   if (d.habits)           habits           = d.habits;
   if (d.checks)           checks           = d.checks;
@@ -4279,10 +4284,14 @@ async function _loadFromFirestore(user, _retryCount) {
         // Always apply on the first snapshot (initial load) and on any
         // change written by another device/tab.
         if (isFirstSnapshot || d._writerId !== _sessionId) {
+          const _before = JSON.stringify({ habits, checks, weeklyTasks });
           _applyFirestoreData(d);
-          try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
-          try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
-          try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
+          const _after = JSON.stringify({ habits, checks, weeklyTasks });
+          if (isFirstSnapshot || _before !== _after) {
+            try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
+            try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
+            try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
+          }
         }
       } else if (isFirstSnapshot) {
         // Brand-new user: seed with starter defaults and create the doc
@@ -4453,6 +4462,7 @@ function exportData() {
   a.href = URL.createObjectURL(blob);
   a.download = `habit-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   showToast(t('toastExported'));
 }
 
@@ -4498,6 +4508,7 @@ function exportCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = `habit-stats-${MONTH_EN[curM]}-${curY}.csv`;
   a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   showToast(t('toastCSV'));
 }
 
@@ -5016,7 +5027,7 @@ function renderTable() {
     const sd = curY === today.getFullYear() && curM === today.getMonth() ? today.getDate() : daysInMonth(curY, curM);
     for (let d = sd; d >= 1; d--) { if (isFuture(d)) continue; if (checks[chkKey(h.id, d)]) streak++;
       else break; }
-    const nameHtml = `<span class="habit-text" title="${escAttr(h.name)}" ondblclick="startEditHabit(${h.id})">${h.name}</span>`;
+    const nameHtml = `<span class="habit-text" title="${escAttr(h.name)}" ondblclick="startEditHabit(${h.id})">${escAttr(h.name)}</span>`;
     html += `<tr class="habit-row"><td class="habit-name-cell"><div class="habit-name-inner">
       <button class="del-btn" onclick="deleteHabit(${h.id})" title="${currentLang === 'ar' ? 'حذف' : currentLang === 'fr' ? 'Supprimer' : 'Delete'}">✕</button>
       <button class="edit-btn" onclick="startEditHabit(${h.id})" title="${currentLang === 'ar' ? 'تعديل الاسم' : currentLang === 'fr' ? 'Modifier' : 'Edit name'}">✎</button>
@@ -5064,7 +5075,10 @@ function renderTable() {
     html += '</tr>';
   });
 
-  document.getElementById('tableBody').innerHTML = html;
+  requestAnimationFrame(() => {
+    const tb = document.getElementById('tableBody');
+    if (tb) tb.innerHTML = html;
+  });
 }
 
 // =========== RENDER MOOD ===========
@@ -5305,10 +5319,10 @@ function renderWeekly() {
       const upDis = i === 0;
       const downDis = i === tasks.length - 1;
       const taskInner = isEditingTask
-        ? `<input class="habit-edit-input" id="taskEditInput-${w}-${i}" type="text" maxlength="80" style="flex:1;min-width:0;width:auto" value="${escAttr(t.text)}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}else if(event.key==='Escape'){editingTask=null;renderWeekly();}" onblur="saveTaskText(${w},${i},this.value)">`
-        : `<span class="task-text ${t.done ? 'done' : ''}" title="${escAttr(t.text)}" ondblclick="event.stopPropagation();startEditTask(${w},${i})">${t.text}</span>`;
-      html += `<div class="task-item" onclick="toggleTask(${w},${i})">
-        <div class="task-chk ${t.done ? 'done' : ''}">${t.done ? '✓' : ''}</div>
+        ? `<input class="habit-edit-input" id="taskEditInput-${w}-${i}" type="text" maxlength="80" style="flex:1;min-width:0;width:auto" value="${escAttr(t.text)}" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault();saveTaskText(${w},${i},this.value);}else if(event.key==='Escape'){editingTask=null;renderWeekly();}" onblur="saveTaskText(${w},${i},this.value)">`
+        : `<span class="task-text ${t.done ? 'done' : ''}" title="${escAttr(t.text)}" ondblclick="event.stopPropagation();startEditTask(${w},${i})">${escAttr(t.text)}</span>`;
+      html += `<div class="task-item">
+        <div class="task-chk ${t.done ? 'done' : ''}" onclick="event.stopPropagation();toggleTask(${w},${i})" style="cursor:pointer">${t.done ? '✓' : ''}</div>
         ${taskInner}
         <button onclick="event.stopPropagation();moveTask(${w},${i},-1)" ${upDis ? 'disabled' : ''} style="background:none;border:none;color:var(--text-3);cursor:${upDis ? 'default' : 'pointer'};opacity:${upDis ? '0.3' : '1'};font-size:0.6rem;padding:1px;flex-shrink:0;line-height:1" title="${currentLang === 'ar' ? 'نقل للأعلى' : 'Move up'}">▲</button>
         <button onclick="event.stopPropagation();moveTask(${w},${i},1)" ${downDis ? 'disabled' : ''} style="background:none;border:none;color:var(--text-3);cursor:${downDis ? 'default' : 'pointer'};opacity:${downDis ? '0.3' : '1'};font-size:0.6rem;padding:1px;flex-shrink:0;line-height:1" title="${currentLang === 'ar' ? 'نقل للأسفل' : 'Move down'}">▼</button>
@@ -5558,7 +5572,7 @@ function renderExerciseList() {
     const catLabel = catLabels[ex.cat] || ex.cat;
     const nameHtml = editingExerciseId === ex.id
       ? `<input class="exercise-edit-input" id="exEditInput-${ex.id}" type="text" maxlength="40" value="${escAttr(ex.name)}" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}else if(event.key==='Escape'){editingExerciseId=null;renderExerciseList();}" onblur="saveExerciseName(${ex.id}, this.value)">`
-      : `<div class="exercise-name" ondblclick="startEditExercise(${ex.id})">${ex.name}</div>`;
+      : `<div class="exercise-name" ondblclick="startEditExercise(${ex.id})">${escAttr(ex.name)}</div>`;
     return `<div class="exercise-item">
       <div class="exercise-cat">${getCatEmoji(ex.cat)}</div>
       ${nameHtml}
@@ -5707,7 +5721,7 @@ function renderProgressLog() {
     return `<div class="log-entry">
       <div class="log-entry-header">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <div class="log-exercise-name">${l.exName}</div>
+          <div class="log-exercise-name">${escAttr(l.exName)}</div>
           ${catTag} ${prBadge}
         </div>
         <div style="display:flex;align-items:center;gap:6px">
@@ -5722,7 +5736,7 @@ function renderProgressLog() {
         ${vol1RM ? `<div class="log-set-badge">${currentLang === 'ar' ? 'حجم 1RM≈' : currentLang === 'fr' ? 'Volume 1RM≈' : '1RM≈'} <span>${vol1RM}kg</span></div>` : ''}
         <div class="log-set-badge">${currentLang === 'ar' ? 'الحجم الكلي' : currentLang === 'fr' ? 'Volume total' : 'Total Volume'}: <span>${(l.sets * l.reps * (l.weight || 1)).toLocaleString()} ${l.weight ? 'kg·reps' : 'reps'}</span></div>
       </div>
-      ${l.note ? `<div class="log-note">📝 ${l.note}</div>` : ''}
+      ${l.note ? `<div class="log-note">📝 ${escAttr(l.note)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -6786,55 +6800,6 @@ window._onAuthReady = function(user) {
 
 // Kick off non-data init immediately (theme, lang, etc.)
 init();
-
-// 🔥 RESTORE from localStorage backup on load
-window.addEventListener('load', function() {
-  setTimeout(() => {
-    const backup = localStorage.getItem('hb2_data_backup');
-    if (backup && window._currentUser) {
-      try {
-        const d = JSON.parse(backup);
-        // استرجع فقط إذا كانت البيانات فارغة
-        if (!habits || habits.length === 0) {
-          _applyFirestoreData(d);
-          renderAll();
-          renderQuickTasks();
-          updateQuickTasksText();
-        }
-      } catch(e) {
-        console.error('Failed to restore backup:', e);
-      }
-    }
-  }, 1000);
-});
-
-// 🔥 EMERGENCY SAVE before closing
-window.addEventListener('beforeunload', function() {
-  if (window._currentUser) {
-    try {
-      const emergencyData = {
-        habits: JSON.parse(JSON.stringify(habits)),
-        checks: JSON.parse(JSON.stringify(checks)),
-        moodData: JSON.parse(JSON.stringify(moodData)),
-        waterData: JSON.parse(JSON.stringify(waterData)),
-        sleepData: JSON.parse(JSON.stringify(sleepData)),
-        thoughtsData: JSON.parse(JSON.stringify(thoughtsData)),
-        weeklyTasks: JSON.parse(JSON.stringify(weeklyTasks)),
-        gymSchedule: JSON.parse(JSON.stringify(gymSchedule || {})),
-        gymExercises: JSON.parse(JSON.stringify(gymExercises || [])),
-        gymLogs: JSON.parse(JSON.stringify(gymLogs || [])),
-        quickTasks: JSON.parse(JSON.stringify(quickTasks || [])),
-        bodyWeightData: JSON.parse(JSON.stringify(bodyWeightData || {})),
-        workoutNotesData: JSON.parse(JSON.stringify(workoutNotesData || {})),
-        bmiSavedData: bmiSavedData ? JSON.parse(JSON.stringify(bmiSavedData)) : null,
-        measurementsData: JSON.parse(JSON.stringify(measurementsData || {})),
-        nutritionData: JSON.parse(JSON.stringify(nutritionData || {})),
-        _timestamp: new Date().toISOString()
-      };
-      localStorage.setItem('hb2_data_backup', JSON.stringify(emergencyData));
-    } catch(e) {}
-  }
-});
 </script>
 </body>
 </html>
