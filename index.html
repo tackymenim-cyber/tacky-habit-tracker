@@ -262,7 +262,7 @@ function fbsReset() {
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc, getDocFromServer, setDoc, onSnapshot }
+  import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocFromServer, setDoc, onSnapshot }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // ============================================================
@@ -271,7 +271,25 @@ function fbsReset() {
   window._fbsDynamicInit = async function(cfg) {
     const app  = initializeApp(cfg);
     const auth = getAuth(app);
-    const db   = getFirestore(app);
+    // Enable offline persistence: pending writes (and last-synced data) are
+    // cached in the browser's IndexedDB by Firestore itself. This means a
+    // write made while offline — or a refresh that happens before a write
+    // finishes — is queued locally and sent automatically the moment the
+    // connection comes back, instead of being lost. This is NOT a separate
+    // local storage of app data; it's Firestore's own sync buffer, and the
+    // cloud document remains the single source of truth.
+    let db;
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+      });
+    } catch (e) {
+      // Falls back to memory-only Firestore if persistence isn't available
+      // (e.g. private browsing in some browsers) — app still works, just
+      // without the offline-write safety net.
+      console.warn('Firestore offline persistence unavailable, using memory-only cache:', e);
+      db = getFirestore(app);
+    }
     const provider = new GoogleAuthProvider();
 
     window._fbAuth     = auth;
@@ -3348,20 +3366,20 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 <!-- EDIT HABIT MODAL -->
 <div id="editHabitOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:3000;align-items:center;justify-content:center;" onclick="closeEditHabitModal()">
   <div style="background:var(--white);border-radius:16px;padding:24px 20px;width:90%;max-width:340px;box-shadow:var(--shadow-lg);" onclick="event.stopPropagation()">
-    <div style="font-size:0.85rem;font-weight:800;color:var(--text);margin-bottom:14px;">✏️ تعديل اسم العادة</div>
+    <div style="font-size:0.85rem;font-weight:800;color:var(--text);margin-bottom:14px;" id="editHabitTitle">✏️ تعديل اسم العادة</div>
     <input id="editHabitModalInput" type="text" maxlength="50"
       style="width:100%;background:var(--bg);border:1.5px solid var(--blue-400);border-radius:10px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:600;padding:10px 14px;outline:none;box-sizing:border-box;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();confirmEditHabitModal();}if(event.key==='Escape'){closeEditHabitModal();}">
-    <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin:14px 0 8px;">🗓️ أيام تكرار العادة</div>
+    <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin:14px 0 8px;" id="editHabitDaysLabel">🗓️ أيام تكرار العادة</div>
     <div id="editDayPickerChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
     <div style="display:flex;gap:8px;">
-      <button onclick="setEditDaysPreset('all')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">كل يوم</button>
-      <button onclick="setEditDaysPreset('alt')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">يوم بعد يوم</button>
-      <button onclick="setEditDaysPreset('weekdays')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">أيام الدراسة</button>
+      <button onclick="setEditDaysPreset('all')" id="editPresetAllBtn" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">كل يوم</button>
+      <button onclick="setEditDaysPreset('alt')" id="editPresetAltBtn" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">يوم بعد يوم</button>
+      <button onclick="setEditDaysPreset('weekdays')" id="editPresetWeekdaysBtn" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">أيام الدراسة</button>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px;">
-      <button onclick="confirmEditHabitModal()" style="flex:1;background:var(--blue-500);color:white;border:none;border-radius:10px;padding:10px;font-family:'Tajawal',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;">حفظ</button>
-      <button onclick="closeEditHabitModal()" style="flex:1;background:var(--bg);color:var(--text-2);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-family:'Tajawal',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;">إلغاء</button>
+      <button onclick="confirmEditHabitModal()" id="editHabitSaveBtn" style="flex:1;background:var(--blue-500);color:white;border:none;border-radius:10px;padding:10px;font-family:'Tajawal',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;">حفظ</button>
+      <button onclick="closeEditHabitModal()" id="editHabitCancelBtn" style="flex:1;background:var(--bg);color:var(--text-2);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-family:'Tajawal',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;">إلغاء</button>
     </div>
   </div>
 </div>
@@ -3631,7 +3649,7 @@ const T = {
     exportCSV: '📊 تصدير إحصائيات (CSV)', clearData: '🗑️ مسح جميع البيانات',
     secAbout: 'ℹ️ حول التطبيق',
     appName: 'TACKY Habit Tracker Pro', appVer: 'الإصدار 2.0 — بناء متقدم',
-    privacy: 'الخصوصية', privacyDesc: 'جميع البيانات محلية 100%',
+    privacy: 'الخصوصية', privacyDesc: 'بياناتك خاصة بحسابك فقط، ولا يراها أي مستخدم آخر',
     footerData: 'البيانات محفوظة محلياً 🔒',
     statHabits: 'عادة نشطة', statDone: 'إجمالي الإنجازات', statStreak: 'أطول سلسلة 🔥', statRate: 'معدل هذا الشهر',
     addHabitPlaceholder: 'أضف عادة جديدة... مثلاً: استيقظ الساعة 5 صباحاً',
@@ -3716,10 +3734,31 @@ const T = {
     firebaseInitError: '⚠️ تعذر الاتصال بخادم تسجيل الدخول، تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة',
     cloudSaveFail: '⚠️ فشل الحفظ على السحاب',
     cloudLoadFail: '⚠️ فشل تحميل البيانات من السحاب',
+    cloudUnconfirmed: '⚠️ تعذر التأكد من بيانات السحاب الآن — سيتم المزامنة عند عودة الاتصال',
+    netOnline: '✅ الإنترنت متصل — جارٍ مزامنة البيانات',
+    netOffline: '⚠️ الإنترنت منقطع — البيانات محفوظة محلياً',
     confirmSignOut: 'هل تريد تسجيل الخروج؟',
     signingOutBtn: '... جارٍ الخروج',
     signOutBtn: '⬡ خروج',
     signOutFail: '⚠️ فشل تسجيل الخروج، حاول مرة أخرى',
+    // SIGN OUT CONFIRM MODAL
+    soTitle: 'تسجيل الخروج؟',
+    soMsg: 'هل تريد فعلاً الخروج من حسابك؟<br>ستحتاج إلى تسجيل الدخول مرة أخرى.',
+    soCancelBtn: 'تراجع 🙈',
+    soConfirmBtn: 'خروج 🚪',
+    // ADD HABIT MODAL
+    addHabitModalTitle: 'إضافة عادة جديدة',
+    addHabitModalSubtitle: 'حدد الأيام التي ستمارس فيها هذه العادة',
+    addHabitDaysLabel: '🗓️ أيام التكرار',
+    presetAllDays: '📅 كل يوم',
+    presetAltDays: '🔄 يوم بعد يوم',
+    presetWeekdays: '📚 أيام الدراسة',
+    addHabitCancelBtn: 'إلغاء',
+    addHabitConfirmBtn: '＋ إضافة العادة',
+    // EDIT HABIT MODAL
+    editHabitTitle: '✏️ تعديل اسم العادة',
+    editHabitDaysLabel: '🗓️ أيام تكرار العادة',
+    saveBtn: 'حفظ',
   },
   fr: {
     dir: 'ltr', lang: 'fr',
@@ -3846,7 +3885,7 @@ const T = {
     exportCSV: '📊 Exporter (CSV)', clearData: '🗑️ Tout effacer',
     secAbout: 'ℹ️ À propos',
     appName: 'TACKY Habit Tracker Pro', appVer: 'Version 2.0',
-    privacy: 'Confidentialité', privacyDesc: '100% des données locales',
+    privacy: 'Confidentialité', privacyDesc: 'Vos données sont privées, liées uniquement à votre compte, invisibles pour les autres',
     footerData: 'Données locales 🔒',
     statHabits: 'Habitudes actives', statDone: 'Réalisations', statStreak: 'Meilleure série 🔥', statRate: 'Taux ce mois',
     addHabitPlaceholder: 'Ajouter une habitude... Ex: Se réveiller à 5h',
@@ -3932,10 +3971,31 @@ const T = {
     firebaseInitError: '⚠️ Impossible de se connecter au serveur de connexion, vérifiez votre connexion internet puis rechargez la page',
     cloudSaveFail: '⚠️ Échec de la sauvegarde dans le cloud',
     cloudLoadFail: '⚠️ Échec du chargement des données depuis le cloud',
+    cloudUnconfirmed: '⚠️ Impossible de vérifier les données cloud pour le moment — synchronisation à la reconnexion',
+    netOnline: '✅ Internet connecté — synchronisation des données en cours',
+    netOffline: '⚠️ Internet déconnecté — données enregistrées localement',
     confirmSignOut: 'Voulez-vous vous déconnecter ?',
     signingOutBtn: '... Déconnexion en cours',
     signOutBtn: '⬡ Déconnexion',
     signOutFail: '⚠️ Échec de la déconnexion, réessayez',
+    // SIGN OUT CONFIRM MODAL
+    soTitle: 'Déconnexion ?',
+    soMsg: 'Voulez-vous vraiment vous déconnecter de votre compte ?<br>Vous devrez vous reconnecter.',
+    soCancelBtn: 'Annuler 🙈',
+    soConfirmBtn: 'Déconnexion 🚪',
+    // ADD HABIT MODAL
+    addHabitModalTitle: 'Ajouter une nouvelle habitude',
+    addHabitModalSubtitle: 'Choisissez les jours où vous pratiquerez cette habitude',
+    addHabitDaysLabel: '🗓️ Jours de répétition',
+    presetAllDays: '📅 Chaque jour',
+    presetAltDays: '🔄 Un jour sur deux',
+    presetWeekdays: '📚 Jours de semaine',
+    addHabitCancelBtn: 'Annuler',
+    addHabitConfirmBtn: '＋ Ajouter l\'habitude',
+    // EDIT HABIT MODAL
+    editHabitTitle: '✏️ Modifier le nom de l\'habitude',
+    editHabitDaysLabel: '🗓️ Jours de répétition de l\'habitude',
+    saveBtn: 'Enregistrer',
   },
   en: {
     dir: 'ltr', lang: 'en',
@@ -4062,7 +4122,7 @@ const T = {
     exportCSV: '📊 Export Statistics (CSV)', clearData: '🗑️ Clear All Data',
     secAbout: 'ℹ️ About',
     appName: 'TACKY Habit Tracker Pro', appVer: 'Version 2.0',
-    privacy: 'Privacy', privacyDesc: '100% of data is local',
+    privacy: 'Privacy', privacyDesc: 'Your data is private to your account only, no other user can see it',
     footerData: 'Data saved locally 🔒',
     statHabits: 'Active Habits', statDone: 'Total Achievements', statStreak: 'Longest Streak 🔥', statRate: 'Rate This Month',
     addHabitPlaceholder: 'Add a new habit... E.g: Wake up at 5am',
@@ -4148,10 +4208,31 @@ const T = {
     firebaseInitError: '⚠️ Could not connect to the sign-in server, check your internet connection then reload the page',
     cloudSaveFail: '⚠️ Failed to save to the cloud',
     cloudLoadFail: '⚠️ Failed to load data from the cloud',
+    cloudUnconfirmed: '⚠️ Could not confirm cloud data right now — will sync when back online',
+    netOnline: '✅ Internet connected — syncing data',
+    netOffline: '⚠️ Internet disconnected — data saved locally',
     confirmSignOut: 'Do you want to sign out?',
     signingOutBtn: '... Signing out',
     signOutBtn: '⬡ Sign out',
     signOutFail: '⚠️ Sign-out failed, please try again',
+    // SIGN OUT CONFIRM MODAL
+    soTitle: 'Sign out?',
+    soMsg: 'Do you really want to sign out of your account?<br>You will need to sign in again.',
+    soCancelBtn: 'Cancel 🙈',
+    soConfirmBtn: 'Sign out 🚪',
+    // ADD HABIT MODAL
+    addHabitModalTitle: 'Add a new habit',
+    addHabitModalSubtitle: 'Choose the days you will practice this habit',
+    addHabitDaysLabel: '🗓️ Repeat days',
+    presetAllDays: '📅 Every day',
+    presetAltDays: '🔄 Every other day',
+    presetWeekdays: '📚 Weekdays',
+    addHabitCancelBtn: 'Cancel',
+    addHabitConfirmBtn: '＋ Add habit',
+    // EDIT HABIT MODAL
+    editHabitTitle: '✏️ Edit habit name',
+    editHabitDaysLabel: '🗓️ Habit repeat days',
+    saveBtn: 'Save',
   },
 };
 
@@ -4209,6 +4290,8 @@ function setLang(lang) {
   if (lockEm) lockEm.textContent = tr.lockEmail;
   const lockOut = document.getElementById('lockLogoutBtnText');
   if (lockOut) lockOut.textContent = tr.lockLogoutBtn;
+  const navSO = document.getElementById('navSignOutBtn');
+  if (navSO && !navSO.disabled) navSO.textContent = tr.signOutBtn;
   const lockChk = document.getElementById('lockCheckingMsg');
   if (lockChk) lockChk.textContent = tr.lockChecking;
   const tabs = document.querySelectorAll('.nav-tab');
@@ -4251,7 +4334,64 @@ function setLang(lang) {
   if (qpEl) qpEl.textContent = qs[quoteIdx];
   updateGymPageText();
   updateQuickTasksText();
+  updateSignOutModalText();
+  updateAddHabitModalText();
+  updateEditHabitModalText();
   renderAll();
+}
+
+function updateEditHabitModalText() {
+  const tr = T[currentLang] || T.ar;
+  const t1 = document.getElementById('editHabitTitle');
+  if (t1) t1.textContent = tr.editHabitTitle;
+  const t2 = document.getElementById('editHabitDaysLabel');
+  if (t2) t2.textContent = tr.editHabitDaysLabel;
+  const t3 = document.getElementById('editPresetAllBtn');
+  if (t3) t3.textContent = tr.presetAllDays;
+  const t4 = document.getElementById('editPresetAltBtn');
+  if (t4) t4.textContent = tr.presetAltDays;
+  const t5 = document.getElementById('editPresetWeekdaysBtn');
+  if (t5) t5.textContent = tr.presetWeekdays;
+  const t6 = document.getElementById('editHabitSaveBtn');
+  if (t6) t6.textContent = tr.saveBtn;
+  const t7 = document.getElementById('editHabitCancelBtn');
+  if (t7) t7.textContent = tr.addHabitCancelBtn;
+  // Day chips also depend on language — re-render if present
+  if (document.getElementById('editDayPickerChips')) renderEditDayPickerChips();
+}
+
+function updateSignOutModalText() {
+  const tr = T[currentLang] || T.ar;
+  const soT = document.getElementById('soTitle');
+  if (soT) soT.textContent = tr.soTitle;
+  const soM = document.getElementById('soMsg');
+  if (soM) soM.innerHTML = tr.soMsg;
+  const soC = document.getElementById('soCancelBtnText');
+  if (soC) soC.textContent = tr.soCancelBtn;
+  const soK = document.getElementById('soConfirmBtn');
+  if (soK) soK.textContent = tr.soConfirmBtn;
+}
+
+function updateAddHabitModalText() {
+  const tr = T[currentLang] || T.ar;
+  const t1 = document.getElementById('addHabitModalTitle');
+  if (t1) t1.textContent = tr.addHabitModalTitle;
+  const t2 = document.getElementById('addHabitModalSubtitle');
+  if (t2) t2.textContent = tr.addHabitModalSubtitle;
+  const t3 = document.getElementById('addHabitDaysLabel');
+  if (t3) t3.textContent = tr.addHabitDaysLabel;
+  const t4 = document.getElementById('presetAllDaysBtn');
+  if (t4) t4.textContent = tr.presetAllDays;
+  const t5 = document.getElementById('presetAltDaysBtn');
+  if (t5) t5.textContent = tr.presetAltDays;
+  const t6 = document.getElementById('presetWeekdaysBtn');
+  if (t6) t6.textContent = tr.presetWeekdays;
+  const t7 = document.getElementById('addHabitCancelBtn');
+  if (t7) t7.textContent = tr.addHabitCancelBtn;
+  const t8 = document.getElementById('addHabitConfirmBtn');
+  if (t8) t8.textContent = tr.addHabitConfirmBtn;
+  // Day-name chips (Sun..Sat) also depend on language — re-render if modal is open/has content
+  if (document.getElementById('modalDayPickerChips')) renderModalDayPickerChips();
 }
 function updateGymPageText() {
   const tr = T[currentLang] || T.ar;
@@ -4556,11 +4696,17 @@ let selectedEmoji = '😊';
 let selectedDays = [0,1,2,3,4,5,6]; // days chosen for a NEW habit (0=Sun ... 6=Sat)
 let editSelectedDays = [0,1,2,3,4,5,6]; // days chosen while editing an existing habit
 const DAY_LABELS_AR = ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+const DAY_LABELS_SHORT = {
+  ar: DAY_LABELS_AR,
+  fr: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
+  en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+};
 
 function _dayChipsHtml(activeArr, toggleFnName) {
+  const labels = DAY_LABELS_SHORT[currentLang] || DAY_LABELS_SHORT.ar;
   return [0,1,2,3,4,5,6].map(i => {
     const on = activeArr.includes(i);
-    return `<button type="button" onclick="${toggleFnName}(${i})" style="min-width:44px;padding:6px 4px;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;cursor:pointer;border:1.5px solid ${on ? 'var(--blue-500)' : 'var(--border)'};background:${on ? 'var(--blue-500)' : 'var(--bg)'};color:${on ? '#fff' : 'var(--text-2)'};">${DAY_LABELS_AR[i]}</button>`;
+    return `<button type="button" onclick="${toggleFnName}(${i})" style="min-width:44px;padding:6px 4px;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;cursor:pointer;border:1.5px solid ${on ? 'var(--blue-500)' : 'var(--border)'};background:${on ? 'var(--blue-500)' : 'var(--bg)'};color:${on ? '#fff' : 'var(--text-2)'};">${labels[i]}</button>`;
   }).join('');
 }
 
@@ -4698,7 +4844,7 @@ async function _saveToFirestore(expectedUid) {
     });
   } catch(e) {
     console.error('Firestore save error:', e);
-    showToast('⚠️ فشل الحفظ على السحاب');
+    showToast(t('cloudSaveFail'));
   }
 }
 
@@ -4712,7 +4858,7 @@ window.addEventListener('beforeunload', () => {
 
 // ── Fix: اكتشاف انقطاع/اتصال الإنترنت ───────────────────────────────────────
 window.addEventListener('online', () => {
-  showToast('✅ الإنترنت متصل — جارٍ مزامنة البيانات');
+  showToast(t('netOnline'));
   // IMPORTANT: reconnecting must never, by itself, push a write. It only
   // flushes a save if one is already pending because of an actual edit the
   // user made (see _saveDebounceTimer). Otherwise this device's possibly
@@ -4725,7 +4871,7 @@ window.addEventListener('online', () => {
   }
 });
 window.addEventListener('offline', () => {
-  showToast('⚠️ الإنترنت منقطع — البيانات محفوظة محلياً');
+  showToast(t('netOffline'));
 });
 
 function _applyFirestoreData(d) {
@@ -4844,14 +4990,14 @@ async function _loadFromFirestore(user, _retryCount) {
     if (_retryCount < 3 && window._currentUser && window._currentUser.uid === user.uid) {
       setTimeout(() => _loadFromFirestore(user, _retryCount + 1), 1000 * (_retryCount + 1));
     } else {
-      showToast('⚠️ فشل تحميل البيانات من السحاب');
+      showToast(t('cloudLoadFail'));
     }
   });
 
   if (serverCheckFailed) {
     // Let the person know we're showing cached/local data and haven't
     // confirmed the cloud state yet, instead of silently proceeding.
-    showToast('⚠️ تعذر التأكد من بيانات السحاب الآن — سيتم المزامنة عند عودة الاتصال');
+    showToast(t('cloudUnconfirmed'));
   }
 }
 
@@ -5042,13 +5188,16 @@ function handleImport(e) {
 function exportCSV() {
   const st = calcStats();
   const totalDays = daysInMonth(curY, curM);
-  let csv = 'اليوم,مكتملة,فائتة,نسبة الإنجاز\n';
+  const csvHeader = currentLang === 'ar' ? 'اليوم,مكتملة,فائتة,نسبة الإنجاز'
+    : currentLang === 'fr' ? 'Jour,Complétées,Manquées,Taux de réussite'
+    : 'Day,Done,Missed,Completion Rate';
+  let csv = csvHeader + '\n';
   for (let d = 1; d <= totalDays; d++) {
     if (isFuture(d)) break;
-    let dc = 0;
-    habits.forEach(h => { if (checks[chkKey(h.id, d)]) dc++; });
-    const missed = habits.length - dc;
-    const pct = habits.length > 0 ? Math.round(dc / habits.length * 100) : 0;
+    let dc = 0, sc = 0;
+    habits.forEach(h => { if (isHabitActiveOn(h, d)) { sc++; if (checks[chkKey(h.id, d)]) dc++; } });
+    const missed = sc - dc;
+    const pct = sc > 0 ? Math.round(dc / sc * 100) : 0;
     csv += `${d},${dc},${missed},${pct}%\n`;
   }
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
@@ -5267,8 +5416,11 @@ function toggleCheck(hid, d) {
   checks[k] = !was;
   save();
   if (!was) {
-    const allDone = habits.every(h => checks[chkKey(h.id, d)]);
-    if (allDone && habits.length > 0) {
+    // Only count habits actually scheduled for this day — a habit that's
+    // grayed out (not scheduled today) must not block the "all done" toast.
+    const scheduledHabits = habits.filter(h => isHabitActiveOn(h, d));
+    const allDone = scheduledHabits.every(h => checks[chkKey(h.id, d)]);
+    if (allDone && scheduledHabits.length > 0) {
       showToast(t('toastAllDone'));
       if (settings.confetti) { launchConfetti(); setTimeout(() => launchConfetti(), 350); }
       playHabitAllDoneSound();
@@ -5504,9 +5656,9 @@ function renderLineChart(id) {
   const pcts = [];
   for (let d = 1; d <= totalDays; d++) {
     if (isFuture(d)) break;
-    let dc = 0;
-    habits.forEach(h => { if (checks[chkKey(h.id, d)]) dc++; });
-    pcts.push(habits.length > 0 ? dc / habits.length : 0);
+    let dc = 0, sc = 0;
+    habits.forEach(h => { if (isHabitActiveOn(h, d)) { sc++; if (checks[chkKey(h.id, d)]) dc++; } });
+    pcts.push(sc > 0 ? dc / sc : 0);
   }
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const gridColor = isDark ? 'rgba(42,51,82,0.8)' : 'rgba(226,232,240,0.8)';
@@ -7345,7 +7497,7 @@ function confirmSignOut() {
   if (_firestoreUnsubscribe) { _firestoreUnsubscribe(); _firestoreUnsubscribe = null; }
 
   const signOutBtn = document.getElementById('navSignOutBtn');
-  if (signOutBtn) { signOutBtn.disabled = true; signOutBtn.textContent = '... جارٍ الخروج'; }
+  if (signOutBtn) { signOutBtn.disabled = true; signOutBtn.textContent = t('signingOutBtn'); }
 
   window._fbSignOut(window._fbAuth).then(() => {
     // Reset all data
@@ -7362,9 +7514,9 @@ function confirmSignOut() {
     renderQuickTasks();
   }).catch(err => {
     console.error('Sign-out error:', err);
-    showToast('⚠️ فشل تسجيل الخروج، حاول مرة أخرى');
+    showToast(t('signOutFail'));
   }).finally(() => {
-    if (signOutBtn) { signOutBtn.disabled = false; signOutBtn.textContent = '🚪 خروج'; }
+    if (signOutBtn) { signOutBtn.disabled = false; signOutBtn.textContent = t('signOutBtn'); }
   });
 }
 
@@ -7643,7 +7795,7 @@ init();
     <div style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:8px;" id="soTitle">تسجيل الخروج؟</div>
     <div style="font-size:0.85rem;color:var(--text-2);line-height:1.6;margin-bottom:22px;" id="soMsg">هل تريد فعلاً الخروج من حسابك؟<br>ستحتاج إلى تسجيل الدخول مرة أخرى.</div>
     <div style="display:flex;gap:10px;">
-      <button onclick="cancelSignOut()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text-2);font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;" id="soCancelBtn">تراجع 🙈</button>
+      <button onclick="cancelSignOut()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text-2);font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;" id="soCancelBtnText">تراجع 🙈</button>
       <button onclick="confirmSignOut()" id="soConfirmBtn" style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#ef4444,#b91c1c);color:white;font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(239,68,68,0.4);transition:all 0.2s;">خروج 🚪</button>
     </div>
   </div>
@@ -7655,8 +7807,8 @@ init();
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
       <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 6px 16px rgba(59,130,246,0.35);flex-shrink:0;">✨</div>
       <div>
-        <div style="font-size:1rem;font-weight:900;color:var(--text);">إضافة عادة جديدة</div>
-        <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px;">حدد الأيام التي ستمارس فيها هذه العادة</div>
+        <div style="font-size:1rem;font-weight:900;color:var(--text);" id="addHabitModalTitle">إضافة عادة جديدة</div>
+        <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px;" id="addHabitModalSubtitle">حدد الأيام التي ستمارس فيها هذه العادة</div>
       </div>
       <button onclick="closeAddHabitModal()" style="margin-right:auto;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-3);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
     </div>
@@ -7668,18 +7820,18 @@ init();
     </div>
 
     <!-- Day picker -->
-    <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin-bottom:10px;">🗓️ أيام التكرار</div>
+    <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin-bottom:10px;" id="addHabitDaysLabel">🗓️ أيام التكرار</div>
     <div id="modalDayPickerChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
     <div style="display:flex;gap:8px;margin-bottom:20px;">
-      <button onclick="setModalDaysPreset('all')" class="modal-preset-btn">📅 كل يوم</button>
-      <button onclick="setModalDaysPreset('alt')" class="modal-preset-btn">🔄 يوم بعد يوم</button>
-      <button onclick="setModalDaysPreset('weekdays')" class="modal-preset-btn">📚 أيام الدراسة</button>
+      <button onclick="setModalDaysPreset('all')" class="modal-preset-btn" id="presetAllDaysBtn">📅 كل يوم</button>
+      <button onclick="setModalDaysPreset('alt')" class="modal-preset-btn" id="presetAltDaysBtn">🔄 يوم بعد يوم</button>
+      <button onclick="setModalDaysPreset('weekdays')" class="modal-preset-btn" id="presetWeekdaysBtn">📚 أيام الدراسة</button>
     </div>
 
     <!-- Action buttons -->
     <div style="display:flex;gap:10px;">
-      <button onclick="closeAddHabitModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text-2);font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;">إلغاء</button>
-      <button onclick="confirmAddHabit()" style="flex:2;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));color:white;font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(59,130,246,0.4);">＋ إضافة العادة</button>
+      <button onclick="closeAddHabitModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text-2);font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;" id="addHabitCancelBtn">إلغاء</button>
+      <button onclick="confirmAddHabit()" style="flex:2;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));color:white;font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(59,130,246,0.4);" id="addHabitConfirmBtn">＋ إضافة العادة</button>
     </div>
   </div>
 </div>
