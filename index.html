@@ -5744,7 +5744,7 @@ function renderMood() {
     const avg = moodVals.length > 0 ? Math.round(moodVals.reduce((a, b) => a + b, 0) / moodVals.length) : 0;
     const barH = avg > 0 ? (avg / 5) * 100 : 5;
     const col = avg > 0 ? MOOD_COLORS[avg] : 'var(--border)';
-    const dayNamesMap = { ar: ['أح', 'اث', 'ثل', 'أر', 'خم', 'جم', 'سب'], fr: ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'], en: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] };
+    const dayNamesMap = { ar: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'], fr: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'], en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] };
     const dayNames = dayNamesMap[currentLang] || dayNamesMap.ar;
     return `<div class="mood-day-pill">
       <div class="mood-day-label">${dayNames[dt.getDay()]}</div>
