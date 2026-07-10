@@ -6493,7 +6493,6 @@ function renderGymScheduleExtras() {
       return gymLogs.filter(l => l.date === dateStr).reduce((acc, l) => acc + l.sets * l.reps * (l.weight || 1), 0);
     });
     const maxV = Math.max(...vols, 1);
-    const dayNames = currentLang === 'ar' ? ['أح', 'اث', 'ثل', 'أر', 'خم', 'جم', 'سب'] : currentLang === 'fr' ? ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'] : ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
     chartEl.innerHTML = days7.map((dateStr, i) => {
       const hPct = Math.max(Math.round(vols[i] / maxV * 100), vols[i] > 0 ? 5 : 3);
       const d = new Date(dateStr);
@@ -6602,7 +6601,7 @@ function renderBWGrid() {
     d.setDate(d.getDate() - i);
     days14.push(d);
   }
-  const dayNames = currentLang === 'ar' ? ['أح', 'اث', 'ثل', 'أر', 'خم', 'جم', 'سب'] : currentLang === 'fr' ? ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'] : ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const dayNames = currentLang === 'ar' ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] : currentLang === 'fr' ? ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'] : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   el.innerHTML = days14.map(dt => {
     const key = dt.toISOString().slice(0, 10);
     const v = bodyWeightData[key] || '';
@@ -7407,7 +7406,7 @@ function confirmAddHabit() {
 }
 
 function renderModalDayPickerChips() {
-  const DAY_NAMES = currentLang === 'ar' ? ['أح','اث','ثل','أر','خم','جم','سب'] : currentLang === 'fr' ? ['Di','Lu','Ma','Me','Je','Ve','Sa'] : ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const DAY_NAMES = currentLang === 'ar' ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] : currentLang === 'fr' ? ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'] : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const cont = document.getElementById('modalDayPickerChips');
   if (!cont) return;
   cont.innerHTML = DAY_NAMES.map((d, i) => `
