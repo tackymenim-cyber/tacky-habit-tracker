@@ -408,7 +408,11 @@ function fbsReset() {
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
+}
 
 body {
   background: var(--bg);
@@ -416,6 +420,8 @@ body {
   font-family: 'Tajawal', sans-serif;
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* 🔧 إصلاح رئيسي: منع التمرير عندما تكون authOverlay نشطة */
@@ -1407,6 +1413,147 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .delh-btn-confirm:hover { box-shadow: 0 8px 28px rgba(239,68,68,0.5); transform: translateY(-2px); }
 
+/* ===== GENERIC TASK DELETE MODAL (shredder theme) ===== */
+.delg-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  animation: celebFadeIn 0.25s ease both;
+}
+.delg-overlay.show { display: flex; }
+.delg-card {
+  background: var(--white); border-radius: 26px;
+  padding: 30px 30px 26px; text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  max-width: 360px; width: 90%;
+  animation: celebBounce 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.delg-shredder {
+  position: relative; display: flex; justify-content: center;
+  margin-bottom: 8px;
+}
+.delg-icon {
+  font-size: 3.8rem; line-height: 1; display: block;
+  animation: delgWiggle 0.7s ease 0.1s both;
+}
+@keyframes delgWiggle {
+  0%   { transform: scale(0.7) rotate(0deg); opacity: 0; }
+  35%  { transform: scale(1.15) rotate(-12deg); opacity: 1; }
+  55%  { transform: scale(1.05) rotate(10deg); }
+  75%  { transform: scale(1) rotate(-6deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.delg-confetti { position: absolute; inset: 0; pointer-events: none; }
+.delg-confetti span {
+  position: absolute; top: 50%; left: 50%;
+  width: 6px; height: 10px; border-radius: 1px;
+  background: var(--red, #ef4444);
+  opacity: 0;
+  animation: delgFly 0.9s ease 0.25s both;
+}
+.delg-confetti span:nth-child(1) { background:#ef4444; --tx:-46px; --ty:-40px; --rot:-70deg; animation-delay:0.22s; }
+.delg-confetti span:nth-child(2) { background:#f59e0b; --tx:44px;  --ty:-36px; --rot:60deg;  animation-delay:0.26s; }
+.delg-confetti span:nth-child(3) { background:#3b82f6; --tx:-52px; --ty:10px;  --rot:-30deg; animation-delay:0.30s; }
+.delg-confetti span:nth-child(4) { background:#10b981; --tx:52px;  --ty:14px;  --rot:40deg;  animation-delay:0.34s; }
+.delg-confetti span:nth-child(5) { background:#a855f7; --tx:-24px; --ty:-52px; --rot:-15deg; animation-delay:0.38s; }
+.delg-confetti span:nth-child(6) { background:#ec4899; --tx:26px;  --ty:-52px; --rot:20deg;  animation-delay:0.42s; }
+@keyframes delgFly {
+  0%   { opacity: 1; transform: translate(-50%,-50%) translate(0,0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-50%,-50%) translate(var(--tx),var(--ty)) rotate(var(--rot)); }
+}
+.delg-title {
+  font-size: 1.22rem; font-weight: 900; color: var(--text);
+  margin-bottom: 8px;
+}
+.delg-msg {
+  font-size: 0.9rem; color: var(--text-2); line-height: 1.6;
+  margin-bottom: 6px;
+}
+.delg-msg:empty { display: none; margin-bottom: 0; }
+.delg-name {
+  font-size: 0.92rem; font-weight: 800; color: var(--blue-500);
+  margin-bottom: 22px; display: inline-block; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  background: var(--bg); border: 1px dashed var(--border);
+  border-radius: 10px; padding: 6px 14px;
+}
+.delg-name:empty { display: none; margin-bottom: 0; }
+.delg-btn-row { display: flex; gap: 10px; }
+.delg-btn {
+  flex: 1; border: none; border-radius: 13px;
+  padding: 12px 14px; font-family: 'Tajawal', sans-serif;
+  font-size: 0.9rem; font-weight: 800; cursor: pointer;
+  transition: all 0.2s;
+}
+.delg-btn-cancel {
+  background: var(--bg-2, #f1f5f9); color: var(--text-2);
+}
+.delg-btn-cancel:hover { background: var(--border); transform: translateY(-1px); }
+.delg-btn-confirm {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: white; box-shadow: 0 6px 20px rgba(239,68,68,0.35);
+}
+.delg-btn-confirm:hover { box-shadow: 0 8px 28px rgba(239,68,68,0.5); transform: translateY(-2px); }
+
+/* ===== MOOD FEEDBACK POPUP ===== */
+.moodtip-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+  animation: celebFadeIn 0.25s ease both; padding: 16px;
+}
+.moodtip-overlay.show { display: flex; }
+.moodtip-card {
+  background: var(--white); border-radius: 26px;
+  padding: 30px 28px 24px; text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  max-width: 380px; width: 100%;
+  animation: celebBounce 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+  border-top: 5px solid var(--moodtip-accent, #3b82f6);
+  position: relative; overflow: hidden;
+}
+.moodtip-card::before {
+  content: ''; position: absolute; top: -60px; right: -60px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: var(--moodtip-accent, #3b82f6); opacity: 0.08;
+}
+.moodtip-emoji-wrap {
+  width: 74px; height: 74px; border-radius: 50%; margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.3rem; position: relative; z-index: 1;
+  background: var(--moodtip-accent-light, #dbeafe);
+  animation: moodtipPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
+}
+@keyframes moodtipPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.moodtip-title {
+  font-size: 1.15rem; font-weight: 900; color: var(--text);
+  margin-bottom: 10px; position: relative; z-index: 1;
+}
+.moodtip-msg {
+  font-size: 0.92rem; color: var(--text-2); line-height: 1.7;
+  margin-bottom: 22px; position: relative; z-index: 1;
+}
+.moodtip-btn-row { display: flex; gap: 10px; position: relative; z-index: 1; }
+.moodtip-btn {
+  flex: 1; border: none; border-radius: 13px;
+  padding: 12px 14px; font-family: 'Tajawal', sans-serif;
+  font-size: 0.88rem; font-weight: 800; cursor: pointer;
+  transition: all 0.2s;
+}
+.moodtip-btn-secondary {
+  background: var(--bg-2, #f1f5f9); color: var(--text-2);
+}
+.moodtip-btn-secondary:hover { background: var(--border); transform: translateY(-1px); }
+.moodtip-btn-primary {
+  background: var(--moodtip-accent, #3b82f6); color: white;
+  box-shadow: 0 6px 20px var(--moodtip-accent-shadow, rgba(59,130,246,0.35));
+}
+.moodtip-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--moodtip-accent-shadow, rgba(59,130,246,0.5)); }
+
 /* ===== DRAG HANDLE for tasks ===== */
 .drag-handle {
   color: var(--text-3); cursor: grab; font-size: 0.85rem;
@@ -2105,44 +2252,101 @@ body[data-fontsize="large"] .chk { width: 32px; height: 32px; }
 body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
 /* ===== MOBILE RESPONSIVE (16:9 phones ~360-430px) ===== */
+/* ===== BOTTOM NAV (Mobile Only) ===== */
+.bottom-nav {
+  display: none;
+}
 @media (max-width: 600px) {
-  :root { --nav-h: 110px; }
-
-  .topnav {
-    flex-wrap: wrap;
-    padding: 8px 12px;
-    height: auto;
-    gap: 6px;
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 300;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(59,130,246,0.08);
+    height: 60px;
+    align-items: stretch;
+    padding: 0;
   }
-  .nav-logo { flex: 1; }
-  .nav-logo-text { font-size: 0.9rem; }
-  .nav-logo-icon { width: 30px; height: 30px; font-size: 0.95rem; }
-
-  .nav-tabs {
-    order: 3;
-    width: 100%;
+  .bottom-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     gap: 2px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-3);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 700;
+    padding: 6px 2px 4px;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .nav-tab { padding: 5px 10px; font-size: 0.75rem; }
+  .bottom-nav-btn .bnav-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: transform 0.2s;
+  }
+  .bottom-nav-btn.active {
+    color: var(--blue-500);
+  }
+  .bottom-nav-btn.active .bnav-icon {
+    transform: scale(1.15);
+  }
+  .bottom-nav-btn:active .bnav-icon {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-width: 600px) {
+  :root { --nav-h: 54px; }
+
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  .topnav {
+    flex-wrap: nowrap;
+    padding: 0 10px;
+    height: var(--nav-h);
+    gap: 6px;
+    overflow: hidden;
+  }
+  .nav-logo { flex: 0 0 auto; }
+  .nav-logo-text { font-size: 0.88rem; }
+  .nav-logo-icon { width: 30px; height: 30px; font-size: 0.95rem; border-radius: 8px; }
+
+  /* Hide tabs from topnav on mobile — moved to bottom nav */
+  .nav-tabs { display: none !important; }
 
   .nav-right {
-    gap: 5px;
-    width: 100%;
-    order: 2;
-    flex-wrap: wrap;
-    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    overflow: hidden;
   }
-  .month-nav { padding: 3px 4px; }
-  .month-label { font-size: 0.78rem; min-width: 80px; }
-  .mnav-btn { width: 24px; height: 24px; }
-  .theme-btn, .settings-nav-btn { width: 32px; height: 32px; font-size: 0.9rem; }
-  .lang-opt { padding: 3px 6px; font-size: 0.7rem; }
-  .nav-user-name { max-width: 70px; }
+  .month-nav { padding: 3px 4px; flex-shrink: 0; }
+  .month-label { font-size: 0.72rem; min-width: 72px; }
+  .mnav-btn { width: 22px; height: 22px; font-size: 0.85rem; }
+  .theme-btn, .settings-nav-btn { width: 30px; height: 30px; font-size: 0.85rem; border-radius: 8px; }
+  .lang-switcher { padding: 2px; }
+  .lang-opt { padding: 3px 5px; font-size: 0.65rem; }
+  .nav-user-name { display: none; }
+  .nav-signout-btn { font-size: 0; width: 30px; height: 30px; padding: 0; border-radius: 8px; }
+  .nav-signout-btn::before { content: '🚪'; font-size: 0.85rem; }
+  .nav-signin-btn { font-size: 0.72rem; padding: 0 8px; height: 30px; }
 
-  .main { padding: 14px 10px 60px; }
+  /* Push main content above bottom nav */
+  .main { padding: 14px 10px 80px; }
 
-  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; width: 100%; }
   .stat-card { padding: 12px 14px; gap: 10px; }
   .stat-icon { width: 36px; height: 36px; font-size: 1.1rem; border-radius: 10px; }
   .stat-value { font-size: 1.3rem; }
@@ -2198,11 +2402,12 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 }
 
 @media (max-width: 380px) {
-  .nav-tab { padding: 4px 7px; font-size: 0.68rem; }
   .hero-stats { grid-template-columns: 1fr 1fr; }
   .stat-value { font-size: 1.15rem; }
   .weekly-grid { grid-template-columns: 1fr; }
-  .month-label { min-width: 70px; font-size: 0.72rem; }
+  .month-label { min-width: 60px; font-size: 0.68rem; }
+  .bottom-nav-btn { font-size: 0.52rem; }
+  .bottom-nav-btn .bnav-icon { font-size: 1.05rem; }
 }
 
 /* ===== GYM EXTRAS ===== */
@@ -2553,6 +2758,30 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
       </div>
     </div>
   </div>
+</nav>
+
+<!-- ===== BOTTOM NAV (Mobile) ===== -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-btn active" data-page="tracker" onclick="showPage('tracker');updateBottomNav(this)">
+    <span class="bnav-icon">📋</span>
+    <span>العادات</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="mood" onclick="showPage('mood');updateBottomNav(this)">
+    <span class="bnav-icon">🧠</span>
+    <span>المزاج</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="weekly" onclick="showPage('weekly');updateBottomNav(this)">
+    <span class="bnav-icon">📅</span>
+    <span>المهام</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="gym" onclick="showPage('gym');updateBottomNav(this)">
+    <span class="bnav-icon">🏋️</span>
+    <span>الجيم</span>
+  </button>
+  <button class="bottom-nav-btn" data-page="quotes" onclick="showPage('quotes');updateBottomNav(this)">
+    <span class="bnav-icon">💬</span>
+    <span>اقتباسات</span>
+  </button>
 </nav>
 
 <!-- ===== MAIN ===== -->
@@ -4542,6 +4771,13 @@ function updateGymPageText() {
   if (ntb) ntb.textContent = tr.gymNutriToday;
   const nyb = document.getElementById('nutriYestBtn');
   if (nyb) nyb.textContent = tr.gymNutriYest;
+  const ndl = document.getElementById('nutriDateLabel');
+  if (ndl) {
+    const d = new Date();
+    d.setDate(d.getDate() + (typeof nutriDayOffset !== 'undefined' ? nutriDayOffset : 0));
+    const dateStr = d.toISOString().slice(0, 10);
+    ndl.textContent = `${(typeof nutriDayOffset !== 'undefined' ? nutriDayOffset : 0) === 0 ? tr.gymNutriToday : tr.gymNutriYest} — ${dateStr}`;
+  }
   const nru = document.querySelector('.nutri-ring-unit');
   if (nru) nru.textContent = tr.gymNutriCal;
 
@@ -4810,7 +5046,8 @@ function save() {
   }, 800); // debounce: wait 800ms after last change before writing
 }
 
-async function _saveToFirestore(expectedUid) {
+async function _saveToFirestore(expectedUid, _retryCount) {
+  _retryCount = _retryCount || 0;
   const user = window._currentUser;
   if (!user || !window._fbDb) return;
 
@@ -4843,7 +5080,21 @@ async function _saveToFirestore(expectedUid) {
       _writerId:        _sessionId,
     });
   } catch(e) {
-    console.error('Firestore save error:', e);
+    // Log full diagnostics — the Firestore error `code` (e.g. "unavailable",
+    // "permission-denied", "resource-exhausted", "invalid-argument") tells
+    // us exactly what's wrong; open the browser console (F12) next time
+    // this happens to see it.
+    console.error('Firestore save error:', e && e.code, e);
+
+    // Transient/network-ish errors are common right after a delete because
+    // it often fires a save while a page is mid-navigation or the network
+    // briefly drops — these usually succeed on their own a moment later,
+    // so retry quietly a few times instead of alarming the user immediately.
+    const transientCodes = ['unavailable', 'deadline-exceeded', 'aborted', 'cancelled', 'internal'];
+    if (transientCodes.includes(e && e.code) && _retryCount < 3 && window._currentUser && window._currentUser.uid === expectedUid) {
+      setTimeout(() => _saveToFirestore(expectedUid, _retryCount + 1), 1000 * (_retryCount + 1));
+      return;
+    }
     showToast(t('cloudSaveFail'));
   }
 }
@@ -5351,11 +5602,67 @@ function cancelDeleteHabit() {
 
 function confirmDeleteHabit() {
   if (_pendingDeleteHabitId === null) return;
-  habits = habits.filter(h => h.id !== _pendingDeleteHabitId);
+  const deletedId = _pendingDeleteHabitId;
+  habits = habits.filter(h => h.id !== deletedId);
+  // Clean up orphaned check entries for the deleted habit so the saved
+  // document doesn't keep accumulating dead data forever (every day this
+  // habit was ever checked, across every month, was stored as a separate
+  // key — e.g. "2026-6-<habitId>-15"). Left uncleaned, this can eventually
+  // make the cloud document large/slow enough to fail to save.
+  Object.keys(checks).forEach(k => {
+    // chkKey format is "{year}-{month}-{habitId}-{day}" — 4 dash-separated
+    // parts, with the habit id always the 3rd part (2nd from the end).
+    const parts = k.split('-');
+    if (parts.length >= 4 && parts[parts.length - 2] === String(deletedId)) delete checks[k];
+  });
   _pendingDeleteHabitId = null;
   document.getElementById('delHabitOverlay').classList.remove('show');
   save();
   renderAll();
+  if (typeof playSound === 'function') { try { playSound(220, 0.1); } catch(e) {} }
+}
+
+// ===== GENERIC TASK DELETE CONFIRM (daily & weekly tasks) =====
+const DELG_TEXTS = {
+  ar: { title: 'هل أنت متأكد؟ 🤔', msg: 'هذه المهمة ستُمزّق للأبد:', cancel: 'تراجع 🙈', confirm: 'نعم، احذف 🗑️', icons: ['🗑️','✂️','📄'] },
+  fr: { title: 'Es-tu sûr ? 🤔', msg: 'Cette tâche va être déchiquetée pour toujours :', cancel: 'Annuler 🙈', confirm: 'Oui, supprimer 🗑️', icons: ['🗑️','✂️','📄'] },
+  en: { title: 'Are you sure? 🤔', msg: 'This task is about to be shredded forever:', cancel: 'Cancel 🙈', confirm: 'Yes, delete 🗑️', icons: ['🗑️','✂️','📄'] }
+};
+const DELG_BULK_TEXTS = {
+  ar: { title: 'حذف كل المهام المكتملة؟ 🧹', cancel: 'تراجع 🙈', confirm: 'نعم، احذفها كلها 🗑️', icons: ['🧹','🗑️','✨'] },
+  fr: { title: 'Supprimer toutes les tâches terminées ? 🧹', cancel: 'Annuler 🙈', confirm: 'Oui, tout supprimer 🗑️', icons: ['🧹','🗑️','✨'] },
+  en: { title: 'Delete all completed tasks? 🧹', cancel: 'Cancel 🙈', confirm: 'Yes, delete them all 🗑️', icons: ['🧹','🗑️','✨'] }
+};
+let _pendingGenericDeleteAction = null;
+
+function openGenericDeleteConfirm(nameText, onConfirm, bulk) {
+  const lang = currentLang || 'ar';
+  const txt = bulk ? (DELG_BULK_TEXTS[lang] || DELG_BULK_TEXTS.ar) : (DELG_TEXTS[lang] || DELG_TEXTS.ar);
+  const icon = txt.icons[Math.floor(Math.random() * txt.icons.length)];
+
+  document.getElementById('delgIcon').textContent = icon;
+  document.getElementById('delgTitle').textContent = txt.title;
+  document.getElementById('delgMsg').textContent = bulk ? '' : txt.msg;
+  const nameEl = document.getElementById('delgName');
+  nameEl.textContent = nameText || '';
+  document.getElementById('delgCancelBtn').textContent = txt.cancel;
+  document.getElementById('delgConfirmBtn').textContent = txt.confirm;
+
+  _pendingGenericDeleteAction = onConfirm;
+  document.getElementById('delGenericOverlay').classList.add('show');
+  if (typeof playSound === 'function') { try { playSound(300, 0.06); } catch(e) {} }
+}
+
+function cancelGenericDelete() {
+  _pendingGenericDeleteAction = null;
+  document.getElementById('delGenericOverlay').classList.remove('show');
+}
+
+function confirmGenericDelete() {
+  const fn = _pendingGenericDeleteAction;
+  _pendingGenericDeleteAction = null;
+  document.getElementById('delGenericOverlay').classList.remove('show');
+  if (typeof fn === 'function') fn();
   if (typeof playSound === 'function') { try { playSound(220, 0.1); } catch(e) {} }
 }
 
@@ -6006,7 +6313,167 @@ function setMood(d, slot) {
   save();
   renderMood();
   syncMoodLevelUI();
-  if (!isUnsetting) playMoodSound(selectedMoodLevel);
+  if (!isUnsetting) {
+    playMoodSound(selectedMoodLevel);
+    showMoodTipPopup(selectedMoodLevel);
+  }
+}
+
+// ===== MOOD FEEDBACK POPUP =====
+// Levels: 1 😊 excellent, 2 🙂 good, 3 😐 neutral, 4 😔 low, 5 😤 hard.
+// 1–2 get a celebratory nudge, 3 gets a gentle neutral tip, 4–5 get
+// comfort/motivation — and within each bucket the exact line is picked
+// at random so it doesn't repeat the same message every time.
+const MOOD_TIP_TITLES = {
+  good:    { ar: '🎉 عمل رائع!',      fr: '🎉 Bravo !',              en: '🎉 Nice one!' },
+  neutral: { ar: '🌤️ يوم عادي',       fr: '🌤️ Journée neutre',       en: '🌤️ An in-between day' },
+  low:     { ar: '🤗 نحن معك',        fr: '🤗 On est avec toi',      en: '🤗 We\'ve got you' },
+};
+const MOOD_TIP_CLOSE_BTN = { ar: 'تمام 🙌', fr: 'Compris 🙌', en: 'Got it 🙌' };
+const MOOD_TIP_REROLL_BTN = { ar: 'نصيحة أخرى 🔄', fr: 'Autre conseil 🔄', en: 'Another tip 🔄' };
+const MOOD_TIP_ACCENT = {
+  good:    { accent: '#22c55e', light: '#dcfce7', shadow: 'rgba(34,197,94,0.35)' },
+  neutral: { accent: '#eab308', light: '#fef9c3', shadow: 'rgba(234,179,8,0.3)' },
+  low:     { accent: '#3b82f6', light: '#dbeafe', shadow: 'rgba(59,130,246,0.35)' },
+};
+const MOOD_TIPS = {
+  good: {
+    ar: [
+      '🎉 رائع! استمتع بهذا الشعور ودَعه يقودك ليوم رائع',
+      '✨ يوم جميل يستحق الاحتفال — واصل هذا الزخم!',
+      '🌟 مزاجك اليوم مصدر إلهام، شارك هذه الطاقة مع من حولك',
+      '💪 أنت في قمة تركيزك — استغل هذه اللحظة لإنجاز شيء مهم',
+      '😄 سعادتك اليوم بذرة لغدٍ أجمل، استمر!',
+      '🔥 طاقة إيجابية! سجّل ما جعلك سعيدًا اليوم لتتذكره لاحقًا',
+    ],
+    fr: [
+      '🎉 Génial ! Profite de ce sentiment et laisse-le illuminer ta journée',
+      '✨ Une belle journée qui mérite d\'être célébrée — garde cet élan !',
+      '🌟 Ta bonne humeur inspire, partage cette énergie autour de toi',
+      '💪 Tu es au top de ta forme — profites-en pour accomplir quelque chose d\'important',
+      '😄 Ton bonheur d\'aujourd\'hui est la graine d\'un lendemain encore plus beau',
+      '🔥 Énergie positive ! Note ce qui t\'a rendu heureux pour t\'en souvenir plus tard',
+    ],
+    en: [
+      '🎉 Awesome! Soak in this feeling and let it carry your whole day',
+      '✨ A beautiful day worth celebrating — keep that momentum going!',
+      '🌟 Your good mood is inspiring, share that energy with people around you',
+      '💪 You\'re at your best right now — use this moment to get something meaningful done',
+      '😄 Today\'s happiness is the seed of an even better tomorrow',
+      '🔥 Positive energy! Jot down what made you happy today so you can look back on it',
+    ],
+  },
+  neutral: {
+    ar: [
+      '🌤️ يوم هادئ، وهذا طبيعي تمامًا — لا داعي أن يكون كل يوم استثنائيًا',
+      '🧘 خذ نفسًا عميقًا، أحيانًا التوازن أهم من الحماس',
+      '☕ استراحة قصيرة أو مشي بسيط قد يرفع مزاجك قليلًا',
+      '📝 جرّب تدوّن فكرة واحدة تشغل بالك الآن، قد تخفف الشعور بالحياد',
+      '🌱 الأيام العادية هي التي تبني الاستمرارية، لا تقلل من قيمتها',
+      '🎧 استمع لأغنية تحبها، قد تكون الدفعة البسيطة التي تحتاجها',
+    ],
+    fr: [
+      '🌤️ Une journée calme, c\'est tout à fait normal — chaque jour n\'a pas besoin d\'être exceptionnel',
+      '🧘 Respire profondément, parfois l\'équilibre compte plus que l\'enthousiasme',
+      '☕ Une petite pause ou une marche pourrait légèrement remonter ton humeur',
+      '📝 Essaie de noter une pensée qui t\'occupe l\'esprit, ça peut alléger ce sentiment neutre',
+      '🌱 Les journées ordinaires construisent la constance, ne les sous-estime pas',
+      '🎧 Écoute une chanson que tu aimes, ça pourrait être le petit coup de pouce qu\'il te faut',
+    ],
+    en: [
+      '🌤️ A calm day — totally normal. Not every day needs to be extraordinary',
+      '🧘 Take a deep breath, sometimes balance matters more than excitement',
+      '☕ A short break or a quick walk might lift your mood a little',
+      '📝 Try jotting down one thought on your mind — it can ease that neutral feeling',
+      '🌱 Ordinary days are what build consistency, don\'t undersell them',
+      '🎧 Play a song you love, it might be the small push you need',
+    ],
+  },
+  low: {
+    ar: [
+      '🤗 من الطبيعي أن يكون لديك يوم صعب، كن لطيفًا مع نفسك اليوم',
+      '💙 هذا الشعور مؤقت وسيمر، أنت أقوى مما تعتقد',
+      '🌈 اسمح لنفسك بالراحة، لا يجب أن تكون منتجًا كل يوم',
+      '☎️ إذا كان الأمر ثقيلًا، تحدث مع شخص تثق به — لست وحدك',
+      '🍃 خذ لحظة للتنفس ببطء، الأمور تتحسن خطوة بخطوة',
+      '✍️ اكتب ما يزعجك الآن، أحيانًا تفريغه على الورق يخفف الثقل',
+    ],
+    fr: [
+      '🤗 C\'est normal d\'avoir une journée difficile, sois indulgent avec toi-même aujourd\'hui',
+      '💙 Ce sentiment est temporaire et passera, tu es plus fort(e) que tu ne le penses',
+      '🌈 Permets-toi de te reposer, tu n\'as pas à être productif(ve) tous les jours',
+      '☎️ Si c\'est lourd à porter, parle à quelqu\'un en qui tu as confiance — tu n\'es pas seul(e)',
+      '🍃 Prends un instant pour respirer lentement, les choses s\'améliorent pas à pas',
+      '✍️ Écris ce qui te tracasse, parfois le mettre sur papier allège le poids',
+    ],
+    en: [
+      '🤗 It\'s okay to have a tough day, be gentle with yourself today',
+      '💙 This feeling is temporary and will pass, you\'re stronger than you think',
+      '🌈 Let yourself rest, you don\'t have to be productive every single day',
+      '☎️ If it feels heavy, talk to someone you trust — you\'re not alone',
+      '🍃 Take a moment to breathe slowly, things improve one step at a time',
+      '✍️ Write down what\'s bothering you, sometimes putting it on paper lightens the weight',
+    ],
+  },
+};
+
+let _lastMoodTipCategory = null;
+let _lastMoodTipIndex = -1;
+
+function _moodTipCategory(level) {
+  if (level <= 2) return 'good';
+  if (level === 3) return 'neutral';
+  return 'low';
+}
+
+function _pickMoodTip(cat, lang) {
+  const pool = (MOOD_TIPS[cat] && MOOD_TIPS[cat][lang]) || MOOD_TIPS[cat].ar;
+  if (pool.length === 1) return { text: pool[0], idx: 0 };
+  let idx = Math.floor(Math.random() * pool.length);
+  // Avoid showing the exact same line twice in a row within the same category
+  if (cat === _lastMoodTipCategory && idx === _lastMoodTipIndex) {
+    idx = (idx + 1 + Math.floor(Math.random() * (pool.length - 1))) % pool.length;
+  }
+  return { text: pool[idx], idx };
+}
+
+function _renderMoodTip(level) {
+  const lang = currentLang || 'ar';
+  const cat = _moodTipCategory(level);
+  const { text, idx } = _pickMoodTip(cat, lang);
+  _lastMoodTipCategory = cat;
+  _lastMoodTipIndex = idx;
+
+  const accent = MOOD_TIP_ACCENT[cat];
+  const card = document.getElementById('moodTipCard');
+  if (card) {
+    card.style.setProperty('--moodtip-accent', accent.accent);
+    card.style.setProperty('--moodtip-accent-light', accent.light);
+    card.style.setProperty('--moodtip-accent-shadow', accent.shadow);
+  }
+  const emojiEl = document.getElementById('moodTipEmoji');
+  if (emojiEl) emojiEl.textContent = MOOD_EMOJIS[level] || '😊';
+  const titleEl = document.getElementById('moodTipTitle');
+  if (titleEl) titleEl.textContent = (MOOD_TIP_TITLES[cat] && MOOD_TIP_TITLES[cat][lang]) || MOOD_TIP_TITLES[cat].ar;
+  const msgEl = document.getElementById('moodTipMsg');
+  if (msgEl) msgEl.textContent = text;
+  const closeBtn = document.getElementById('moodTipCloseBtn');
+  if (closeBtn) closeBtn.textContent = MOOD_TIP_CLOSE_BTN[lang] || MOOD_TIP_CLOSE_BTN.ar;
+  const rerollBtn = document.getElementById('moodTipRerollBtn');
+  if (rerollBtn) rerollBtn.textContent = MOOD_TIP_REROLL_BTN[lang] || MOOD_TIP_REROLL_BTN.ar;
+}
+
+function showMoodTipPopup(level) {
+  _renderMoodTip(level);
+  document.getElementById('moodTipOverlay').classList.add('show');
+}
+
+function rerollMoodTip() {
+  if (typeof selectedMoodLevel === 'number') _renderMoodTip(selectedMoodLevel);
+}
+
+function closeMoodTip() {
+  document.getElementById('moodTipOverlay').classList.remove('show');
 }
 
 function selectMoodLevel(l, el) {
@@ -6122,9 +6589,15 @@ function toggleTask(w, i) {
 }
 
 function deleteTask(w, i) {
-  if (weeklyTasks[w]) { weeklyTasks[w].splice(i, 1);
-    save();
-    renderWeekly(); }
+  if (!weeklyTasks[w] || !weeklyTasks[w][i]) return;
+  const taskText = weeklyTasks[w][i].text || '';
+  openGenericDeleteConfirm(taskText, () => {
+    if (weeklyTasks[w]) {
+      weeklyTasks[w].splice(i, 1);
+      save();
+      renderWeekly();
+    }
+  });
 }
 
 function startEditTask(w, i) {
@@ -7224,15 +7697,27 @@ function toggleQuickTask(id) {
 }
 
 function deleteQuickTask(id) {
-  quickTasks = quickTasks.filter(t => t.id !== id);
-  saveQuickTasks();
-  renderQuickTasks();
+  const task = quickTasks.find(t => t.id === id);
+  if (!task) return;
+  openGenericDeleteConfirm(task.text || '', () => {
+    quickTasks = quickTasks.filter(t => t.id !== id);
+    saveQuickTasks();
+    renderQuickTasks();
+  });
 }
 
 function clearDoneQuickTasks() {
-  quickTasks = quickTasks.filter(t => !t.done);
-  saveQuickTasks();
-  renderQuickTasks();
+  const doneCount = quickTasks.filter(t => t.done).length;
+  if (!doneCount) return;
+  const lang = currentLang || 'ar';
+  const countLabel = lang === 'ar' ? `${doneCount} مهمة مكتملة ✅`
+    : lang === 'fr' ? `${doneCount} tâche(s) terminée(s) ✅`
+    : `${doneCount} completed task(s) ✅`;
+  openGenericDeleteConfirm(countLabel, () => {
+    quickTasks = quickTasks.filter(t => !t.done);
+    saveQuickTasks();
+    renderQuickTasks();
+  }, true);
 }
 
 function setQtFilter(filter, btn) {
@@ -7788,6 +8273,41 @@ init();
   </div>
 </div>
 
+<!-- ===== GENERIC TASK DELETE CONFIRM MODAL (shredder-themed) ===== -->
+<div id="delGenericOverlay" class="delg-overlay" onclick="cancelGenericDelete()">
+  <div class="delg-card" onclick="event.stopPropagation()">
+    <div class="delg-shredder">
+      <span class="delg-icon" id="delgIcon">🗑️</span>
+      <div class="delg-confetti" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="delg-title" id="delgTitle">هل أنت متأكد؟</div>
+    <div class="delg-msg" id="delgMsg">هذه المهمة ستُمزّق للأبد:</div>
+    <div class="delg-name" id="delgName"></div>
+    <div class="delg-btn-row">
+      <button class="delg-btn delg-btn-cancel" id="delgCancelBtn" onclick="cancelGenericDelete()">تراجع</button>
+      <button class="delg-btn delg-btn-confirm" id="delgConfirmBtn" onclick="confirmGenericDelete()">نعم، احذف</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MOOD FEEDBACK POPUP ===== -->
+<div id="moodTipOverlay" class="moodtip-overlay" onclick="closeMoodTip()">
+  <div class="moodtip-card" id="moodTipCard" onclick="event.stopPropagation()">
+    <div class="moodtip-emoji-wrap" id="moodTipEmojiWrap">
+      <span id="moodTipEmoji">😊</span>
+    </div>
+    <div class="moodtip-title" id="moodTipTitle">رائع!</div>
+    <div class="moodtip-msg" id="moodTipMsg"></div>
+    <div class="moodtip-btn-row">
+      <button class="moodtip-btn moodtip-btn-secondary" id="moodTipRerollBtn" onclick="rerollMoodTip()">نصيحة أخرى 🔄</button>
+      <button class="moodtip-btn moodtip-btn-primary" id="moodTipCloseBtn" onclick="closeMoodTip()">تمام 🙌</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- ===== SIGN OUT CONFIRM MODAL ===== -->
 <div id="signOutOverlay" onclick="cancelSignOut()" style="display:none;position:fixed;inset:0;z-index:99997;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
   <div onclick="event.stopPropagation()" style="background:var(--white);border:1px solid var(--border);border-radius:24px;padding:32px 28px 26px;max-width:380px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.35);text-align:center;animation:mdpPopIn 0.3s cubic-bezier(.2,.9,.3,1.2) both;">
@@ -7803,14 +8323,14 @@ init();
 
 <!-- ===== ADD HABIT MODAL (with days) ===== -->
 <div id="addHabitModalOverlay" onclick="closeAddHabitModal()" style="display:none;position:fixed;inset:0;z-index:99990;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
-  <div onclick="event.stopPropagation()" style="background:var(--white);border:1px solid var(--border);border-radius:24px;padding:28px 24px 22px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.35);animation:mdpPopIn 0.3s cubic-bezier(.2,.9,.3,1.2) both;">
+  <div onclick="event.stopPropagation()" style="position:relative;background:var(--white);border:1px solid var(--border);border-radius:24px;padding:28px 24px 22px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.35);animation:mdpPopIn 0.3s cubic-bezier(.2,.9,.3,1.2) both;">
+    <button onclick="closeAddHabitModal()" style="position:absolute;top:16px;inset-inline-end:16px;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-3);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:2;">✕</button>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
       <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 6px 16px rgba(59,130,246,0.35);flex-shrink:0;">✨</div>
-      <div>
+      <div style="max-width:calc(100% - 56px);">
         <div style="font-size:1rem;font-weight:900;color:var(--text);" id="addHabitModalTitle">إضافة عادة جديدة</div>
         <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px;" id="addHabitModalSubtitle">حدد الأيام التي ستمارس فيها هذه العادة</div>
       </div>
-      <button onclick="closeAddHabitModal()" style="margin-right:auto;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-3);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
     </div>
 
     <!-- Habit name preview -->
@@ -8241,6 +8761,25 @@ function _checkMidnightRollover() {
 
   if (missed.length > 0) _showMissedYesterdayPopup(missed);
 }
+
+// ===== BOTTOM NAV SYNC =====
+function updateBottomNav(activeBtn) {
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  if (activeBtn) activeBtn.classList.add('active');
+}
+
+// Patch showPage to also sync bottom nav
+const _origShowPage = typeof showPage === 'function' ? showPage : null;
+(function() {
+  const _sp = window.showPage;
+  if (_sp) {
+    window.showPage = function(page) {
+      _sp(page);
+      const btn = document.querySelector(`.bottom-nav-btn[data-page="${page}"]`);
+      if (btn) updateBottomNav(btn);
+    };
+  }
+})();
 
 setInterval(_checkMidnightRollover, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) _checkMidnightRollover(); });
