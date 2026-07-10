@@ -5623,13 +5623,10 @@ function renderTable() {
     for (let d = sd; d >= 1; d--) { if (isFuture(d)) continue; if (!isHabitActiveOn(h, d)) continue; if (checks[chkKey(h.id, d)]) streak++;
       else break; }
     const nameHtml = `<span class="habit-text" title="${escAttr(h.name)}" ondblclick="startEditHabit(${h.id})">${escAttr(h.name)}</span>`;
-    html += `<tr class="habit-row"><td class="habit-name-cell"><div class="habit-name-inner">
+    html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}"><td class="habit-name-cell"><div class="habit-name-inner">
       <button class="del-btn" onclick="deleteHabit(${h.id})" title="${currentLang === 'ar' ? 'حذف' : currentLang === 'fr' ? 'Supprimer' : 'Delete'}">✕</button>
       <button class="edit-btn" onclick="startEditHabit(${h.id})" title="${currentLang === 'ar' ? 'تعديل الاسم' : currentLang === 'fr' ? 'Modifier' : 'Edit name'}">✎</button>
-      <div class="move-btn-group">
-        <button class="move-btn" onclick="moveHabit(${h.id},-1)" ${hIdx === 0 ? 'disabled' : ''} title="${currentLang === 'ar' ? 'نقل للأعلى' : currentLang === 'fr' ? 'Monter' : 'Move up'}">▲</button>
-        <button class="move-btn" onclick="moveHabit(${h.id},1)" ${hIdx === habits.length - 1 ? 'disabled' : ''} title="${currentLang === 'ar' ? 'نقل للأسفل' : currentLang === 'fr' ? 'Descendre' : 'Move down'}">▼</button>
-      </div>
+      <div class="drag-handle habit-drag-handle" title="${currentLang === 'ar' ? 'اسحب لإعادة الترتيب' : currentLang === 'fr' ? 'Glisser pour réorganiser' : 'Drag to reorder'}">⠿</div>
       ${streak > 1 ? `<span class="streak-mini">🔥${streak}</span>` : ''}${nameHtml}<span class="habit-emoji">${h.emoji}</span></div></td>`;
     weekGroups.forEach((wg, wi) => {
       const isLastWk = wi === weekGroups.length - 1;
@@ -8094,6 +8091,58 @@ function _checkMidnightRollover() {
 setInterval(_checkMidnightRollover, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) _checkMidnightRollover(); });
 window.addEventListener('focus', _checkMidnightRollover);
+
+// =========== DRAG & DROP for Habits ===========
+let _habitDragId = null;
+let _habitDragOverIdx = null;
+
+function setupHabitDragDrop() {
+  document.querySelectorAll('.habit-row[data-hid]').forEach(row => {
+    const hid = parseInt(row.getAttribute('data-hid'));
+    const hidx = parseInt(row.getAttribute('data-hidx'));
+    row.setAttribute('draggable', 'true');
+
+    row.addEventListener('dragstart', e => {
+      _habitDragId = hid;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      document.querySelectorAll('.habit-row').forEach(r => r.classList.remove('drag-over'));
+      _habitDragId = null;
+      _habitDragOverIdx = null;
+    });
+
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.habit-row').forEach(r => r.classList.remove('drag-over'));
+      if (_habitDragId !== hid) row.classList.add('drag-over');
+    });
+
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      if (_habitDragId === null || _habitDragId === hid) return;
+      const fromIdx = habits.findIndex(h => h.id === _habitDragId);
+      const toIdx   = habits.findIndex(h => h.id === hid);
+      if (fromIdx === -1 || toIdx === -1) return;
+      const [moved] = habits.splice(fromIdx, 1);
+      habits.splice(toIdx, 0, moved);
+      save();
+      renderAll();
+    });
+  });
+}
+
+// Patch renderTable to setup drag-drop after render
+const _orig_renderTable = renderTable;
+renderTable = function() {
+  _orig_renderTable();
+  requestAnimationFrame(() => setupHabitDragDrop());
+};
 
 // Patch renderWeekly to add data attributes and drag handles
 const _orig_renderWeekly = renderWeekly;
