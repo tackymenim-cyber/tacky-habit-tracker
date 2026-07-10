@@ -262,7 +262,7 @@ function fbsReset() {
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot }
+  import { getFirestore, doc, getDoc, getDocFromServer, setDoc, onSnapshot }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // ============================================================
@@ -278,6 +278,7 @@ function fbsReset() {
     window._fbDb       = db;
     window._fbDoc      = doc;
     window._fbGetDoc   = getDoc;
+    window._fbGetDocFromServer = getDocFromServer;
     window._fbSetDoc   = setDoc;
     window._fbOnSnapshot = onSnapshot;
     window._fbProvider = provider;
@@ -1014,6 +1015,37 @@ table { border-collapse: collapse; min-width: 100%; }
 .chk.future { opacity: 0.3; cursor: default; box-shadow: none; }
 .chk:not(.future):not(.done):hover { border-color: var(--blue-300); background: var(--blue-50); transform: scale(1.1); }
 
+/* Day not scheduled for this habit — grayed out, unclickable, three-dots "skip" mark */
+.chk.skip-day {
+  background: #e8ecf2;
+  border: 1.5px dashed #b8c2d0;
+  color: #9aacbe;
+  cursor: default;
+  box-shadow: none;
+  opacity: 0.75;
+  font-size: 0.6rem;
+  letter-spacing: -1px;
+}
+[data-theme="dark"] .chk.skip-day {
+  background: #1e2433;
+  border-color: #2a3352;
+  color: #3a4a62;
+  opacity: 0.7;
+}
+.chk.skip-day:hover { transform: none; border-color: #b8c2d0; background: #e8ecf2; }
+
+/* Day was scheduled, is now in the past, and was never checked — auto red X to motivate tomorrow */
+.chk.missed-day {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  border-color: var(--red);
+  border-width: 2px;
+  color: var(--red);
+  box-shadow: 0 2px 8px rgba(239,68,68,0.2);
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+.chk.missed-day:hover { border-color: var(--red); background: linear-gradient(135deg, #fecaca, #fca5a5); transform: scale(1.08); box-shadow: 0 3px 12px rgba(239,68,68,0.35); }
+
 /* PROGRESS ROWS */
 .prog-row td {
   padding: 4px 2px; text-align: center;
@@ -1238,6 +1270,132 @@ table { border-collapse: collapse; min-width: 100%; }
   outline: none;
   box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
 }
+
+/* ===== CELEBRATION OVERLAY ===== */
+#celebrationOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  animation: celebFadeIn 0.3s ease both;
+}
+#celebrationOverlay.show { display: flex; }
+@keyframes celebFadeIn { from { opacity:0; } to { opacity:1; } }
+.celeb-card {
+  background: var(--white); border-radius: 28px;
+  padding: 40px 36px 32px; text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  max-width: 380px; width: 90%;
+  animation: celebBounce 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  position: relative; overflow: hidden;
+}
+@keyframes celebBounce { from { opacity:0; transform:scale(0.6) translateY(30px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.celeb-crow {
+  font-size: 5rem; line-height: 1;
+  display: block; margin-bottom: 12px;
+  animation: celebWiggle 0.6s ease 0.3s both;
+}
+@keyframes celebWiggle {
+  0%   { transform: rotate(0deg) scale(1); }
+  20%  { transform: rotate(-15deg) scale(1.15); }
+  40%  { transform: rotate(12deg) scale(1.1); }
+  60%  { transform: rotate(-8deg) scale(1.08); }
+  80%  { transform: rotate(5deg) scale(1.04); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+.celeb-title {
+  font-size: 1.6rem; font-weight: 900; color: var(--text);
+  margin-bottom: 8px; letter-spacing: -0.5px;
+}
+.celeb-msg {
+  font-size: 1rem; color: var(--text-2); line-height: 1.6;
+  margin-bottom: 24px;
+}
+.celeb-stars {
+  font-size: 1.5rem; letter-spacing: 4px; margin-bottom: 16px;
+  animation: celebStarPop 0.4s ease 0.6s both;
+}
+@keyframes celebStarPop { from { opacity:0; transform:scale(0); } to { opacity:1; transform:scale(1); } }
+.celeb-close-btn {
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+  color: white; border: none; border-radius: 14px;
+  padding: 13px 32px; font-family: 'Tajawal', sans-serif;
+  font-size: 1rem; font-weight: 800; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(59,130,246,0.35);
+  transition: all 0.2s; width: 100%;
+}
+.celeb-close-btn:hover { box-shadow: 0 8px 28px rgba(59,130,246,0.5); transform: translateY(-2px); }
+
+/* ===== DELETE HABIT CONFIRM MODAL ===== */
+#delHabitOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  animation: celebFadeIn 0.25s ease both;
+}
+#delHabitOverlay.show { display: flex; }
+.delh-card {
+  background: var(--white); border-radius: 26px;
+  padding: 34px 30px 26px; text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  max-width: 360px; width: 90%;
+  animation: celebBounce 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.delh-icon {
+  font-size: 4.2rem; line-height: 1; display: block;
+  margin-bottom: 10px;
+  animation: delhShake 0.6s ease 0.15s both;
+}
+@keyframes delhShake {
+  0%   { transform: rotate(0deg) scale(0.8); opacity: 0; }
+  30%  { transform: rotate(-10deg) scale(1.1); opacity: 1; }
+  50%  { transform: rotate(8deg) scale(1.05); }
+  70%  { transform: rotate(-5deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+.delh-title {
+  font-size: 1.25rem; font-weight: 900; color: var(--text);
+  margin-bottom: 8px;
+}
+.delh-msg {
+  font-size: 0.92rem; color: var(--text-2); line-height: 1.6;
+  margin-bottom: 6px;
+}
+.delh-name {
+  font-size: 0.95rem; font-weight: 800; color: var(--blue-500);
+  margin-bottom: 22px; display: inline-block; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.delh-btn-row { display: flex; gap: 10px; }
+.delh-btn {
+  flex: 1; border: none; border-radius: 13px;
+  padding: 12px 14px; font-family: 'Tajawal', sans-serif;
+  font-size: 0.9rem; font-weight: 800; cursor: pointer;
+  transition: all 0.2s;
+}
+.delh-btn-cancel {
+  background: var(--bg-2, #f1f5f9); color: var(--text-2);
+}
+.delh-btn-cancel:hover { background: var(--border); transform: translateY(-1px); }
+.delh-btn-confirm {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: white; box-shadow: 0 6px 20px rgba(239,68,68,0.35);
+}
+.delh-btn-confirm:hover { box-shadow: 0 8px 28px rgba(239,68,68,0.5); transform: translateY(-2px); }
+
+/* ===== DRAG HANDLE for tasks ===== */
+.drag-handle {
+  color: var(--text-3); cursor: grab; font-size: 0.85rem;
+  padding: 4px 2px; flex-shrink: 0; user-select: none;
+  opacity: 0.5; transition: opacity 0.15s;
+  display: flex; align-items: center;
+}
+.drag-handle:active { cursor: grabbing; }
+.qt-item:hover .drag-handle,
+.task-item:hover .drag-handle { opacity: 1; }
+.qt-item.drag-over { border: 2px dashed var(--blue-400); background: var(--blue-50); border-radius: 8px; }
+.task-item.drag-over { border: 2px dashed var(--blue-400); background: var(--blue-50); border-radius: 6px; }
+.qt-item.dragging { opacity: 0.4; }
+.task-item.dragging { opacity: 0.4; }
 
 /* ===== EMOJI PICKER ===== */
 .emoji-popup {
@@ -2414,10 +2572,21 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
   <div class="streaks-row fade-up" id="streaksRow"></div>
 
-  <div class="add-row fade-up">
+  <div class="add-row fade-up" style="position:relative">
     <button class="emoji-pick" id="emojiPickBtn" onclick="toggleEmojiPicker()">😊</button>
     <input class="habit-input" id="newHabitInput" type="text" placeholder="أضف عادة جديدة... مثلاً: استيقظ الساعة 5 صباحاً" maxlength="50">
+    <button class="emoji-pick" id="dayPickBtn" onclick="toggleDayPicker()" title="أيام التكرار">📅</button>
     <button class="add-btn" onclick="addHabit()">＋ إضافة عادة</button>
+    <div id="dayPickerPopover" style="display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:50;background:var(--white);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);padding:14px;">
+      <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin-bottom:10px;">🗓️ كرر العادة في أيام محددة (اختياري)</div>
+      <div id="dayPickerChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="setAddDaysPreset('all')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">كل يوم</button>
+        <button onclick="setAddDaysPreset('alt')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">يوم بعد يوم</button>
+        <button onclick="setAddDaysPreset('weekdays')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">أيام الدراسة</button>
+      </div>
+      <button onclick="toggleDayPicker()" style="width:100%;margin-top:10px;background:var(--blue-500);color:white;border:none;border-radius:8px;padding:8px;font-family:'Tajawal',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">تم ✓</button>
+    </div>
   </div>
 
   <div class="table-wrap fade-up">
@@ -3187,6 +3356,13 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <input id="editHabitModalInput" type="text" maxlength="50"
       style="width:100%;background:var(--bg);border:1.5px solid var(--blue-400);border-radius:10px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:600;padding:10px 14px;outline:none;box-sizing:border-box;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();confirmEditHabitModal();}if(event.key==='Escape'){closeEditHabitModal();}">
+    <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin:14px 0 8px;">🗓️ أيام تكرار العادة</div>
+    <div id="editDayPickerChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="setEditDaysPreset('all')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">كل يوم</button>
+      <button onclick="setEditDaysPreset('alt')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">يوم بعد يوم</button>
+      <button onclick="setEditDaysPreset('weekdays')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">أيام الدراسة</button>
+    </div>
     <div style="display:flex;gap:8px;margin-top:14px;">
       <button onclick="confirmEditHabitModal()" style="flex:1;background:var(--blue-500);color:white;border:none;border-radius:10px;padding:10px;font-family:'Tajawal',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;">حفظ</button>
       <button onclick="closeEditHabitModal()" style="flex:1;background:var(--bg);color:var(--text-2);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-family:'Tajawal',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;">إلغاء</button>
@@ -4355,11 +4531,11 @@ let curM = today.getMonth();
 // Default starter habits (used immediately so pages never render empty/broken
 // before Firestore responds, and used for brand-new users with no cloud data yet)
 const DEFAULT_HABITS = [
-  { id: 1, emoji: '☀️', name: 'استيقظ الساعة 5:00' },
-  { id: 2, emoji: '🏋️', name: 'التمرين الرياضي' },
-  { id: 3, emoji: '📚', name: 'القراءة / التعلم' },
-  { id: 4, emoji: '💧', name: 'شرب 8 أكواب ماء' },
-  { id: 5, emoji: '📖', name: 'مراجعة الأهداف' },
+  { id: 1, emoji: '☀️', name: 'استيقظ الساعة 5:00', activeDays: [0,1,2,3,4,5,6] },
+  { id: 2, emoji: '🏋️', name: 'التمرين الرياضي', activeDays: [0,1,2,3,4,5,6] },
+  { id: 3, emoji: '📚', name: 'القراءة / التعلم', activeDays: [0,1,2,3,4,5,6] },
+  { id: 4, emoji: '💧', name: 'شرب 8 أكواب ماء', activeDays: [0,1,2,3,4,5,6] },
+  { id: 5, emoji: '📖', name: 'مراجعة الأهداف', activeDays: [0,1,2,3,4,5,6] },
 ];
 const DEFAULT_WEEKLY = {
   1: [{ text: 'مراجعة الأهداف الأسبوعية', done: false }, { text: 'تحديد 3 أولويات رئيسية', done: false }, { text: 'ترتيب مساحة العمل', done: false }, { text: 'تخطيط وجبات الأسبوع', done: false }],
@@ -4381,6 +4557,57 @@ let weeklyTasks = JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
 let editingTask = null;
 
 let selectedEmoji = '😊';
+let selectedDays = [0,1,2,3,4,5,6]; // days chosen for a NEW habit (0=Sun ... 6=Sat)
+let editSelectedDays = [0,1,2,3,4,5,6]; // days chosen while editing an existing habit
+const DAY_LABELS_AR = ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+
+function _dayChipsHtml(activeArr, toggleFnName) {
+  return [0,1,2,3,4,5,6].map(i => {
+    const on = activeArr.includes(i);
+    return `<button type="button" onclick="${toggleFnName}(${i})" style="min-width:44px;padding:6px 4px;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;cursor:pointer;border:1.5px solid ${on ? 'var(--blue-500)' : 'var(--border)'};background:${on ? 'var(--blue-500)' : 'var(--bg)'};color:${on ? '#fff' : 'var(--text-2)'};">${DAY_LABELS_AR[i]}</button>`;
+  }).join('');
+}
+
+function renderDayPickerChips() {
+  const el = document.getElementById('dayPickerChips');
+  if (el) el.innerHTML = _dayChipsHtml(selectedDays, 'toggleAddDay');
+}
+function toggleAddDay(i) {
+  if (selectedDays.includes(i)) {
+    if (selectedDays.length > 1) selectedDays = selectedDays.filter(x => x !== i);
+  } else { selectedDays = [...selectedDays, i]; }
+  renderDayPickerChips();
+}
+function setAddDaysPreset(preset) {
+  if (preset === 'all') selectedDays = [0,1,2,3,4,5,6];
+  else if (preset === 'alt') selectedDays = [0,2,4,6];
+  else if (preset === 'weekdays') selectedDays = [0,1,2,3,4];
+  renderDayPickerChips();
+}
+function toggleDayPicker() {
+  const pop = document.getElementById('dayPickerPopover');
+  if (!pop) return;
+  const opening = pop.style.display === 'none';
+  pop.style.display = opening ? 'block' : 'none';
+  if (opening) renderDayPickerChips();
+}
+
+function renderEditDayPickerChips() {
+  const el = document.getElementById('editDayPickerChips');
+  if (el) el.innerHTML = _dayChipsHtml(editSelectedDays, 'toggleEditDay');
+}
+function toggleEditDay(i) {
+  if (editSelectedDays.includes(i)) {
+    if (editSelectedDays.length > 1) editSelectedDays = editSelectedDays.filter(x => x !== i);
+  } else { editSelectedDays = [...editSelectedDays, i]; }
+  renderEditDayPickerChips();
+}
+function setEditDaysPreset(preset) {
+  if (preset === 'all') editSelectedDays = [0,1,2,3,4,5,6];
+  else if (preset === 'alt') editSelectedDays = [0,2,4,6];
+  else if (preset === 'weekdays') editSelectedDays = [0,1,2,3,4];
+  renderEditDayPickerChips();
+}
 let selectedMoodLevel = 1;
 let currentPage = 'tracker';
 let quoteIdx = 0;
@@ -4490,7 +4717,16 @@ window.addEventListener('beforeunload', () => {
 // ── Fix: اكتشاف انقطاع/اتصال الإنترنت ───────────────────────────────────────
 window.addEventListener('online', () => {
   showToast('✅ الإنترنت متصل — جارٍ مزامنة البيانات');
-  if (window._currentUser) _saveToFirestore(window._currentUser.uid);
+  // IMPORTANT: reconnecting must never, by itself, push a write. It only
+  // flushes a save if one is already pending because of an actual edit the
+  // user made (see _saveDebounceTimer). Otherwise this device's possibly
+  // stale local copy could clobber newer data saved from another device
+  // while this one was offline — the realtime listener (not this handler)
+  // is what should bring this device back in sync.
+  if (_saveDebounceTimer && window._currentUser) {
+    clearTimeout(_saveDebounceTimer);
+    _saveToFirestore(window._currentUser.uid);
+  }
 });
 window.addEventListener('offline', () => {
   showToast('⚠️ الإنترنت منقطع — البيانات محفوظة محلياً');
@@ -4518,6 +4754,17 @@ function _applyFirestoreData(d) {
 // Real-time sync: listens to the user's Firestore document continuously,
 // so changes made on another device (phone ⇄ computer) appear here within
 // a second or two, without needing to refresh or re-login.
+//
+// "Is this a brand-new user?" is decided EXACTLY ONCE per sign-in, and only
+// from a direct server round-trip (getDocFromServer) — never from the local
+// cache. The realtime listener's very first callback can otherwise fire
+// from an empty/stale local cache before the server has actually answered;
+// if that were trusted to mean "no cloud data yet", a returning user on a
+// fresh device (or right after sign-in, before the cache warms up) could
+// have their real cloud data silently overwritten with starter defaults.
+// If the server check itself fails (offline, token not propagated yet,
+// etc.) we do NOT guess — we skip seeding entirely and just attach the
+// listener, so nothing gets written until we can actually confirm.
 async function _loadFromFirestore(user, _retryCount) {
   if (!user || !window._fbDb) return;
   _retryCount = _retryCount || 0;
@@ -4526,16 +4773,55 @@ async function _loadFromFirestore(user, _retryCount) {
   if (_firestoreUnsubscribe) { _firestoreUnsubscribe(); _firestoreUnsubscribe = null; }
 
   const docRef = window._fbDoc(window._fbDb, 'users', user.uid, 'data', 'main');
-  let isFirstSnapshot = true;
 
+  // Step 1 — resolve existence from the SERVER, not the cache.
+  let serverConfirmedNew = false;
+  let serverCheckFailed = false;
+  try {
+    const serverSnap = await window._fbGetDocFromServer(docRef);
+    if (serverSnap.exists()) {
+      _applyFirestoreData(serverSnap.data());
+    } else {
+      serverConfirmedNew = true;
+    }
+  } catch (e) {
+    // Offline, or a transient permissions/token hiccup right after sign-in.
+    // Never treat this as "new user" — just log it and let the realtime
+    // listener below take over below with whatever is in the cache.
+    console.warn('Server existence check failed — will not seed/write defaults this round:', e);
+    serverCheckFailed = true;
+  }
+
+  if (serverConfirmedNew) {
+    // Confirmed by the server: this account truly has no cloud document
+    // yet. Seed local state with starter defaults and create the doc once.
+    habits      = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+    weeklyTasks = JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
+    // Render immediately — this IS the real state for a new user
+    try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
+    try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
+    try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
+    await _saveToFirestore(user.uid);
+  } else if (!serverCheckFailed) {
+    // Server confirmed data exists and we've applied it — render now
+    try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
+    try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
+    try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
+  }
+  // If serverCheckFailed: don't render defaults — wait for the realtime
+  // listener below to bring in real data from cache/server.
+
+  // Step 2 — attach the realtime listener for ongoing sync. Existence was
+  // already resolved above, so this listener never re-seeds or re-writes
+  // defaults on its own; a "does not exist" reading in here (which can
+  // only really happen from a stale cache callback) is just ignored.
+  let isFirstSnapshot = true;
   _firestoreUnsubscribe = window._fbOnSnapshot(docRef, (snap) => {
     try {
       if (snap.exists()) {
         const d = snap.data();
         // Skip re-applying data that THIS tab just wrote itself — it's already
         // reflected locally, and re-rendering would disrupt active typing.
-        // Always apply on the first snapshot (initial load) and on any
-        // change written by another device/tab.
         if (isFirstSnapshot || d._writerId !== _sessionId) {
           const _before = JSON.stringify({ habits, checks, weeklyTasks });
           _applyFirestoreData(d);
@@ -4546,15 +4832,10 @@ async function _loadFromFirestore(user, _retryCount) {
             try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
           }
         }
-      } else if (isFirstSnapshot) {
-        // Brand-new user: seed with starter defaults and create the doc
-        habits      = JSON.parse(JSON.stringify(DEFAULT_HABITS));
-        weeklyTasks = JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
-        renderAll();
-        renderQuickTasks();
-        updateQuickTasksText();
-        _saveToFirestore();
       }
+      // No "else" branch: a missing doc on a later snapshot is never
+      // treated as a reason to seed or write defaults. That decision is
+      // made exactly once, above, from a confirmed server read.
     } catch(e) {
       console.error('Firestore snapshot apply error:', e);
     }
@@ -4570,6 +4851,12 @@ async function _loadFromFirestore(user, _retryCount) {
       showToast('⚠️ فشل تحميل البيانات من السحاب');
     }
   });
+
+  if (serverCheckFailed) {
+    // Let the person know we're showing cached/local data and haven't
+    // confirmed the cloud state yet, instead of silently proceeding.
+    showToast('⚠️ تعذر التأكد من بيانات السحاب الآن — سيتم المزامنة عند عودة الاتصال');
+  }
 }
 
 // =========== HELPERS ===========
@@ -4588,6 +4875,18 @@ function isFuture(d) {
 }
 
 function chkKey(hid, d) { return `${curY}-${curM}-${hid}-${d}`; }
+
+// =========== HABIT SCHEDULE (which weekdays a habit is active on) ===========
+// habits without activeDays (old data) are treated as active every day — fully backward compatible
+function habitActiveDays(h) {
+  return (h && Array.isArray(h.activeDays) && h.activeDays.length > 0) ? h.activeDays : [0,1,2,3,4,5,6];
+}
+function isHabitActiveOnDate(h, y, m, d) {
+  return habitActiveDays(h).includes(dayOfWeek(y, m, d));
+}
+function isHabitActiveOn(h, d) {
+  return isHabitActiveOnDate(h, curY, curM, d);
+}
 
 function moodKey(d, slot) { return `${curY}-${curM}-${d}-${slot}`; }
 
@@ -4798,6 +5097,7 @@ function changeMonth(d) {
     curY++; }
   if (curM < 0) { curM = 11;
     curY--; }
+  _tableScrolledOnce = false; // re-center on today whenever the visible month changes
   renderAll();
 }
 
@@ -4858,19 +5158,59 @@ function addHabit() {
   if (!name) { inp.focus();
     inp.style.borderColor = 'var(--red)';
     setTimeout(() => inp.style.borderColor = '', 1200); return; }
-  habits.push({ id: Date.now(), emoji: selectedEmoji, name });
+  habits.push({ id: Date.now(), emoji: selectedEmoji, name, activeDays: [...selectedDays] });
   save();
   inp.value = '';
+  selectedDays = [0,1,2,3,4,5,6];
+  const pop = document.getElementById('dayPickerPopover');
+  if (pop) pop.style.display = 'none';
   showToast(t('toastHabitAdded'));
   renderAll();
   playSound(440, 0.08);
 }
 
+// =========== FUN DELETE-HABIT CONFIRMATION MODAL ===========
+const DELH_TEXTS = {
+  ar: { title: 'هل أنت متأكد؟ 🤔', msg: 'هذه العادة ستطير بعيدًا للأبد:', cancel: 'تراجع 🙈', confirm: 'نعم، احذف 🗑️', icons: ['🗑️','😢','⚠️'] },
+  fr: { title: 'Es-tu sûr ? 🤔', msg: 'Cette habitude va s\'envoler pour toujours :', cancel: 'Annuler 🙈', confirm: 'Oui, supprimer 🗑️', icons: ['🗑️','😢','⚠️'] },
+  en: { title: 'Are you sure? 🤔', msg: 'This habit is about to fly away forever:', cancel: 'Cancel 🙈', confirm: 'Yes, delete 🗑️', icons: ['🗑️','😢','⚠️'] }
+};
+
+let _pendingDeleteHabitId = null;
+
 function deleteHabit(id) {
-  if (!confirm(t('confirmDelete'))) return;
-  habits = habits.filter(h => h.id !== id);
+  const h = habits.find(x => x.id === id);
+  if (!h) return;
+  _pendingDeleteHabitId = id;
+
+  const lang = currentLang || 'ar';
+  const txt = DELH_TEXTS[lang] || DELH_TEXTS.ar;
+  const icon = txt.icons[Math.floor(Math.random() * txt.icons.length)];
+
+  document.getElementById('delhIcon').textContent = icon;
+  document.getElementById('delhTitle').textContent = txt.title;
+  document.getElementById('delhMsg').textContent = txt.msg;
+  document.getElementById('delhName').textContent = `${h.emoji || ''} ${h.name}`.trim();
+  document.getElementById('delhCancelBtn').textContent = txt.cancel;
+  document.getElementById('delhConfirmBtn').textContent = txt.confirm;
+
+  document.getElementById('delHabitOverlay').classList.add('show');
+  if (typeof playSound === 'function') { try { playSound(300, 0.06); } catch(e) {} }
+}
+
+function cancelDeleteHabit() {
+  _pendingDeleteHabitId = null;
+  document.getElementById('delHabitOverlay').classList.remove('show');
+}
+
+function confirmDeleteHabit() {
+  if (_pendingDeleteHabitId === null) return;
+  habits = habits.filter(h => h.id !== _pendingDeleteHabitId);
+  _pendingDeleteHabitId = null;
+  document.getElementById('delHabitOverlay').classList.remove('show');
   save();
   renderAll();
+  if (typeof playSound === 'function') { try { playSound(220, 0.1); } catch(e) {} }
 }
 
 function escAttr(s) {
@@ -4887,6 +5227,8 @@ function startEditHabit(id) {
   const inp = document.getElementById('editHabitModalInput');
   overlay.style.display = 'flex';
   inp.value = h.name;
+  editSelectedDays = (Array.isArray(h.activeDays) && h.activeDays.length > 0) ? [...h.activeDays] : [0,1,2,3,4,5,6];
+  renderEditDayPickerChips();
   setTimeout(() => { inp.focus(); inp.select(); }, 100);
 }
 
@@ -4900,7 +5242,7 @@ function confirmEditHabitModal() {
   const name = (inp.value || '').trim();
   if (!name) return;
   const h = habits.find(x => x.id === _editingHabitModalId);
-  if (h) { h.name = name; save(); }
+  if (h) { h.name = name; h.activeDays = [...editSelectedDays]; save(); }
   closeEditHabitModal();
   renderAll();
 }
@@ -5036,10 +5378,10 @@ function calcStats() {
     bestDay = 0,
     bestDayN = 0;
   for (let d = 1; d <= totalDays; d++) {
-    let dc = 0;
-    habits.forEach(h => { if (checks[chkKey(h.id, d)]) dc++; });
-    if (isFuture(d)) { future += habits.length; } else { done += dc;
-      missed += (habits.length - dc); }
+    let dc = 0, sc = 0;
+    habits.forEach(h => { if (isHabitActiveOn(h, d)) { sc++; if (checks[chkKey(h.id, d)]) dc++; } });
+    if (isFuture(d)) { future += sc; } else { done += dc;
+      missed += (sc - dc); }
     if (dc > bestDay) { bestDay = dc;
       bestDayN = d; }
   }
@@ -5050,7 +5392,9 @@ function calcStats() {
     let streak = 0,
       best = 0;
     for (let d = 1; d <= totalDays; d++) {
-      if (!isFuture(d) && checks[chkKey(h.id, d)]) { streak++;
+      if (isFuture(d)) continue;
+      if (!isHabitActiveOn(h, d)) continue;
+      if (checks[chkKey(h.id, d)]) { streak++;
         best = Math.max(best, streak); } else { streak = 0; }
     }
     maxStreak = Math.max(maxStreak, best);
@@ -5065,6 +5409,7 @@ function calcCurrentStreaks() {
     const startDay = (curY === today.getFullYear() && curM === today.getMonth()) ? today.getDate() : daysInMonth(curY, curM);
     for (let d = startDay; d >= 1; d--) {
       if (isFuture(d)) continue;
+      if (!isHabitActiveOn(h, d)) continue;
       if (checks[chkKey(h.id, d)]) streak++;
       else break;
     }
@@ -5278,7 +5623,7 @@ function renderTable() {
   habits.forEach((h, hIdx) => {
     let streak = 0;
     const sd = curY === today.getFullYear() && curM === today.getMonth() ? today.getDate() : daysInMonth(curY, curM);
-    for (let d = sd; d >= 1; d--) { if (isFuture(d)) continue; if (checks[chkKey(h.id, d)]) streak++;
+    for (let d = sd; d >= 1; d--) { if (isFuture(d)) continue; if (!isHabitActiveOn(h, d)) continue; if (checks[chkKey(h.id, d)]) streak++;
       else break; }
     const nameHtml = `<span class="habit-text" title="${escAttr(h.name)}" ondblclick="startEditHabit(${h.id})">${escAttr(h.name)}</span>`;
     html += `<tr class="habit-row"><td class="habit-name-cell"><div class="habit-name-inner">
@@ -5296,25 +5641,31 @@ function renderTable() {
         const k = chkKey(h.id, d);
         const done = !!checks[k];
         const fut = isFuture(d);
-        let cls = '';
-        if (fut) cls = 'future';
-        else if (done) cls = 'done';
-        html += `<td style="${isLastDay && !isLastWk ? 'border-right:2px solid var(--border)' : ''}"><button class="chk ${cls}" onclick="${fut ? '' : 'toggleCheck(' + h.id + ',' + d + ')'}">${done ? '✓' : ''}</button></td>`;
+        const isTodayCell = isToday(d);
+        const scheduled = isHabitActiveOn(h, d);
+        let cls = '', symbol = '', clickable = true;
+        if (fut) { cls = 'future'; clickable = false; }
+        else if (!scheduled) { cls = 'skip-day'; symbol = '⋯'; clickable = false; }
+        else if (done) { cls = 'done'; symbol = '✓'; }
+        else if (isTodayCell) { cls = ''; symbol = ''; } // still today — no verdict yet, plain empty box
+        else { cls = 'missed-day'; symbol = '✕'; } // scheduled, already passed, never checked
+        const title = !scheduled ? (currentLang === 'ar' ? 'غير مجدولة لهذا اليوم' : currentLang === 'fr' ? 'Non prévue ce jour' : 'Not scheduled this day') : '';
+        html += `<td style="${isLastDay && !isLastWk ? 'border-right:2px solid var(--border)' : ''}"><button class="chk ${cls}" ${title ? `title="${title}"` : ''} onclick="${clickable ? 'toggleCheck(' + h.id + ',' + d + ')' : ''}">${symbol}</button></td>`;
       });
     });
     html += '</tr>';
   });
 
   const rowDefs = [
-    { label: currentLang === 'ar' ? 'التقدم' : currentLang === 'fr' ? 'Progrès' : 'Progress', fn: (d) => { if (isFuture(d)) return '<span style="color:var(--text-3)">—</span>'; let dc = 0;
-      habits.forEach(h => { if (checks[chkKey(h.id, d)]) dc++; });
-      const pct = habits.length > 0 ? Math.round(dc / habits.length * 100) : 0;
+    { label: currentLang === 'ar' ? 'التقدم' : currentLang === 'fr' ? 'Progrès' : 'Progress', fn: (d) => { if (isFuture(d)) return '<span style="color:var(--text-3)">—</span>'; let dc = 0, sc = 0;
+      habits.forEach(h => { if (isHabitActiveOn(h, d)) { sc++; if (checks[chkKey(h.id, d)]) dc++; } });
+      const pct = sc > 0 ? Math.round(dc / sc * 100) : 0;
       const cl = pct >= 80 ? 'pct-high' : pct >= 50 ? 'pct-mid' : pct > 0 ? 'pct-low' : 'pct-zero'; return `<span class="pct-chip ${cl}">${pct}%</span>`; } },
     { label: currentLang === 'ar' ? 'مكتملة ✅' : currentLang === 'fr' ? 'Complétées ✅' : 'Done ✅', fn: (d) => { let dc = 0;
-      habits.forEach(h => { if (checks[chkKey(h.id, d)]) dc++; }); return isFuture(d) ? '<span style="color:var(--text-3)">—</span>' : `<span style="color:var(--green);font-weight:700">${dc}</span>`; } },
-    { label: currentLang === 'ar' ? 'فائتة ❌' : currentLang === 'fr' ? 'Manquées ❌' : 'Missed ❌', fn: (d) => { let dc = 0;
-      habits.forEach(h => { if (checks[chkKey(h.id, d)]) dc++; });
-      const nd = habits.length - dc; return isFuture(d) ? '<span style="color:var(--text-3)">—</span>' : `<span style="color:var(--red);font-weight:700">${nd}</span>`; } },
+      habits.forEach(h => { if (isHabitActiveOn(h, d) && checks[chkKey(h.id, d)]) dc++; }); return isFuture(d) ? '<span style="color:var(--text-3)">—</span>' : `<span style="color:var(--green);font-weight:700">${dc}</span>`; } },
+    { label: currentLang === 'ar' ? 'فائتة ❌' : currentLang === 'fr' ? 'Manquées ❌' : 'Missed ❌', fn: (d) => { let dc = 0, sc = 0;
+      habits.forEach(h => { if (isHabitActiveOn(h, d)) { sc++; if (checks[chkKey(h.id, d)]) dc++; } });
+      const nd = sc - dc; return isFuture(d) ? '<span style="color:var(--text-3)">—</span>' : `<span style="color:var(--red);font-weight:700">${nd}</span>`; } },
   ];
   rowDefs.forEach(rd => {
     html += `<tr class="prog-row"><td class="label">${rd.label}</td>`;
@@ -5331,6 +5682,29 @@ function renderTable() {
   requestAnimationFrame(() => {
     const tb = document.getElementById('tableBody');
     if (tb) tb.innerHTML = html;
+    _scrollTableToToday();
+  });
+}
+
+// =========== AUTO-SCROLL TABLE TO TODAY'S COLUMN ===========
+let _tableScrolledOnce = false;
+function _scrollTableToToday(force) {
+  // Only the current month/year has a "today" column to scroll to
+  if (curY !== today.getFullYear() || curM !== today.getMonth()) return;
+  if (_tableScrolledOnce && !force) return;
+
+  const wrap = document.querySelector('.table-wrap');
+  const headerCell = document.querySelector('.table-wrap th.today-th');
+  if (!wrap || !headerCell) return;
+
+  _tableScrolledOnce = true;
+
+  requestAnimationFrame(() => {
+    const wrapRect = wrap.getBoundingClientRect();
+    const cellRect = headerCell.getBoundingClientRect();
+    // Center today's column within the visible scroll area
+    const offset = (cellRect.left - wrapRect.left) - (wrapRect.width / 2) + (cellRect.width / 2);
+    wrap.scrollBy({ left: offset, behavior: 'smooth' });
   });
 }
 
@@ -6851,6 +7225,14 @@ function startEditQuickTask(id, textEl) {
 // =========== INIT ===========
 function init() {
   buildEmojiPicker();
+  renderDayPickerChips();
+  document.addEventListener('click', (e) => {
+    const pop = document.getElementById('dayPickerPopover');
+    const btn = document.getElementById('dayPickBtn');
+    if (pop && pop.style.display === 'block' && !pop.contains(e.target) && e.target !== btn) {
+      pop.style.display = 'none';
+    }
+  });
   applyTheme(settings.theme);
   setFontSize(settings.fontSize);
   setCompact(settings.compact);
@@ -7057,6 +7439,44 @@ function _hideAccessLockOverlay() {
   if (lockOverlay) lockOverlay.classList.remove('visible');
 }
 
+// =========== ACCESS CACHE (speeds up repeated sign-ins) ===========
+// Caches the allowed_users check result for 24 hours per email,
+// so returning users enter immediately without waiting for Firestore.
+const ACCESS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
+const ACCESS_CACHE_KEY = 'tacky_access_cache';
+
+function _getAccessCache(email) {
+  try {
+    const raw = _ls.getItem(ACCESS_CACHE_KEY);
+    if (!raw) return null;
+    const cache = JSON.parse(raw);
+    const entry = cache[email.toLowerCase()];
+    if (!entry) return null;
+    // Expired?
+    if (Date.now() - entry.ts > ACCESS_CACHE_TTL) return null;
+    return entry.allowed; // true or false
+  } catch(e) { return null; }
+}
+
+function _setAccessCache(email, allowed) {
+  try {
+    const raw = _ls.getItem(ACCESS_CACHE_KEY);
+    const cache = raw ? JSON.parse(raw) : {};
+    cache[email.toLowerCase()] = { allowed, ts: Date.now() };
+    _ls.setItem(ACCESS_CACHE_KEY, JSON.stringify(cache));
+  } catch(e) {}
+}
+
+function _clearAccessCache(email) {
+  try {
+    const raw = _ls.getItem(ACCESS_CACHE_KEY);
+    if (!raw) return;
+    const cache = JSON.parse(raw);
+    delete cache[email.toLowerCase()];
+    _ls.setItem(ACCESS_CACHE_KEY, JSON.stringify(cache));
+  } catch(e) {}
+}
+
 // Checks Firestore collection "allowed_users" for a document whose ID is the
 // user's lowercase email, with a boolean field "active" set to true.
 async function _checkUserAccess(user) {
@@ -7065,9 +7485,14 @@ async function _checkUserAccess(user) {
     const email = user.email.toLowerCase();
     const ref = window._fbDoc(window._fbDb, 'allowed_users', email);
     const snap = await window._fbGetDoc(ref);
-    if (!snap.exists()) return false;
+    if (!snap.exists()) {
+      _clearAccessCache(email);
+      return false;
+    }
     const data = snap.data();
-    return data && data.active === true;
+    const allowed = data && data.active === true;
+    _setAccessCache(email, allowed);
+    return allowed;
   } catch (e) {
     console.error('Access check failed:', e);
     return false;
@@ -7082,8 +7507,28 @@ window._onAuthReady = async function(user) {
     return;
   }
 
-  // Show a lightweight "checking" indicator while we verify access, so the
-  // app UI never flashes open before the subscription check completes.
+  const email = user.email ? user.email.toLowerCase() : null;
+  const cachedAccess = email ? _getAccessCache(email) : null;
+
+  if (cachedAccess === true) {
+    // ✅ Fast path: user was verified recently — enter immediately
+    _hideAccessLockOverlay();
+    _updateNavUserUI(user);
+    _loadFromFirestore(user);
+
+    // Background re-verify to refresh cache (doesn't block UI)
+    _checkUserAccess(user).then(stillAllowed => {
+      if (!stillAllowed) {
+        // Access was revoked — sign them out silently
+        _clearAccessCache(email);
+        if (typeof doSignOut === 'function') doSignOut();
+      }
+    }).catch(() => {});
+
+    return;
+  }
+
+  // Slow path: first time or cache expired — show checking indicator
   const checkingMsg = document.getElementById('lockCheckingMsg');
   if (checkingMsg) checkingMsg.style.display = 'block';
   document.body.classList.add('auth-active');
@@ -7105,6 +7550,452 @@ window._onAuthReady = async function(user) {
 
 // Kick off non-data init immediately (theme, lang, etc.)
 init();
+</script>
+
+<!-- ===== DELETE HABIT CONFIRM MODAL ===== -->
+<div id="delHabitOverlay" onclick="cancelDeleteHabit()">
+  <div class="delh-card" onclick="event.stopPropagation()">
+    <span class="delh-icon" id="delhIcon">🗑️</span>
+    <div class="delh-title" id="delhTitle">هل أنت متأكد؟</div>
+    <div class="delh-msg" id="delhMsg">هذه العادة ستطير بعيدًا للأبد:</div>
+    <div class="delh-name" id="delhName"></div>
+    <div class="delh-btn-row">
+      <button class="delh-btn delh-btn-cancel" id="delhCancelBtn" onclick="cancelDeleteHabit()">تراجع</button>
+      <button class="delh-btn delh-btn-confirm" id="delhConfirmBtn" onclick="confirmDeleteHabit()">نعم، احذف</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CELEBRATION OVERLAY ===== -->
+<div id="celebrationOverlay" onclick="closeCelebration()">
+  <div class="celeb-card" onclick="event.stopPropagation()">
+    <span class="celeb-crow" id="celebCrow">🐦‍⬛</span>
+    <div class="celeb-stars" id="celebStars">⭐⭐⭐</div>
+    <div class="celeb-title" id="celebTitle">تهانينا!</div>
+    <div class="celeb-msg" id="celebMsg">أكملت كل مهامك! 🎉</div>
+    <button class="celeb-close-btn" id="celebCloseBtn" onclick="closeCelebration()">رائع! 🚀</button>
+  </div>
+</div>
+
+<script>
+// =========== CELEBRATION SYSTEM ===========
+const CELEB_TEXTS = {
+  ar: {
+    title: 'تهانينا! 🎉',
+    msg: 'أكملت كل مهامك! أنت رائع ومتميز — واصل الإنجاز! 💪',
+    btn: 'رائع! 🚀',
+    crow: '🐦‍⬛'
+  },
+  fr: {
+    title: 'Félicitations! 🎉',
+    msg: 'Toutes les tâches sont terminées! Tu es incroyable — continue comme ça! 💪',
+    btn: 'Super! 🚀',
+    crow: '🐦‍⬛'
+  },
+  en: {
+    title: 'Congratulations! 🎉',
+    msg: 'All tasks completed! You\'re amazing — keep it up! 💪',
+    btn: 'Awesome! 🚀',
+    crow: '🐦‍⬛'
+  }
+};
+
+let _celebShownThisSession = new Set();
+
+function showCelebration(contextKey) {
+  // Prevent showing twice for same context in same session
+  if (_celebShownThisSession.has(contextKey)) return;
+  _celebShownThisSession.add(contextKey);
+
+  const lang = currentLang || 'ar';
+  const txt = CELEB_TEXTS[lang] || CELEB_TEXTS.ar;
+
+  document.getElementById('celebCrow').textContent = txt.crow;
+  document.getElementById('celebTitle').textContent = txt.title;
+  document.getElementById('celebMsg').textContent = txt.msg;
+  document.getElementById('celebCloseBtn').textContent = txt.btn;
+
+  const overlay = document.getElementById('celebrationOverlay');
+  overlay.classList.add('show');
+
+  // Play celebration sound
+  playCelebrationSound();
+
+  // Launch double confetti
+  if (settings.confetti) {
+    launchConfetti();
+    setTimeout(() => launchConfetti(), 300);
+    setTimeout(() => launchConfetti(), 700);
+  }
+}
+
+function closeCelebration() {
+  document.getElementById('celebrationOverlay').classList.remove('show');
+}
+
+function playCelebrationSound() {
+  if (!settings.sound) return;
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    // Triumphant fanfare
+    const notes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5];
+    notes.forEach((freq, i) => {
+      _playTone(ctx, freq, freq * 1.05, now + i * 0.1, 0.3, 0.22);
+    });
+    // Final pop
+    _playTone(ctx, 1318.5, 1568, now + 0.7, 0.4, 0.28);
+  } catch(e) {}
+}
+
+// =========== CHECK ALL DONE — wrapper for each section ===========
+function _checkAllDone_Habits(dayN) {
+  const allDone = habits.every(h => checks[chkKey(h.id, dayN)]);
+  if (allDone && habits.length > 0) {
+    const key = 'habits-' + chkKey(0, dayN);
+    showCelebration(key);
+  }
+}
+
+function _checkAllDone_Weekly() {
+  let total = 0, done = 0;
+  for (let w = 1; w <= 4; w++) {
+    (weeklyTasks[w] || []).forEach(t => { total++; if (t.done) done++; });
+  }
+  if (total > 0 && done === total) {
+    const key = 'weekly-' + new Date().toISOString().slice(0, 7);
+    showCelebration(key);
+  }
+}
+
+function _checkAllDone_QuickTasks() {
+  const total = quickTasks.length;
+  const done = quickTasks.filter(t => t.done).length;
+  if (total > 0 && done === total) {
+    const key = 'qt-' + new Date().toISOString().slice(0, 10) + '-' + total;
+    showCelebration(key);
+  }
+}
+
+// Patch existing functions to trigger celebration checks
+const _orig_toggleCheck = toggleCheck;
+toggleCheck = function(hid, d) {
+  _orig_toggleCheck(hid, d);
+  if (checks[chkKey(hid, d)]) {
+    setTimeout(() => _checkAllDone_Habits(d), 100);
+  }
+};
+
+const _orig_toggleTask = toggleTask;
+toggleTask = function(w, i) {
+  _orig_toggleTask(w, i);
+  setTimeout(() => _checkAllDone_Weekly(), 100);
+};
+
+const _orig_toggleQuickTask = toggleQuickTask;
+toggleQuickTask = function(id) {
+  _orig_toggleQuickTask(id);
+  const task = quickTasks.find(t => t.id === id);
+  if (task && task.done) {
+    setTimeout(() => _checkAllDone_QuickTasks(), 100);
+  }
+};
+
+// =========== DRAG & DROP for Quick Tasks ===========
+let _qtDragId = null;
+let _qtDragOverId = null;
+
+function setupQtDragDrop() {
+  const list = document.getElementById('qtList');
+  if (!list) return;
+
+  list.querySelectorAll('.qt-item[data-id]').forEach(el => {
+    const id = parseInt(el.getAttribute('data-id'));
+    el.setAttribute('draggable', 'true');
+
+    el.addEventListener('dragstart', e => {
+      _qtDragId = id;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      list.querySelectorAll('.qt-item').forEach(x => x.classList.remove('drag-over'));
+      _qtDragId = null;
+      _qtDragOverId = null;
+    });
+
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (_qtDragOverId !== id) {
+        list.querySelectorAll('.qt-item').forEach(x => x.classList.remove('drag-over'));
+        _qtDragOverId = id;
+        el.classList.add('drag-over');
+      }
+    });
+
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      if (_qtDragId === null || _qtDragId === id) return;
+
+      const fromIdx = quickTasks.findIndex(t => t.id === _qtDragId);
+      const toIdx   = quickTasks.findIndex(t => t.id === id);
+      if (fromIdx === -1 || toIdx === -1) return;
+
+      const [moved] = quickTasks.splice(fromIdx, 1);
+      quickTasks.splice(toIdx, 0, moved);
+      saveQuickTasks();
+      renderQuickTasks();
+    });
+  });
+}
+
+// Patch renderQuickTasks to add drag handles and setup D&D after render
+const _orig_renderQuickTasks = renderQuickTasks;
+renderQuickTasks = function() {
+  _orig_renderQuickTasks();
+  // Replace up/down buttons with drag handles in qt-items
+  const list = document.getElementById('qtList');
+  if (!list) return;
+  list.querySelectorAll('.qt-item[data-id]').forEach(el => {
+    // Find the move btn group (column of ▲▼ buttons) and replace with drag handle
+    const moveBtns = el.querySelector('div[style*="flex-direction:column"]');
+    if (moveBtns) {
+      const handle = document.createElement('div');
+      handle.className = 'drag-handle';
+      handle.innerHTML = '⠿';
+      handle.title = currentLang === 'ar' ? 'اسحب لإعادة الترتيب' : currentLang === 'fr' ? 'Glisser pour réorganiser' : 'Drag to reorder';
+      moveBtns.replaceWith(handle);
+    }
+  });
+  setupQtDragDrop();
+};
+
+// =========== DRAG & DROP for Weekly Tasks ===========
+let _wTaskDragW = null;
+let _wTaskDragI = null;
+
+function setupWeeklyDragDrop() {
+  document.querySelectorAll('.task-item[data-w][data-i]').forEach(el => {
+    const w = parseInt(el.getAttribute('data-w'));
+    const i = parseInt(el.getAttribute('data-i'));
+
+    el.setAttribute('draggable', 'true');
+
+    el.addEventListener('dragstart', e => {
+      _wTaskDragW = w;
+      _wTaskDragI = i;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      document.querySelectorAll('.task-item').forEach(x => x.classList.remove('drag-over'));
+      _wTaskDragW = null; _wTaskDragI = null;
+    });
+
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.task-item').forEach(x => x.classList.remove('drag-over'));
+      el.classList.add('drag-over');
+    });
+
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      if (_wTaskDragW === null) return;
+      if (_wTaskDragW === w && _wTaskDragI === i) return;
+
+      // Only allow drag within the same week column
+      if (_wTaskDragW !== w) {
+        // Cross-column: move task
+        const task = weeklyTasks[_wTaskDragW].splice(_wTaskDragI, 1)[0];
+        weeklyTasks[w].splice(i, 0, task);
+      } else {
+        // Same column reorder
+        const arr = weeklyTasks[w];
+        const [moved] = arr.splice(_wTaskDragI, 1);
+        arr.splice(i, 0, moved);
+      }
+      save();
+      renderWeekly();
+    });
+  });
+}
+
+// =========== MIDNIGHT WATCHER ===========
+// `today`/curY/curM are computed once at page load, so a tab left open past
+// midnight never re-evaluates isFuture()/isToday() — missed-day (red X) cells
+// wouldn't appear until a manual refresh. This watcher detects the date
+// change (checked every 30s, cheap) and forces a full re-render + shows a
+// popup listing habits that were scheduled yesterday and never checked.
+let _lastKnownDateStr = today.toDateString();
+
+function _collectYesterdayMissed() {
+  const now = new Date();
+  const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const yy = y.getFullYear(), ym = y.getMonth(), yd = y.getDate();
+  const missed = [];
+  habits.forEach(h => {
+    if (isHabitActiveOnDate(h, yy, ym, yd)) {
+      const k = `${yy}-${ym}-${h.id}-${yd}`;
+      if (!checks[k]) missed.push(h);
+    }
+  });
+  return missed;
+}
+
+function _showMissedYesterdayPopup(missedHabits) {
+  if (!missedHabits || missedHabits.length === 0) return;
+  const existing = document.getElementById('missedDayPopupOverlay');
+  if (existing) existing.remove();
+
+  const isAr = currentLang === 'ar', isFr = currentLang === 'fr';
+  const title = isAr ? '☀️ يوم جديد بدأ!' : isFr ? '☀️ Nouveau jour !' : '☀️ New Day Started!';
+  const subtitle = isAr
+    ? `لم تُكمل ${missedHabits.length} من عاداتك أمس. هيا نجعل اليوم أفضل 💪`
+    : isFr
+    ? `Vous n'avez pas terminé ${missedHabits.length} habitude(s) hier. Faisons de aujourd'hui un jour meilleur 💪`
+    : `You missed ${missedHabits.length} habit(s) yesterday. Let's make today count 💪`;
+  const btnTxt = isAr ? 'هيا نبدأ اليوم! 🔥' : isFr ? "C'est parti ! 🔥" : "Let's go! 🔥";
+
+  const itemsHtml = missedHabits.map(h => `
+    <div class="missed-popup-item">
+      <span class="missed-popup-x">✕</span>
+      <span class="missed-popup-emoji">${h.emoji || '📌'}</span>
+      <span class="missed-popup-name">${escAttr(h.name)}</span>
+    </div>`).join('');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'missedDayPopupOverlay';
+  overlay.innerHTML = `
+    <style>
+      #missedDayPopupOverlay {
+        position: fixed; inset: 0; z-index: 99998;
+        background: rgba(15,23,42,0.55);
+        backdrop-filter: blur(4px);
+        display: flex; align-items: center; justify-content: center;
+        padding: 16px;
+        animation: mdpFadeIn 0.25s ease both;
+      }
+      @keyframes mdpFadeIn { from { opacity:0; } to { opacity:1; } }
+      @keyframes mdpPopIn { from { opacity:0; transform:translateY(14px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+      .missed-popup-card {
+        background: var(--white, #fff); border-radius: 22px;
+        max-width: 400px; width: 100%;
+        padding: 28px 24px 24px; text-align: center;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+        animation: mdpPopIn 0.32s cubic-bezier(.2,.9,.3,1.2) both;
+        border: 1px solid var(--border, #e5e7eb);
+      }
+      [data-theme="dark"] .missed-popup-card { background:#1e2433; border-color:#2a3352; }
+      .missed-popup-icon {
+        width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px;
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem; box-shadow: 0 8px 20px rgba(239,68,68,0.25);
+      }
+      .missed-popup-title { font-size: 1.15rem; font-weight: 900; color: var(--text, #0f172a); margin-bottom: 6px; }
+      .missed-popup-sub { font-size: 0.85rem; color: var(--text-2, #64748b); line-height:1.6; margin-bottom: 18px; }
+      .missed-popup-list {
+        max-height: 220px; overflow-y: auto; margin-bottom: 20px;
+        display: flex; flex-direction: column; gap: 8px;
+      }
+      .missed-popup-item {
+        display: flex; align-items: center; gap: 10px;
+        background: #fef2f2; border: 1px solid #fecaca;
+        border-radius: 12px; padding: 10px 14px; text-align: start;
+      }
+      [data-theme="dark"] .missed-popup-item { background:#2d0b0b; border-color:#5b1a1a; }
+      .missed-popup-x {
+        width: 24px; height: 24px; border-radius: 6px; flex-shrink:0;
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        border: 1.8px solid var(--red, #ef4444); color: var(--red, #ef4444);
+        display: flex; align-items:center; justify-content:center;
+        font-weight: 900; font-size: 0.8rem;
+      }
+      .missed-popup-emoji { font-size: 1.1rem; flex-shrink:0; }
+      .missed-popup-name { font-size: 0.85rem; font-weight: 700; color: var(--text, #0f172a); flex:1; }
+      .missed-popup-btn {
+        width: 100%; padding: 13px; border: none; border-radius: 12px;
+        font-family: 'Tajawal', sans-serif; font-size: 0.95rem; font-weight: 800;
+        cursor: pointer; color: white;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+        transition: all 0.2s;
+      }
+      .missed-popup-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(59,130,246,0.55); }
+    </style>
+    <div class="missed-popup-card">
+      <div class="missed-popup-icon">⏰</div>
+      <div class="missed-popup-title">${title}</div>
+      <div class="missed-popup-sub">${subtitle}</div>
+      <div class="missed-popup-list">${itemsHtml}</div>
+      <button class="missed-popup-btn" onclick="document.getElementById('missedDayPopupOverlay').remove()">${btnTxt}</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function _checkMidnightRollover() {
+  const now = new Date();
+  const nowStr = now.toDateString();
+  if (nowStr === _lastKnownDateStr) return;
+
+  const missed = _collectYesterdayMissed();
+
+  today.setTime(now.getTime());
+  curY = today.getFullYear();
+  curM = today.getMonth();
+  _lastKnownDateStr = nowStr;
+
+  renderAll();
+  if (typeof renderQuickTasks === 'function') renderQuickTasks();
+
+  if (missed.length > 0) _showMissedYesterdayPopup(missed);
+}
+
+setInterval(_checkMidnightRollover, 30000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) _checkMidnightRollover(); });
+window.addEventListener('focus', _checkMidnightRollover);
+
+// Patch renderWeekly to add data attributes and drag handles
+const _orig_renderWeekly = renderWeekly;
+renderWeekly = function() {
+  _orig_renderWeekly();
+
+  // Add data-w / data-i to task items and replace move buttons with handles
+  let wIdx = 0;
+  for (let w = 1; w <= 4; w++) {
+    const tasks = weeklyTasks[w] || [];
+    const colItems = document.querySelectorAll(`.week-column:nth-child(${w}) .task-item`);
+    colItems.forEach((el, i) => {
+      el.setAttribute('data-w', w);
+      el.setAttribute('data-i', i);
+      // Replace ▲▼ buttons with drag handle
+      el.querySelectorAll('button').forEach(btn => {
+        if (btn.textContent.trim() === '▲' || btn.textContent.trim() === '▼') {
+          btn._toRemove = true;
+        }
+      });
+      const toRemove = Array.from(el.querySelectorAll('button')).filter(b => b._toRemove);
+      if (toRemove.length) {
+        const handle = document.createElement('div');
+        handle.className = 'drag-handle';
+        handle.innerHTML = '⠿';
+        handle.title = currentLang === 'ar' ? 'اسحب لإعادة الترتيب' : 'Drag to reorder';
+        toRemove[0].parentNode.insertBefore(handle, toRemove[0]);
+        toRemove.forEach(b => b.remove());
+      }
+    });
+  }
+  setupWeeklyDragDrop();
+};
 </script>
 </body>
 </html>
