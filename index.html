@@ -644,13 +644,13 @@ body.auth-active {
 }
 .nav-signout-btn {
   height: 32px; border-radius: 8px;
-  border: 1.5px solid var(--border); background: var(--bg);
+  border: 1.5px solid var(--red); background: var(--red-light);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   font-family: 'Tajawal', sans-serif; font-size: 0.75rem; font-weight: 700;
-  transition: var(--transition); color: var(--text-2);
+  transition: var(--transition); color: var(--red);
   padding: 0 10px; gap: 4px; white-space: nowrap;
 }
-.nav-signout-btn:hover { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.nav-signout-btn:hover { background: var(--red); color: white; box-shadow: 0 4px 14px rgba(239,68,68,0.4); transform: translateY(-1px); }
 .nav-signin-btn {
   height: 36px; border-radius: 10px;
   border: none; background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
@@ -1017,34 +1017,41 @@ table { border-collapse: collapse; min-width: 100%; }
 
 /* Day not scheduled for this habit — grayed out, unclickable, three-dots "skip" mark */
 .chk.skip-day {
-  background: #e8ecf2;
-  border: 1.5px dashed #b8c2d0;
-  color: #9aacbe;
+  background: #c8d0dc;
+  border: 1.5px dashed #8e9bae;
+  color: #6b7a8d;
   cursor: default;
   box-shadow: none;
-  opacity: 0.75;
+  opacity: 1;
   font-size: 0.6rem;
   letter-spacing: -1px;
 }
 [data-theme="dark"] .chk.skip-day {
-  background: #1e2433;
-  border-color: #2a3352;
-  color: #3a4a62;
-  opacity: 0.7;
+  background: #2a3f5c;
+  border-color: #4a6a8a;
+  color: #7aafd4;
+  opacity: 1;
 }
-.chk.skip-day:hover { transform: none; border-color: #b8c2d0; background: #e8ecf2; }
+.chk.skip-day:hover { transform: none; border-color: #8e9bae; background: #c8d0dc; }
+[data-theme="dark"] .chk.skip-day:hover { border-color: #4a6a8a; background: #2a3f5c; }
 
 /* Day was scheduled, is now in the past, and was never checked — auto red X to motivate tomorrow */
 .chk.missed-day {
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
-  border-color: var(--red);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-color: #b91c1c;
   border-width: 2px;
-  color: var(--red);
-  box-shadow: 0 2px 8px rgba(239,68,68,0.2);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(185,28,28,0.4);
   font-weight: 900;
   font-size: 0.9rem;
 }
-.chk.missed-day:hover { border-color: var(--red); background: linear-gradient(135deg, #fecaca, #fca5a5); transform: scale(1.08); box-shadow: 0 3px 12px rgba(239,68,68,0.35); }
+[data-theme="dark"] .chk.missed-day {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  border-color: #7f1d1d;
+  color: #fca5a5;
+  box-shadow: 0 2px 8px rgba(127,29,29,0.5);
+}
+.chk.missed-day:hover { border-color: #991b1b; background: linear-gradient(135deg, #dc2626, #b91c1c); transform: scale(1.08); box-shadow: 0 3px 12px rgba(185,28,28,0.55); }
 
 /* PROGRESS ROWS */
 .prog-row td {
@@ -2482,7 +2489,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
       </a>
     </div>
     <div class="lock-divider"></div>
-    <button class="lock-logout-btn" onclick="doSignOut()" id="lockLogoutBtnText">⬡ تسجيل الخروج أو تبديل الحساب</button>
+    <button class="lock-logout-btn" onclick="doSignOut()" id="lockLogoutBtnText">🚪 تسجيل الخروج أو تبديل الحساب</button>
     <div class="lock-checking" id="lockCheckingMsg" style="display:none;">⏳ جارٍ التحقق من حالة الاشتراك...</div>
   </div>
 </div>
@@ -2524,7 +2531,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
           <div class="nav-user-avatar-placeholder" id="navUserAvatar">?</div>
           <div class="nav-user-name" id="navUserName">...</div>
         </div>
-        <button class="nav-signout-btn" id="navSignOutBtn" onclick="doSignOut()">⬡ خروج</button>
+        <button class="nav-signout-btn" id="navSignOutBtn" onclick="doSignOut()">🚪 خروج</button>
       </div>
     </div>
   </div>
@@ -2574,19 +2581,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
   <div class="add-row fade-up" style="position:relative">
     <button class="emoji-pick" id="emojiPickBtn" onclick="toggleEmojiPicker()">😊</button>
-    <input class="habit-input" id="newHabitInput" type="text" placeholder="أضف عادة جديدة... مثلاً: استيقظ الساعة 5 صباحاً" maxlength="50">
-    <button class="emoji-pick" id="dayPickBtn" onclick="toggleDayPicker()" title="أيام التكرار">📅</button>
-    <button class="add-btn" onclick="addHabit()">＋ إضافة عادة</button>
-    <div id="dayPickerPopover" style="display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:50;background:var(--white);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);padding:14px;">
-      <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin-bottom:10px;">🗓️ كرر العادة في أيام محددة (اختياري)</div>
-      <div id="dayPickerChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="setAddDaysPreset('all')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">كل يوم</button>
-        <button onclick="setAddDaysPreset('alt')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">يوم بعد يوم</button>
-        <button onclick="setAddDaysPreset('weekdays')" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px;font-family:'Tajawal',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-2);cursor:pointer;">أيام الدراسة</button>
-      </div>
-      <button onclick="toggleDayPicker()" style="width:100%;margin-top:10px;background:var(--blue-500);color:white;border:none;border-radius:8px;padding:8px;font-family:'Tajawal',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">تم ✓</button>
-    </div>
+    <input class="habit-input" id="newHabitInput" type="text" placeholder="أضف عادة جديدة... مثلاً: استيقظ الساعة 5 صباحاً" maxlength="50" onkeydown="if(event.key==='Enter') openAddHabitModal()">
+    <button class="add-btn" onclick="openAddHabitModal()">＋ إضافة عادة</button>
   </div>
 
   <div class="table-wrap fade-up">
@@ -5162,6 +5158,7 @@ function addHabit() {
   save();
   inp.value = '';
   selectedDays = [0,1,2,3,4,5,6];
+  _updateDayPickBtnLabel();
   const pop = document.getElementById('dayPickerPopover');
   if (pop) pop.style.display = 'none';
   showToast(t('toastHabitAdded'));
@@ -7225,14 +7222,6 @@ function startEditQuickTask(id, textEl) {
 // =========== INIT ===========
 function init() {
   buildEmojiPicker();
-  renderDayPickerChips();
-  document.addEventListener('click', (e) => {
-    const pop = document.getElementById('dayPickerPopover');
-    const btn = document.getElementById('dayPickBtn');
-    if (pop && pop.style.display === 'block' && !pop.contains(e.target) && e.target !== btn) {
-      pop.style.display = 'none';
-    }
-  });
   applyTheme(settings.theme);
   setFontSize(settings.fontSize);
   setCompact(settings.compact);
@@ -7334,7 +7323,18 @@ function signInWithGoogle() {
 }
 
 function doSignOut() {
-  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  const overlay = document.getElementById('signOutOverlay');
+  if (overlay) { overlay.style.display = 'flex'; }
+}
+
+function cancelSignOut() {
+  const overlay = document.getElementById('signOutOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function confirmSignOut() {
+  const overlay = document.getElementById('signOutOverlay');
+  if (overlay) overlay.style.display = 'none';
 
   // Cancel any pending debounced save first — otherwise it could fire a
   // few hundred ms from now and write stale data into whichever account
@@ -7368,9 +7368,83 @@ function doSignOut() {
     console.error('Sign-out error:', err);
     showToast('⚠️ فشل تسجيل الخروج، حاول مرة أخرى');
   }).finally(() => {
-    if (signOutBtn) { signOutBtn.disabled = false; signOutBtn.textContent = '⬡ خروج'; }
+    if (signOutBtn) { signOutBtn.disabled = false; signOutBtn.textContent = '🚪 خروج'; }
   });
 }
+
+// =========== ADD HABIT MODAL ===========
+let _modalSelectedDays = [0,1,2,3,4,5,6];
+
+function openAddHabitModal() {
+  const inp = document.getElementById('newHabitInput');
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); inp.style.borderColor = 'var(--red)'; setTimeout(() => inp.style.borderColor = '', 1200); return; }
+  _modalSelectedDays = [...selectedDays];
+  const overlay = document.getElementById('addHabitModalOverlay');
+  const emojiPreview = document.getElementById('modalEmojiPreview');
+  const namePreview = document.getElementById('modalNamePreview');
+  if (emojiPreview) emojiPreview.textContent = selectedEmoji;
+  if (namePreview) namePreview.textContent = name;
+  renderModalDayPickerChips();
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeAddHabitModal() {
+  const overlay = document.getElementById('addHabitModalOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function confirmAddHabit() {
+  const inp = document.getElementById('newHabitInput');
+  const name = inp.value.trim();
+  if (!name) { closeAddHabitModal(); return; }
+  habits.push({ id: Date.now(), emoji: selectedEmoji, name, activeDays: [..._modalSelectedDays] });
+  save();
+  inp.value = '';
+  selectedDays = [0,1,2,3,4,5,6];
+  _modalSelectedDays = [0,1,2,3,4,5,6];
+  closeAddHabitModal();
+  showToast(t('toastHabitAdded'));
+  renderAll();
+  playSound(440, 0.08);
+}
+
+function renderModalDayPickerChips() {
+  const DAY_NAMES = currentLang === 'ar' ? ['أح','اث','ثل','أر','خم','جم','سب'] : currentLang === 'fr' ? ['Di','Lu','Ma','Me','Je','Ve','Sa'] : ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const cont = document.getElementById('modalDayPickerChips');
+  if (!cont) return;
+  cont.innerHTML = DAY_NAMES.map((d, i) => `
+    <button onclick="toggleModalDay(${i})" id="modalDayChip${i}" style="
+      width:40px;height:40px;border-radius:10px;border:2px solid ${_modalSelectedDays.includes(i) ? 'var(--blue-500)' : 'var(--border)'};
+      background:${_modalSelectedDays.includes(i) ? 'var(--blue-500)' : 'var(--bg)'};
+      color:${_modalSelectedDays.includes(i) ? 'white' : 'var(--text-2)'};
+      font-family:'Tajawal',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;
+      transition:all 0.2s;box-shadow:${_modalSelectedDays.includes(i) ? '0 3px 10px rgba(59,130,246,0.35)' : 'none'};
+    ">${d}</button>`).join('');
+}
+
+function toggleModalDay(i) {
+  const idx = _modalSelectedDays.indexOf(i);
+  if (idx > -1) {
+    if (_modalSelectedDays.length > 1) _modalSelectedDays.splice(idx, 1);
+  } else {
+    _modalSelectedDays.push(i);
+    _modalSelectedDays.sort((a,b)=>a-b);
+  }
+  renderModalDayPickerChips();
+}
+
+function setModalDaysPreset(preset) {
+  if (preset === 'all') _modalSelectedDays = [0,1,2,3,4,5,6];
+  else if (preset === 'alt') _modalSelectedDays = [0,2,4,6];
+  else if (preset === 'weekdays') _modalSelectedDays = [0,1,2,3,4];
+  renderModalDayPickerChips();
+}
+
+// Keep toggleDayPicker as no-op for backward compat
+function toggleDayPicker() {}
+function setAddDaysPreset() {}
+function renderDayPickerChips() {}
 
 function _updateNavUserUI(user) {
   const overlay    = document.getElementById('authOverlay');
@@ -7565,6 +7639,63 @@ init();
     </div>
   </div>
 </div>
+
+<!-- ===== SIGN OUT CONFIRM MODAL ===== -->
+<div id="signOutOverlay" onclick="cancelSignOut()" style="display:none;position:fixed;inset:0;z-index:99997;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
+  <div onclick="event.stopPropagation()" style="background:var(--white);border:1px solid var(--border);border-radius:24px;padding:32px 28px 26px;max-width:380px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.35);text-align:center;animation:mdpPopIn 0.3s cubic-bezier(.2,.9,.3,1.2) both;">
+    <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,#fee2e2,#fecaca);display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 8px 20px rgba(239,68,68,0.25);">🚪</div>
+    <div style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:8px;" id="soTitle">تسجيل الخروج؟</div>
+    <div style="font-size:0.85rem;color:var(--text-2);line-height:1.6;margin-bottom:22px;" id="soMsg">هل تريد فعلاً الخروج من حسابك؟<br>ستحتاج إلى تسجيل الدخول مرة أخرى.</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="cancelSignOut()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text-2);font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;" id="soCancelBtn">تراجع 🙈</button>
+      <button onclick="confirmSignOut()" id="soConfirmBtn" style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#ef4444,#b91c1c);color:white;font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(239,68,68,0.4);transition:all 0.2s;">خروج 🚪</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD HABIT MODAL (with days) ===== -->
+<div id="addHabitModalOverlay" onclick="closeAddHabitModal()" style="display:none;position:fixed;inset:0;z-index:99990;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
+  <div onclick="event.stopPropagation()" style="background:var(--white);border:1px solid var(--border);border-radius:24px;padding:28px 24px 22px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.35);animation:mdpPopIn 0.3s cubic-bezier(.2,.9,.3,1.2) both;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 6px 16px rgba(59,130,246,0.35);flex-shrink:0;">✨</div>
+      <div>
+        <div style="font-size:1rem;font-weight:900;color:var(--text);">إضافة عادة جديدة</div>
+        <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px;">حدد الأيام التي ستمارس فيها هذه العادة</div>
+      </div>
+      <button onclick="closeAddHabitModal()" style="margin-right:auto;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-3);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+    </div>
+
+    <!-- Habit name preview -->
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
+      <span id="modalEmojiPreview" style="font-size:1.4rem;">😊</span>
+      <span id="modalNamePreview" style="font-size:0.9rem;font-weight:700;color:var(--text);flex:1;"></span>
+    </div>
+
+    <!-- Day picker -->
+    <div style="font-size:0.78rem;font-weight:800;color:var(--text-2);margin-bottom:10px;">🗓️ أيام التكرار</div>
+    <div id="modalDayPickerChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button onclick="setModalDaysPreset('all')" class="modal-preset-btn">📅 كل يوم</button>
+      <button onclick="setModalDaysPreset('alt')" class="modal-preset-btn">🔄 يوم بعد يوم</button>
+      <button onclick="setModalDaysPreset('weekdays')" class="modal-preset-btn">📚 أيام الدراسة</button>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeAddHabitModal()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text-2);font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;">إلغاء</button>
+      <button onclick="confirmAddHabit()" style="flex:2;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));color:white;font-family:'Tajawal',sans-serif;font-size:0.9rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(59,130,246,0.4);">＋ إضافة العادة</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.modal-preset-btn {
+  flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 4px;
+  font-family:'Tajawal',sans-serif;font-size:0.7rem;font-weight:700;color:var(--text-2);cursor:pointer;
+  transition:all 0.2s;white-space:nowrap;
+}
+.modal-preset-btn:hover { border-color:var(--blue-400);color:var(--blue-500);background:var(--blue-50); }
+</style>
 
 <!-- ===== CELEBRATION OVERLAY ===== -->
 <div id="celebrationOverlay" onclick="closeCelebration()">
