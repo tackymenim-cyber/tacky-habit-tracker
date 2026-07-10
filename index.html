@@ -7411,10 +7411,10 @@ function renderModalDayPickerChips() {
   if (!cont) return;
   cont.innerHTML = DAY_NAMES.map((d, i) => `
     <button onclick="toggleModalDay(${i})" id="modalDayChip${i}" style="
-      width:40px;height:40px;border-radius:10px;border:2px solid ${_modalSelectedDays.includes(i) ? 'var(--blue-500)' : 'var(--border)'};
+      min-width:52px;height:auto;padding:8px 6px;border-radius:10px;border:2px solid ${_modalSelectedDays.includes(i) ? 'var(--blue-500)' : 'var(--border)'};
       background:${_modalSelectedDays.includes(i) ? 'var(--blue-500)' : 'var(--bg)'};
       color:${_modalSelectedDays.includes(i) ? 'white' : 'var(--text-2)'};
-      font-family:'Tajawal',sans-serif;font-size:0.78rem;font-weight:800;cursor:pointer;
+      font-family:'Tajawal',sans-serif;font-size:0.7rem;font-weight:800;cursor:pointer;white-space:nowrap;line-height:1.2;
       transition:all 0.2s;box-shadow:${_modalSelectedDays.includes(i) ? '0 3px 10px rgba(59,130,246,0.35)' : 'none'};
     ">${d}</button>`).join('');
 }
@@ -7777,8 +7777,11 @@ function playCelebrationSound() {
 
 // =========== CHECK ALL DONE — wrapper for each section ===========
 function _checkAllDone_Habits(dayN) {
-  const allDone = habits.every(h => checks[chkKey(h.id, dayN)]);
-  if (allDone && habits.length > 0) {
+  // Only count habits actually scheduled for this day — habits grayed out
+  // (not scheduled today) should not block the "all done" celebration.
+  const scheduledHabits = habits.filter(h => isHabitActiveOn(h, dayN));
+  const allDone = scheduledHabits.every(h => checks[chkKey(h.id, dayN)]);
+  if (allDone && scheduledHabits.length > 0) {
     const key = 'habits-' + chkKey(0, dayN);
     showCelebration(key);
   }
