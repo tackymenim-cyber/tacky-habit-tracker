@@ -2990,7 +2990,7 @@ table { border-collapse: collapse; min-width: 100%; }
 
 /* ===== GYM PAGE ===== */
 .gym-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-@media (max-width: 800px) { .gym-grid { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .gym-grid { grid-template-columns: 1fr; } .gym-card { grid-column: 1 !important; } }
 .gym-card {
   background: var(--white); border: 1px solid var(--border);
   border-radius: var(--radius); box-shadow: var(--shadow-sm);
@@ -3127,7 +3127,7 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .gym-add-btn:hover { box-shadow: 0 6px 20px rgba(249,115,22,0.4); transform: translateY(-1px); }
 /* Progress Log */
-.progress-log { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-left: 4px; }
+.progress-log { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; padding-left: 4px; }
 .log-entry {
   background: var(--bg); border: 1px solid var(--border);
   border-radius: 10px; padding: 12px 14px; transition: var(--transition);
@@ -3806,7 +3806,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
   /* Main grid: 1 column */
   .gym-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 12px; }
-  .gym-card { padding: 13px 12px; }
+  .gym-card { padding: 13px 12px; grid-column: 1 !important; }
   .gym-card-full { grid-column: 1; }
 
   /* Section titles */
@@ -3859,7 +3859,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   .log-textarea { height: 50px; font-size: 0.82rem; padding: 7px 10px; }
 
   /* Progress log entries */
-  .progress-log { max-height: 260px; gap: 6px; }
+  .progress-log { max-height: 400px; gap: 6px; }
   .log-entry { padding: 10px 11px; }
   .log-entry-header { margin-bottom: 6px; }
   .log-date { font-size: 0.65rem; padding: 2px 6px; }
@@ -4159,7 +4159,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     </div>
     <div class="sk-loading-msg">
       <div class="sk-dot"></div><div class="sk-dot"></div><div class="sk-dot"></div>
-      <span>جارٍ تحميل بياناتك...</span>
+      <span id="skeletonLoadingText">جارٍ تحميل بياناتك...</span>
     </div>
   </div>
 </div>
@@ -4508,34 +4508,34 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <!-- Header -->
     <div class="journal-header-card fade-up">
       <div class="journal-header-title" id="journalHeaderTitle">📖 يومياتي</div>
-      <div class="journal-header-sub">سجّل أفكارك وانعكاساتك اليومية — مكانك الخاص</div>
+      <div class="journal-header-sub" id="journalHeaderSub">سجّل أفكارك وانعكاساتك اليومية — مكانك الخاص</div>
       <div class="journal-streak-badge" id="journalStreakBadge">🔥 0 يوم متواصل</div>
     </div>
 
     <!-- Stats -->
     <div class="journal-stats-bar fade-up" id="journalStatsBar">
-      <div class="journal-stat"><div class="journal-stat-val" id="jStatTotal">0</div><div class="journal-stat-label">إجمالي المقالات</div></div>
-      <div class="journal-stat"><div class="journal-stat-val" id="jStatWords">0</div><div class="journal-stat-label">كلمة كُتبت</div></div>
-      <div class="journal-stat"><div class="journal-stat-val" id="jStatStreak">0</div><div class="journal-stat-label">أيام متواصلة</div></div>
-      <div class="journal-stat"><div class="journal-stat-val" id="jStatThisMonth">0</div><div class="journal-stat-label">هذا الشهر</div></div>
+      <div class="journal-stat"><div class="journal-stat-val" id="jStatTotal">0</div><div class="journal-stat-label" id="jStatLabelTotal">إجمالي المقالات</div></div>
+      <div class="journal-stat"><div class="journal-stat-val" id="jStatWords">0</div><div class="journal-stat-label" id="jStatLabelWords">كلمة كُتبت</div></div>
+      <div class="journal-stat"><div class="journal-stat-val" id="jStatStreak">0</div><div class="journal-stat-label" id="jStatLabelStreak">أيام متواصلة</div></div>
+      <div class="journal-stat"><div class="journal-stat-val" id="jStatThisMonth">0</div><div class="journal-stat-label" id="jStatLabelMonth">هذا الشهر</div></div>
     </div>
 
     <!-- Composer -->
     <div class="journal-composer fade-up">
       <div class="journal-composer-top">
         <span style="font-size:1.1rem">✍️</span>
-        <span style="font-size:0.85rem;font-weight:700;color:var(--text)">ماذا في بالك اليوم؟</span>
+        <span style="font-size:0.85rem;font-weight:700;color:var(--text)" id="journalComposerPrompt">ماذا في بالك اليوم؟</span>
         <span class="journal-date-badge" id="journalTodayDate"></span>
       </div>
 
       <!-- Mood -->
       <div class="journal-mood-pick" id="journalMoodPick">
-        <button class="journal-mood-btn active" data-mood="😊 ممتاز" onclick="selectJournalMood(this)">😊 ممتاز</button>
-        <button class="journal-mood-btn" data-mood="🙂 جيد" onclick="selectJournalMood(this)">🙂 جيد</button>
-        <button class="journal-mood-btn" data-mood="😐 عادي" onclick="selectJournalMood(this)">😐 عادي</button>
-        <button class="journal-mood-btn" data-mood="😔 صعب" onclick="selectJournalMood(this)">😔 صعب</button>
-        <button class="journal-mood-btn" data-mood="🔥 متحمس" onclick="selectJournalMood(this)">🔥 متحمس</button>
-        <button class="journal-mood-btn" data-mood="😴 متعب" onclick="selectJournalMood(this)">😴 متعب</button>
+        <button class="journal-mood-btn active" data-mood="😊 ممتاز" id="journalMoodBtn0" onclick="selectJournalMood(this)">😊 ممتاز</button>
+        <button class="journal-mood-btn" data-mood="🙂 جيد" id="journalMoodBtn1" onclick="selectJournalMood(this)">🙂 جيد</button>
+        <button class="journal-mood-btn" data-mood="😐 عادي" id="journalMoodBtn2" onclick="selectJournalMood(this)">😐 عادي</button>
+        <button class="journal-mood-btn" data-mood="😔 صعب" id="journalMoodBtn3" onclick="selectJournalMood(this)">😔 صعب</button>
+        <button class="journal-mood-btn" data-mood="🔥 متحمس" id="journalMoodBtn4" onclick="selectJournalMood(this)">🔥 متحمس</button>
+        <button class="journal-mood-btn" data-mood="😴 متعب" id="journalMoodBtn5" onclick="selectJournalMood(this)">😴 متعب</button>
       </div>
 
       <textarea class="journal-textarea" id="journalTextarea"
@@ -4544,26 +4544,26 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
       <!-- Tags -->
       <div class="journal-tags-row" id="journalTagsRow">
-        <span style="font-size:0.72rem;color:var(--text-3);font-weight:700;align-self:center">وسوم:</span>
-        <button class="journal-tag-chip" data-tag="🎯 أهداف" onclick="toggleJournalTag(this)">🎯 أهداف</button>
-        <button class="journal-tag-chip" data-tag="💪 إنجاز" onclick="toggleJournalTag(this)">💪 إنجاز</button>
-        <button class="journal-tag-chip" data-tag="🧠 تعلم" onclick="toggleJournalTag(this)">🧠 تعلم</button>
-        <button class="journal-tag-chip" data-tag="❤️ علاقات" onclick="toggleJournalTag(this)">❤️ علاقات</button>
-        <button class="journal-tag-chip" data-tag="🌱 نمو" onclick="toggleJournalTag(this)">🌱 نمو</button>
-        <button class="journal-tag-chip" data-tag="😌 تأمل" onclick="toggleJournalTag(this)">😌 تأمل</button>
-        <button class="journal-tag-chip" data-tag="💡 فكرة" onclick="toggleJournalTag(this)">💡 فكرة</button>
+        <span style="font-size:0.72rem;color:var(--text-3);font-weight:700;align-self:center" id="journalTagsLabel">وسوم:</span>
+        <button class="journal-tag-chip" data-tag="🎯 أهداف" id="journalTag0" onclick="toggleJournalTag(this)">🎯 أهداف</button>
+        <button class="journal-tag-chip" data-tag="💪 إنجاز" id="journalTag1" onclick="toggleJournalTag(this)">💪 إنجاز</button>
+        <button class="journal-tag-chip" data-tag="🧠 تعلم" id="journalTag2" onclick="toggleJournalTag(this)">🧠 تعلم</button>
+        <button class="journal-tag-chip" data-tag="❤️ علاقات" id="journalTag3" onclick="toggleJournalTag(this)">❤️ علاقات</button>
+        <button class="journal-tag-chip" data-tag="🌱 نمو" id="journalTag4" onclick="toggleJournalTag(this)">🌱 نمو</button>
+        <button class="journal-tag-chip" data-tag="😌 تأمل" id="journalTag5" onclick="toggleJournalTag(this)">😌 تأمل</button>
+        <button class="journal-tag-chip" data-tag="💡 فكرة" id="journalTag6" onclick="toggleJournalTag(this)">💡 فكرة</button>
       </div>
 
       <div class="journal-composer-actions">
         <span class="journal-char-count" id="journalCharCount">0 حرف</span>
-        <button class="journal-save-btn" onclick="saveJournalEntry()">💾 حفظ المقال</button>
+        <button class="journal-save-btn" id="journalSaveBtn" onclick="saveJournalEntry()">💾 حفظ المقال</button>
       </div>
     </div>
 
     <!-- Entries -->
     <div class="fade-up">
       <div class="journal-entries-header">
-        <span class="journal-entries-title">📚 المقالات السابقة</span>
+        <span class="journal-entries-title" id="journalEntriesTitle">📚 المقالات السابقة</span>
         <input class="journal-search" id="journalSearch" placeholder="🔍 بحث..." oninput="renderJournalEntries()">
       </div>
       <div id="journalEntriesList"></div>
@@ -4580,12 +4580,12 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <div class="ach-section-header">
       <div class="ach-section-icon">🌡️</div>
       <div>
-        <div class="ach-section-title">الخريطة الحرارية — آخر 365 يوم</div>
-        <div class="ach-section-sub">كل مربع = يوم. اللون الأغمق = إنجاز أعلى</div>
+        <div class="ach-section-title" id="achHeatmapTitle">الخريطة الحرارية — آخر 365 يوم</div>
+        <div class="ach-section-sub" id="achHeatmapSub">كل مربع = يوم. اللون الأغمق = إنجاز أعلى</div>
       </div>
     </div>
     <div class="heatmap-legend-row">
-      <span class="heatmap-legend-label">أقل</span>
+      <span class="heatmap-legend-label" id="achHeatmapLess">أقل</span>
       <div class="heatmap-legend-cells">
         <div class="hmc hmc-0"></div>
         <div class="hmc hmc-1"></div>
@@ -4593,12 +4593,12 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         <div class="hmc hmc-3"></div>
         <div class="hmc hmc-4"></div>
       </div>
-      <span class="heatmap-legend-label">أكثر</span>
+      <span class="heatmap-legend-label" id="achHeatmapMore">أكثر</span>
     </div>
     <div class="heatmap-scroll-wrap">
       <div class="heatmap-month-labels" id="hmMonthLabels"></div>
       <div class="heatmap-grid-wrap">
-        <div class="heatmap-day-labels">
+        <div class="heatmap-day-labels" id="achHeatmapDayLabels">
           <span>أحد</span><span>إثنين</span><span>ثلاثاء</span><span>أربعاء</span><span>خميس</span><span>جمعة</span><span>سبت</span>
         </div>
         <div class="heatmap-grid" id="heatmapGrid"></div>
@@ -4612,8 +4612,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <div class="ach-section-header">
       <div class="ach-section-icon">⚡</div>
       <div>
-        <div class="ach-section-title">مستواك وتقدمك</div>
-        <div class="ach-section-sub">كل إنجاز يكسبك XP ويرفعك لمستوى أعلى</div>
+        <div class="ach-section-title" id="achLevelTitle">مستواك وتقدمك</div>
+        <div class="ach-section-sub" id="achLevelSub">كل إنجاز يكسبك XP ويرفعك لمستوى أعلى</div>
       </div>
     </div>
     <div class="ach-level-card" id="achLevelCard">
@@ -4635,14 +4635,14 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <div class="ach-section-header">
       <div class="ach-section-icon">🏅</div>
       <div>
-        <div class="ach-section-title">الأوسمة والشارات</div>
+        <div class="ach-section-title" id="achBadgesTitle">الأوسمة والشارات</div>
         <div class="ach-section-sub" id="achBadgesSubtext">0 / 0 شارة مفتوحة</div>
       </div>
     </div>
     <div class="ach-badges-filter" id="achBadgesFilter">
-      <button class="ach-filter-btn active" onclick="filterAchBadges('all',this)">الكل</button>
-      <button class="ach-filter-btn" onclick="filterAchBadges('unlocked',this)">✅ مفتوحة</button>
-      <button class="ach-filter-btn" onclick="filterAchBadges('locked',this)">🔒 مقفلة</button>
+      <button class="ach-filter-btn active" id="achFilterAll" onclick="filterAchBadges('all',this)">الكل</button>
+      <button class="ach-filter-btn" id="achFilterUnlocked" onclick="filterAchBadges('unlocked',this)">✅ مفتوحة</button>
+      <button class="ach-filter-btn" id="achFilterLocked" onclick="filterAchBadges('locked',this)">🔒 مقفلة</button>
     </div>
     <div class="ach-badges-grid" id="achBadgesGrid"></div>
   </div>
@@ -5820,6 +5820,53 @@ const T = {
     themePickLabel: 'ثيم التطبيق', themePickDesc: 'اختر لوحة ألوان كاملة للواجهة', themePopupTitle: '🖼️ اختر ثيم التطبيق',
     quotesTabLabel: 'خانة الاقتباسات', quotesTabDesc: 'إظهار أو إخفاء تبويب الاقتباسات',
     journalTabLabel: 'خانة اليوميات', journalTabDesc: 'سجّل أفكارك وانعكاساتك اليومية',
+    // JOURNAL PAGE
+    journalHeaderSub: 'سجّل أفكارك وانعكاساتك اليومية — مكانك الخاص',
+    journalStreakDay: 'يوم متواصل',
+    jStatLabelTotal: 'إجمالي المقالات',
+    jStatLabelWords: 'كلمة كُتبت',
+    jStatLabelStreak: 'أيام متواصلة',
+    jStatLabelMonth: 'هذا الشهر',
+    journalComposerPrompt: 'ماذا في بالك اليوم؟',
+    journalTextareaPlaceholder: 'اكتب هنا... يمكنك التحدث عن يومك، إنجازاتك، تحدياتك، أو أي شيء في بالك.',
+    journalTagsLabel: 'وسوم:',
+    journalTagGoals: '🎯 أهداف',
+    journalTagAchieve: '💪 إنجاز',
+    journalTagLearn: '🧠 تعلم',
+    journalTagRelations: '❤️ علاقات',
+    journalTagGrowth: '🌱 نمو',
+    journalTagMeditate: '😌 تأمل',
+    journalTagIdea: '💡 فكرة',
+    journalCharCountUnit: 'حرف',
+    journalSaveBtn: '💾 حفظ المقال',
+    journalEntriesTitle: '📚 المقالات السابقة',
+    journalSearchPlaceholder: '🔍 بحث...',
+    journalMoodExcellent: '😊 ممتاز',
+    journalMoodGood: '🙂 جيد',
+    journalMoodOk: '😐 عادي',
+    journalMoodHard: '😔 صعب',
+    journalMoodEnergized: '🔥 متحمس',
+    journalMoodTired: '😴 متعب',
+    journalDateLocale: 'ar-DZ',
+    // ACHIEVEMENTS PAGE
+    achHeatmapTitle: 'الخريطة الحرارية — آخر 365 يوم',
+    achHeatmapSub: 'كل مربع = يوم. اللون الأغمق = إنجاز أعلى',
+    achHeatmapLess: 'أقل',
+    achHeatmapMore: 'أكثر',
+    achHeatmapDays: ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'],
+    achLevelTitle: 'مستواك وتقدمك',
+    achLevelSub: 'كل إنجاز يكسبك XP ويرفعك لمستوى أعلى',
+    achBadgesTitle: 'الأوسمة والشارات',
+    achFilterAll: 'الكل',
+    achFilterUnlocked: '✅ مفتوحة',
+    achFilterLocked: '🔒 مقفلة',
+    achBadgesUnlocked: 'شارة مفتوحة',
+    achXpHabits: 'إنجازات العادات', achXpHabitsUnit: 'إنجاز × ',
+    achXpMood: 'تسجيلات المزاج', achXpMoodUnit: 'تسجيل × ',
+    achXpTasks: 'مهام منجزة', achXpTasksUnit: 'مهمة × ',
+    achXpGym: 'جلسات الجيم', achXpGymUnit: 'جلسة × ',
+    journalReadMore: 'اقرأ المزيد ↓', journalReadLess: 'أقل ↑',
+    skeletonLoading: 'جارٍ تحميل بياناتك...',
   },
   fr: {
     dir: 'ltr', lang: 'fr',
@@ -6108,6 +6155,53 @@ const T = {
     themePickLabel: "Thème de l'app", themePickDesc: "Choisis une palette de couleurs complète", themePopupTitle: "🖼️ Choisir un thème",
     quotesTabLabel: 'Onglet citations', quotesTabDesc: "Afficher ou masquer l'onglet citations",
     journalTabLabel: 'Onglet journal', journalTabDesc: 'Note tes pensées et réflexions quotidiennes',
+    // JOURNAL PAGE
+    journalHeaderSub: 'Note tes pensées et réflexions quotidiennes — ton espace personnel',
+    journalStreakDay: 'jour(s) consécutif(s)',
+    jStatLabelTotal: 'Total des entrées',
+    jStatLabelWords: 'mots écrits',
+    jStatLabelStreak: 'jours consécutifs',
+    jStatLabelMonth: 'ce mois-ci',
+    journalComposerPrompt: 'Qu\'as-tu en tête aujourd\'hui ?',
+    journalTextareaPlaceholder: 'Écris ici... tu peux parler de ta journée, tes réussites, tes défis, ou tout ce qui te passe par la tête.',
+    journalTagsLabel: 'Tags :',
+    journalTagGoals: '🎯 Objectifs',
+    journalTagAchieve: '💪 Réussite',
+    journalTagLearn: '🧠 Apprentissage',
+    journalTagRelations: '❤️ Relations',
+    journalTagGrowth: '🌱 Croissance',
+    journalTagMeditate: '😌 Méditation',
+    journalTagIdea: '💡 Idée',
+    journalCharCountUnit: 'caractères',
+    journalSaveBtn: '💾 Sauvegarder',
+    journalEntriesTitle: '📚 Entrées précédentes',
+    journalSearchPlaceholder: '🔍 Rechercher...',
+    journalMoodExcellent: '😊 Excellent',
+    journalMoodGood: '🙂 Bien',
+    journalMoodOk: '😐 Normal',
+    journalMoodHard: '😔 Difficile',
+    journalMoodEnergized: '🔥 Motivé',
+    journalMoodTired: '😴 Fatigué',
+    journalDateLocale: 'fr-FR',
+    // ACHIEVEMENTS PAGE
+    achHeatmapTitle: 'Carte thermique — 365 derniers jours',
+    achHeatmapSub: 'Chaque carré = 1 jour. Plus foncé = plus d\'accomplissements',
+    achHeatmapLess: 'Moins',
+    achHeatmapMore: 'Plus',
+    achHeatmapDays: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
+    achLevelTitle: 'Ton niveau et ta progression',
+    achLevelSub: 'Chaque réussite te rapporte des XP et te fait monter de niveau',
+    achBadgesTitle: 'Médailles et badges',
+    achFilterAll: 'Tout',
+    achFilterUnlocked: '✅ Débloqués',
+    achFilterLocked: '🔒 Verrouillés',
+    achBadgesUnlocked: 'badge(s) débloqué(s)',
+    achXpHabits: 'Réussites d\'habitudes', achXpHabitsUnit: 'réussite × ',
+    achXpMood: 'Enregistrements d\'humeur', achXpMoodUnit: 'enreg. × ',
+    achXpTasks: 'Tâches terminées', achXpTasksUnit: 'tâche × ',
+    achXpGym: 'Séances de sport', achXpGymUnit: 'séance × ',
+    journalReadMore: 'Lire plus ↓', journalReadLess: 'Moins ↑',
+    skeletonLoading: 'Chargement de vos données...',
   },
   en: {
     dir: 'ltr', lang: 'en',
@@ -6396,6 +6490,53 @@ const T = {
     themePickLabel: 'App Theme', themePickDesc: 'Choose a full color palette for the interface', themePopupTitle: '🖼️ Choose App Theme',
     quotesTabLabel: 'Quotes Tab', quotesTabDesc: 'Show or hide the quotes tab',
     journalTabLabel: 'Journal Tab', journalTabDesc: 'Record your daily thoughts and reflections',
+    // JOURNAL PAGE
+    journalHeaderSub: 'Record your thoughts and daily reflections — your personal space',
+    journalStreakDay: 'day streak',
+    jStatLabelTotal: 'Total Entries',
+    jStatLabelWords: 'Words Written',
+    jStatLabelStreak: 'Day Streak',
+    jStatLabelMonth: 'This Month',
+    journalComposerPrompt: "What's on your mind today?",
+    journalTextareaPlaceholder: 'Write here... you can talk about your day, achievements, challenges, or anything on your mind.',
+    journalTagsLabel: 'Tags:',
+    journalTagGoals: '🎯 Goals',
+    journalTagAchieve: '💪 Achievement',
+    journalTagLearn: '🧠 Learning',
+    journalTagRelations: '❤️ Relationships',
+    journalTagGrowth: '🌱 Growth',
+    journalTagMeditate: '😌 Reflection',
+    journalTagIdea: '💡 Idea',
+    journalCharCountUnit: 'chars',
+    journalSaveBtn: '💾 Save Entry',
+    journalEntriesTitle: '📚 Previous Entries',
+    journalSearchPlaceholder: '🔍 Search...',
+    journalMoodExcellent: '😊 Excellent',
+    journalMoodGood: '🙂 Good',
+    journalMoodOk: '😐 Okay',
+    journalMoodHard: '😔 Tough',
+    journalMoodEnergized: '🔥 Energized',
+    journalMoodTired: '😴 Tired',
+    journalDateLocale: 'en-US',
+    // ACHIEVEMENTS PAGE
+    achHeatmapTitle: 'Heat Map — Last 365 Days',
+    achHeatmapSub: 'Each square = 1 day. Darker = more achievements',
+    achHeatmapLess: 'Less',
+    achHeatmapMore: 'More',
+    achHeatmapDays: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    achLevelTitle: 'Your Level & Progress',
+    achLevelSub: 'Every achievement earns you XP and levels you up',
+    achBadgesTitle: 'Medals & Badges',
+    achFilterAll: 'All',
+    achFilterUnlocked: '✅ Unlocked',
+    achFilterLocked: '🔒 Locked',
+    achBadgesUnlocked: 'badge(s) unlocked',
+    achXpHabits: 'Habit Completions', achXpHabitsUnit: 'completion × ',
+    achXpMood: 'Mood Logs', achXpMoodUnit: 'log × ',
+    achXpTasks: 'Tasks Completed', achXpTasksUnit: 'task × ',
+    achXpGym: 'Gym Sessions', achXpGymUnit: 'session × ',
+    journalReadMore: 'Read more ↓', journalReadLess: 'Less ↑',
+    skeletonLoading: 'Loading your data...',
   },
 };
 
@@ -6533,7 +6674,63 @@ function setLang(lang) {
   updateSignOutModalText();
   updateAddHabitModalText();
   updateEditHabitModalText();
+  updateJournalPageText();
+  updateAchievementsPageText();
   renderAll();
+}
+
+function updateJournalPageText() {
+  const tr = T[currentLang] || T.ar;
+  const se = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  se('journalHeaderSub', tr.journalHeaderSub);
+  se('jStatLabelTotal', tr.jStatLabelTotal);
+  se('jStatLabelWords', tr.jStatLabelWords);
+  se('jStatLabelStreak', tr.jStatLabelStreak);
+  se('jStatLabelMonth', tr.jStatLabelMonth);
+  se('journalComposerPrompt', tr.journalComposerPrompt);
+  se('journalTagsLabel', tr.journalTagsLabel);
+  se('journalEntriesTitle', tr.journalEntriesTitle);
+  se('journalSaveBtn', tr.journalSaveBtn);
+  const ta = document.getElementById('journalTextarea');
+  if (ta) ta.placeholder = tr.journalTextareaPlaceholder;
+  const js = document.getElementById('journalSearch');
+  if (js) js.placeholder = tr.journalSearchPlaceholder;
+  // Mood buttons
+  const moods = [tr.journalMoodExcellent, tr.journalMoodGood, tr.journalMoodOk, tr.journalMoodHard, tr.journalMoodEnergized, tr.journalMoodTired];
+  moods.forEach((label, i) => {
+    const btn = document.getElementById('journalMoodBtn' + i);
+    if (btn) { btn.textContent = label; btn.setAttribute('data-mood', label); }
+  });
+  // Tag chips
+  const tags = [tr.journalTagGoals, tr.journalTagAchieve, tr.journalTagLearn, tr.journalTagRelations, tr.journalTagGrowth, tr.journalTagMeditate, tr.journalTagIdea];
+  tags.forEach((label, i) => {
+    const btn = document.getElementById('journalTag' + i);
+    if (btn) { btn.textContent = label; btn.setAttribute('data-tag', label); }
+  });
+  // Re-render stats to update streak badge
+  renderJournalStats();
+}
+
+function updateAchievementsPageText() {
+  const tr = T[currentLang] || T.ar;
+  const se = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  se('achHeatmapTitle', tr.achHeatmapTitle);
+  se('achHeatmapSub', tr.achHeatmapSub);
+  se('achHeatmapLess', tr.achHeatmapLess);
+  se('achHeatmapMore', tr.achHeatmapMore);
+  se('achLevelTitle', tr.achLevelTitle);
+  se('achLevelSub', tr.achLevelSub);
+  se('achBadgesTitle', tr.achBadgesTitle);
+  se('achFilterAll', tr.achFilterAll);
+  se('achFilterUnlocked', tr.achFilterUnlocked);
+  se('achFilterLocked', tr.achFilterLocked);
+  // Skeleton loading text (shown before auth)
+  se('skeletonLoadingText', tr.skeletonLoading);
+  // Heatmap day labels
+  if (tr.achHeatmapDays) {
+    const dayLabels = document.getElementById('achHeatmapDayLabels');
+    if (dayLabels) dayLabels.innerHTML = tr.achHeatmapDays.map(d => `<span>${d}</span>`).join('');
+  }
 }
 
 function updateEditHabitModalText() {
@@ -9346,7 +9543,7 @@ function renderJournalEntries() {
         </div>
       </div>
       <div class="journal-entry-text" id="jtext-${e.id}">${e.text.replace(/\n/g,'<br>')}</div>
-      ${e.text.length > 200 ? `<button class="journal-expand-btn" onclick="toggleJournalExpand(${e.id}, this)">اقرأ المزيد ↓</button>` : ''}
+      ${e.text.length > 200 ? `<button class="journal-expand-btn" onclick="toggleJournalExpand(${e.id}, this)">${t('journalReadMore')}</button>` : ''}
       ${(e.tags||[]).length ? `<div class="journal-entry-tags">${e.tags.map(t=>`<span class="journal-entry-tag">${t}</span>`).join('')}</div>` : ''}
     </div>
   `).join('');
@@ -9356,7 +9553,7 @@ function toggleJournalExpand(id, btn) {
   const el = document.getElementById('jtext-' + id);
   if (!el) return;
   el.classList.toggle('expanded');
-  btn.textContent = el.classList.contains('expanded') ? 'أقل ↑' : 'اقرأ المزيد ↓';
+  btn.textContent = el.classList.contains('expanded') ? t('journalReadLess') : t('journalReadMore');
 }
 
 function renderJournalStats() {
@@ -9387,14 +9584,14 @@ function renderJournalStats() {
   setEl('jStatStreak', streak);
   setEl('jStatThisMonth', thisMonth);
   const sb = document.getElementById('journalStreakBadge');
-  if (sb) sb.textContent = `🔥 ${streak} يوم متواصل`;
+  if (sb) sb.textContent = `🔥 ${streak} ${t('journalStreakDay')}`;
 }
 
 function renderJournalPage() {
   // Set today's date
   const today = new Date();
   const dateEl = document.getElementById('journalTodayDate');
-  if (dateEl) dateEl.textContent = today.toLocaleDateString('ar-DZ', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  if (dateEl) dateEl.textContent = today.toLocaleDateString(t('journalDateLocale') || 'ar-DZ', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   renderJournalStats();
   renderJournalEntries();
 }
@@ -9850,6 +10047,11 @@ function renderGymScheduleExtras() {
 
   const chartEl = document.getElementById('gymVolWeekChart');
   if (chartEl) {
+    const dayNames = currentLang === 'fr'
+      ? ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam']
+      : currentLang === 'en'
+      ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+      : ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
     const days7 = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -12031,10 +12233,10 @@ function renderAchievementsLevel() {
   xpTextEl.textContent = `${lvl.xpIntoLevel} / ${lvl.xpForNextLevel} XP`;
 
   const sources = [
-    { icon: '✅', label: 'إنجازات العادات', val: stats.totalCompletions * XP_PER_COMPLETION + ' XP', raw: stats.totalCompletions, unit: 'إنجاز × ' + XP_PER_COMPLETION },
-    { icon: '🧠', label: 'تسجيلات المزاج', val: stats.moodLogCount * XP_PER_MOOD_LOG + ' XP', raw: stats.moodLogCount, unit: 'تسجيل × ' + XP_PER_MOOD_LOG },
-    { icon: '📝', label: 'مهام منجزة', val: stats.tasksCompletedCount * XP_PER_TASK + ' XP', raw: stats.tasksCompletedCount, unit: 'مهمة × ' + XP_PER_TASK },
-    { icon: '🏋️', label: 'جلسات الجيم', val: stats.gymLogCount * XP_PER_GYM_LOG + ' XP', raw: stats.gymLogCount, unit: 'جلسة × ' + XP_PER_GYM_LOG },
+    { icon: '✅', label: t('achXpHabits'), val: stats.totalCompletions * XP_PER_COMPLETION + ' XP', raw: stats.totalCompletions, unit: t('achXpHabitsUnit') + XP_PER_COMPLETION },
+    { icon: '🧠', label: t('achXpMood'), val: stats.moodLogCount * XP_PER_MOOD_LOG + ' XP', raw: stats.moodLogCount, unit: t('achXpMoodUnit') + XP_PER_MOOD_LOG },
+    { icon: '📝', label: t('achXpTasks'), val: stats.tasksCompletedCount * XP_PER_TASK + ' XP', raw: stats.tasksCompletedCount, unit: t('achXpTasksUnit') + XP_PER_TASK },
+    { icon: '🏋️', label: t('achXpGym'), val: stats.gymLogCount * XP_PER_GYM_LOG + ' XP', raw: stats.gymLogCount, unit: t('achXpGymUnit') + XP_PER_GYM_LOG },
   ];
 
   sourcesEl.innerHTML = sources.map(s => `
@@ -12064,7 +12266,7 @@ function renderAchBadgesGrid() {
   const stats = computeAllTimeStats();
   const unlockedIds = new Set(ACHIEVEMENTS.filter(a => a.test(stats)).map(a => a.id));
 
-  if (sub) sub.textContent = `${unlockedIds.size} / ${ACHIEVEMENTS.length} شارة مفتوحة`;
+  if (sub) sub.textContent = `${unlockedIds.size} / ${ACHIEVEMENTS.length} ${t('achBadgesUnlocked')}`;
 
   const filtered = ACHIEVEMENTS.filter(a => {
     if (_achBadgeFilter === 'unlocked') return unlockedIds.has(a.id);
