@@ -8158,7 +8158,7 @@ function renderQuickTasks() {
       <div class="qt-checkbox${task.done ? ' checked' : ''}" onclick="toggleQuickTask(${task.id})">${task.done ? '✓' : ''}</div>
       <div class="qt-item-body">
         <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${escAttr(task.text)}</div>
-        <div class="qt-item-date">${_formatFullDateTime(task.createdAt || task.id)}</div>
+        <div class="qt-item-date">${task.createdAt ? _formatFullDateTime(task.createdAt) : (currentLang === 'fr' ? "Aujourd'hui" : currentLang === 'en' ? 'Today' : 'اليوم')}</div>
       </div>
       ${task.done ? `<div class="qt-done-label">✓</div>` : ''}
       <div class="qt-item-actions" dir="ltr">
