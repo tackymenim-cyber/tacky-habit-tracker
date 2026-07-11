@@ -5853,6 +5853,8 @@ const T = {
     achHeatmapSub: 'كل مربع = يوم. اللون الأغمق = إنجاز أعلى',
     achHeatmapLess: 'أقل',
     achHeatmapMore: 'أكثر',
+    achStatActiveDay: 'يوم نشط', achStatPerfectDay: 'يوم مثالي 💎',
+    achStatLoggedAch: 'إنجاز مسجّل', achStatConsistency: 'معدل الاتساق',
     achHeatmapDays: ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'],
     achLevelTitle: 'مستواك وتقدمك',
     achLevelSub: 'كل إنجاز يكسبك XP ويرفعك لمستوى أعلى',
@@ -5866,6 +5868,12 @@ const T = {
     achXpTasks: 'مهام منجزة', achXpTasksUnit: 'مهمة × ',
     achXpGym: 'جلسات الجيم', achXpGymUnit: 'جلسة × ',
     journalReadMore: 'اقرأ المزيد ↓', journalReadLess: 'أقل ↑',
+    journalCharUnit: 'حرف', journalWordUnit: 'كلمة',
+    journalWriteFirst: 'اكتب شيئاً أولاً ✍️', journalSavedToast: 'تم حفظ مقالتك 📖',
+    journalNoResults: 'لا نتائج للبحث', journalEmptyState: 'لا توجد مقالات بعد — ابدأ بكتابة أولى أفكارك!',
+    journalDeleteTitle: 'حذف',
+    journalMoodExcellentShort: '😊 ممتاز', journalMoodGoodShort: '🙂 جيد', journalMoodOkShort: '😐 عادي',
+    journalMoodHardShort: '😔 صعب', journalMoodEnergizedShort: '🔥 متحمس', journalMoodTiredShort: '😴 متعب',
     skeletonLoading: 'جارٍ تحميل بياناتك...',
   },
   fr: {
@@ -6188,6 +6196,8 @@ const T = {
     achHeatmapSub: 'Chaque carré = 1 jour. Plus foncé = plus d\'accomplissements',
     achHeatmapLess: 'Moins',
     achHeatmapMore: 'Plus',
+    achStatActiveDay: 'Jour actif', achStatPerfectDay: 'Jour parfait 💎',
+    achStatLoggedAch: 'Réussite enregistrée', achStatConsistency: 'Taux de régularité',
     achHeatmapDays: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
     achLevelTitle: 'Ton niveau et ta progression',
     achLevelSub: 'Chaque réussite te rapporte des XP et te fait monter de niveau',
@@ -6201,6 +6211,12 @@ const T = {
     achXpTasks: 'Tâches terminées', achXpTasksUnit: 'tâche × ',
     achXpGym: 'Séances de sport', achXpGymUnit: 'séance × ',
     journalReadMore: 'Lire plus ↓', journalReadLess: 'Moins ↑',
+    journalCharUnit: 'caractères', journalWordUnit: 'mots',
+    journalWriteFirst: 'Écris quelque chose d\'abord ✍️', journalSavedToast: 'Ton entrée a été enregistrée 📖',
+    journalNoResults: 'Aucun résultat', journalEmptyState: 'Aucune entrée pour le moment — commence à écrire tes premières pensées !',
+    journalDeleteTitle: 'Supprimer',
+    journalMoodExcellentShort: '😊 Excellent', journalMoodGoodShort: '🙂 Bon', journalMoodOkShort: '😐 Normal',
+    journalMoodHardShort: '😔 Difficile', journalMoodEnergizedShort: '🔥 Motivé', journalMoodTiredShort: '😴 Fatigué',
     skeletonLoading: 'Chargement de vos données...',
   },
   en: {
@@ -6523,6 +6539,8 @@ const T = {
     achHeatmapSub: 'Each square = 1 day. Darker = more achievements',
     achHeatmapLess: 'Less',
     achHeatmapMore: 'More',
+    achStatActiveDay: 'Active day', achStatPerfectDay: 'Perfect day 💎',
+    achStatLoggedAch: 'Logged achievement', achStatConsistency: 'Consistency rate',
     achHeatmapDays: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
     achLevelTitle: 'Your Level & Progress',
     achLevelSub: 'Every achievement earns you XP and levels you up',
@@ -6536,6 +6554,12 @@ const T = {
     achXpTasks: 'Tasks Completed', achXpTasksUnit: 'task × ',
     achXpGym: 'Gym Sessions', achXpGymUnit: 'session × ',
     journalReadMore: 'Read more ↓', journalReadLess: 'Less ↑',
+    journalCharUnit: 'characters', journalWordUnit: 'words',
+    journalWriteFirst: 'Write something first ✍️', journalSavedToast: 'Your entry has been saved 📖',
+    journalNoResults: 'No results found', journalEmptyState: 'No entries yet — start writing your first thoughts!',
+    journalDeleteTitle: 'Delete',
+    journalMoodExcellentShort: '😊 Excellent', journalMoodGoodShort: '🙂 Good', journalMoodOkShort: '😐 Okay',
+    journalMoodHardShort: '😔 Tough', journalMoodEnergizedShort: '🔥 Energized', journalMoodTiredShort: '😴 Tired',
     skeletonLoading: 'Loading your data...',
   },
 };
@@ -9443,7 +9467,7 @@ function applyTabVisibility() {
 }
 
 // =========== JOURNAL ===========
-let _journalMood = '😊 ممتاز';
+let _journalMood = '😊 ممتاز'; // fallback default; actual value set per-language on first mood button select
 let _journalTags = [];
 
 function selectJournalMood(btn) {
@@ -9465,20 +9489,21 @@ function toggleJournalTag(btn) {
 function updateJournalCharCount() {
   const ta = document.getElementById('journalTextarea');
   const cc = document.getElementById('journalCharCount');
-  if (ta && cc) cc.textContent = ta.value.length + ' حرف';
+  if (ta && cc) cc.textContent = ta.value.length + ' ' + t('journalCharUnit');
 }
 
 function saveJournalEntry() {
   const ta = document.getElementById('journalTextarea');
   const text = ta ? ta.value.trim() : '';
-  if (!text) { showToast('اكتب شيئاً أولاً ✍️'); return; }
+  if (!text) { showToast(t('journalWriteFirst')); return; }
 
   const now = new Date();
+  const dLoc = t('journalDateLocale') || 'ar-DZ';
   const entry = {
     id: Date.now(),
     date: now.toISOString(),
-    dateStr: now.toLocaleDateString('ar-DZ', { year:'numeric', month:'long', day:'numeric' }),
-    timeStr: now.toLocaleTimeString('ar-DZ', { hour:'2-digit', minute:'2-digit' }),
+    dateStr: now.toLocaleDateString(dLoc, { year:'numeric', month:'long', day:'numeric' }),
+    timeStr: now.toLocaleTimeString(dLoc, { hour:'2-digit', minute:'2-digit' }),
     text,
     mood: _journalMood,
     tags: [..._journalTags],
@@ -9498,7 +9523,7 @@ function saveJournalEntry() {
   if (firstMood) { firstMood.classList.add('active'); _journalMood = firstMood.getAttribute('data-mood'); }
 
   renderJournalPage();
-  showToast('تم حفظ مقالتك 📖');
+  showToast(t('journalSavedToast'));
 }
 
 function deleteJournalEntry(id) {
@@ -9520,14 +9545,18 @@ function renderJournalEntries() {
   if (!filtered.length) {
     list.innerHTML = `<div class="journal-empty">
       <div class="journal-empty-icon">📝</div>
-      <div class="journal-empty-text">${search ? 'لا نتائج للبحث' : 'لا توجد مقالات بعد — ابدأ بكتابة أولى أفكارك!'}</div>
+      <div class="journal-empty-text">${search ? t('journalNoResults') : t('journalEmptyState')}</div>
     </div>`;
     return;
   }
 
   const moodColors = {
     '😊 ممتاز': '#22c55e', '🙂 جيد': '#3b82f6', '😐 عادي': '#94a3b8',
-    '😔 صعب': '#f97316', '🔥 متحمس': '#ef4444', '😴 متعب': '#a855f7'
+    '😔 صعب': '#f97316', '🔥 متحمس': '#ef4444', '😴 متعب': '#a855f7',
+    '😊 Excellent': '#22c55e', '🙂 Bon': '#3b82f6', '😐 Normal': '#94a3b8',
+    '😔 Difficile': '#f97316', '🔥 Motivé': '#ef4444', '😴 Fatigué': '#a855f7',
+    '🙂 Good': '#3b82f6', '😐 Okay': '#94a3b8', '😔 Tough': '#f97316',
+    '🔥 Energized': '#ef4444', '😴 Tired': '#a855f7'
   };
 
   list.innerHTML = filtered.map(e => `
@@ -9538,8 +9567,8 @@ function renderJournalEntries() {
           <span class="journal-entry-mood-badge" style="background:${moodColors[e.mood]}22;color:${moodColors[e.mood]}">${e.mood}</span>
         </div>
         <div class="journal-entry-actions">
-          <span style="font-size:0.65rem;color:var(--text-3)">${e.wordCount || 0} كلمة</span>
-          <button class="journal-del-btn" onclick="deleteJournalEntry(${e.id})" title="حذف">🗑</button>
+          <span style="font-size:0.65rem;color:var(--text-3)">${e.wordCount || 0} ${t('journalWordUnit')}</span>
+          <button class="journal-del-btn" onclick="deleteJournalEntry(${e.id})" title="${t('journalDeleteTitle')}">🗑</button>
         </div>
       </div>
       <div class="journal-entry-text" id="jtext-${e.id}">${e.text.replace(/\n/g,'<br>')}</div>
@@ -12186,10 +12215,10 @@ function renderHeatmap() {
   });
 
   statsRow.innerHTML = [
-    { val: activeDays, label: 'يوم نشط' },
-    { val: perfectDays, label: 'يوم مثالي 💎' },
-    { val: totalChecked, label: 'إنجاز مسجّل' },
-    { val: Math.round(activeDays / 365 * 100) + '%', label: 'معدل الاتساق' },
+    { val: activeDays, label: t('achStatActiveDay') },
+    { val: perfectDays, label: t('achStatPerfectDay') },
+    { val: totalChecked, label: t('achStatLoggedAch') },
+    { val: Math.round(activeDays / 365 * 100) + '%', label: t('achStatConsistency') },
   ].map(s => `<div class="hm-stat"><div class="hm-stat-val">${s.val}</div><div class="hm-stat-label">${s.label}</div></div>`).join('');
 }
 
@@ -12228,7 +12257,7 @@ function renderAchievementsLevel() {
   const lvl = calcLevel(xp);
 
   lvlNumEl.textContent = lvl.level;
-  lvlTitleEl.textContent = `${levelTierName(lvl.level)} · المستوى ${lvl.level}`;
+  lvlTitleEl.textContent = `${levelTierName(lvl.level)} · ${t('lvlWord')} ${lvl.level}`;
   xpBarEl.style.width = Math.round(lvl.progress * 100) + '%';
   xpTextEl.textContent = `${lvl.xpIntoLevel} / ${lvl.xpForNextLevel} XP`;
 
