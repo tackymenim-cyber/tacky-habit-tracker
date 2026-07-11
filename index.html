@@ -412,11 +412,15 @@ function fbsReset() {
 
 /* ══════════════════════════════════════════════════
    THEME DECORATIVE BACKGROUND — waves + floating emojis
-   Fixed behind all content, medium visibility, per-theme.
+   Scrolls WITH the page content (not pinned to viewport) with a subtle
+   parallax drift, so it feels alive instead of static. Medium visibility,
+   per-theme.
    ══════════════════════════════════════════════════ */
 #themeBgLayer {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100%;
+  min-height: 100vh;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
@@ -428,7 +432,8 @@ function fbsReset() {
   height: 46vh;
   min-height: 260px;
   opacity: 0.5;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.4s ease, transform 0.05s linear;
+  will-change: transform;
 }
 [data-theme="dark"] .theme-bg-waves,
 [data-app-theme$="-dark"] .theme-bg-waves,
@@ -448,6 +453,7 @@ function fbsReset() {
   filter: saturate(0.9);
   animation: themeBgFloat linear infinite;
   user-select: none;
+  will-change: transform;
 }
 [data-theme="dark"] .theme-bg-emoji,
 [data-app-theme$="-dark"] .theme-bg-emoji,
@@ -487,6 +493,29 @@ function fbsReset() {
   position: relative;
   z-index: 1;
 }
+
+/* ── PARALLAX SCROLL ENHANCEMENT ── */
+/* Each emoji gets its own parallax speed via CSS custom property */
+.theme-bg-emoji {
+  will-change: transform;
+  transition: opacity 0.4s ease;
+}
+/* Larger emojis for more visual richness */
+.theme-bg-emoji { opacity: 0.2 !important; }
+[data-theme="dark"] .theme-bg-emoji,
+[data-app-theme$="-dark"] .theme-bg-emoji,
+[data-app-theme="dark"] .theme-bg-emoji,
+[data-app-theme="midnight"] .theme-bg-emoji,
+[data-app-theme="space"] .theme-bg-emoji { opacity: 0.26 !important; }
+/* Slight rotation variety on each emoji */
+.theme-bg-emoji:nth-child(3n)   { filter: saturate(1.1) brightness(1.05); }
+.theme-bg-emoji:nth-child(3n+1) { filter: saturate(0.9) brightness(0.98); }
+/* Waves parallax wrapper */
+.theme-bg-waves { will-change: transform; }
+/* body/html need explicit relative positioning for the absolutely
+   positioned #themeBgLayer to anchor to the full document instead of
+   just the initial viewport */
+html, body { position: relative; }
 
 /* ══════════════════════════════════════════════════
    FULL THEME SYSTEM — 12 themes
@@ -828,6 +857,34 @@ function fbsReset() {
   --border:#bfd4ff; --text:#1e3a8a; --text-2:#1e40af; --text-3:#3b82f6;
   --shadow-sm:0 1px 3px rgba(37,99,235,.1); --shadow:0 4px 16px rgba(37,99,235,.18); --shadow-lg:0 12px 40px rgba(37,99,235,.22);
 }
+
+/* ── NONE ⬜ (clean white / pure dark — no decorations) ── */
+[data-app-theme="none"] {
+  --bg:#ffffff; --bg2:#f8f9fa; --bg3:#f1f3f5;
+  --white:#ffffff;
+  --blue-50:#f8f9fa; --blue-100:#f1f3f5; --blue-200:#e9ecef;
+  --blue-300:#dee2e6; --blue-400:#6c757d; --blue-500:#495057;
+  --blue-600:#343a40; --blue-700:#212529;
+  --border:#e9ecef; --text:#212529; --text-2:#495057; --text-3:#adb5bd;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+  --shadow:0 4px 16px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.1),0 2px 8px rgba(0,0,0,0.06);
+}
+[data-app-theme="none-dark"] {
+  --white:#1a1a1a; --bg:#0d0d0d; --bg2:#1a1a1a; --bg3:#222222;
+  --blue-50:#222222; --blue-100:#2d2d2d; --blue-200:#383838;
+  --blue-300:#4a4a4a; --blue-400:#6e6e6e; --blue-500:#9e9e9e;
+  --blue-600:#c0c0c0; --blue-700:#e0e0e0;
+  --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
+  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
+  --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#6e6e6e;
+  --border:#2d2d2d;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.4); --shadow:0 4px 16px rgba(0,0,0,0.5); --shadow-lg:0 12px 40px rgba(0,0,0,0.6);
+}
+/* Hide decorative background layer for none theme */
+[data-app-theme="none"] #themeBgLayer,
+[data-app-theme="none-dark"] #themeBgLayer { display: none !important; }
 
 /* ── SPACE 🚀 (dark, boyish, cosmic) ── */
 [data-app-theme="space"] {
@@ -6000,6 +6057,7 @@ const T = {
     achStatActiveDay: 'يوم نشط', achStatPerfectDay: 'يوم مثالي 💎',
     achStatLoggedAch: 'إنجاز مسجّل', achStatConsistency: 'معدل الاتساق', achNoData: 'لا بيانات',
     themeNames: {
+      none:'⬜ بدون تيم', 'none-dark':'⬛ بدون تيم (ليلي)',
       ocean:'🌊 أوقيانوس', dark:'🌑 ليلي', forest:'🌿 غابة', 'forest-dark':'🌲 غابة ليلية',
       sunset:'🌅 غروب', 'sunset-dark':'🌆 غروب ليلي', rose:'🌸 ورود', 'rose-dark':'🥀 ورود ليلية',
       violet:'💜 بنفسج', 'violet-dark':'🔮 بنفسج ليلي', midnight:'🌑 منتصف الليل',
@@ -6353,6 +6411,7 @@ const T = {
     achStatActiveDay: 'Jour actif', achStatPerfectDay: 'Jour parfait 💎',
     achStatLoggedAch: 'Réussite enregistrée', achStatConsistency: 'Taux de régularité', achNoData: 'Aucune donnée',
     themeNames: {
+      none:'⬜ Sans thème', 'none-dark':'⬛ Sans thème (nuit)',
       ocean:'🌊 Océan', dark:'🌑 Nuit', forest:'🌿 Forêt', 'forest-dark':'🌲 Forêt nocturne',
       sunset:'🌅 Coucher de soleil', 'sunset-dark':'🌆 Crépuscule', rose:'🌸 Rose', 'rose-dark':'🥀 Rose nocturne',
       violet:'💜 Violet', 'violet-dark':'🔮 Violet nocturne', midnight:'🌑 Minuit',
@@ -6706,6 +6765,7 @@ const T = {
     achStatActiveDay: 'Active day', achStatPerfectDay: 'Perfect day 💎',
     achStatLoggedAch: 'Logged achievement', achStatConsistency: 'Consistency rate', achNoData: 'No data',
     themeNames: {
+      none:'⬜ No Theme', 'none-dark':'⬛ No Theme (Dark)',
       ocean:'🌊 Ocean', dark:'🌑 Night', forest:'🌿 Forest', 'forest-dark':'🌲 Night Forest',
       sunset:'🌅 Sunset', 'sunset-dark':'🌆 Night Sunset', rose:'🌸 Rose', 'rose-dark':'🥀 Night Rose',
       violet:'💜 Violet', 'violet-dark':'🔮 Night Violet', midnight:'🌑 Midnight',
@@ -7819,6 +7879,8 @@ function toggleThemeFromSettings(el) {
 
 // =========== APP THEME SYSTEM ===========
 const APP_THEMES = [
+  { id:'none',     name:'⬜ بدون تيم',   bg:'#ffffff',  bg2:'#f8f9fa', accent:'#495057', dark:false },
+  { id:'none-dark',name:'⬛ بدون تيم (ليلي)', bg:'#0d0d0d', bg2:'#1a1a1a', accent:'#9e9e9e', dark:true  },
   { id:'ocean',    name:'🌊 أوقيانوس', bg:'#f4f7ff', bg2:'#edf1fc', accent:'#3b82f6', dark:false },
   { id:'dark',     name:'🌑 ليلي',      bg:'#141824', bg2:'#1a2035', accent:'#60a5fa', dark:true  },
   { id:'forest',   name:'🌿 غابة',      bg:'#f0fdf4', bg2:'#dcfce7', accent:'#16a34a', dark:false },
@@ -7860,6 +7922,12 @@ function applyAppTheme(themeId) {
   } else if (themeId === 'dark') {
     document.documentElement.removeAttribute('data-app-theme');
     applyTheme('dark');
+  } else if (themeId === 'none') {
+    document.documentElement.setAttribute('data-app-theme', 'none');
+    applyTheme('light');
+  } else if (themeId === 'none-dark') {
+    document.documentElement.setAttribute('data-app-theme', 'none-dark');
+    applyTheme('dark');
   } else {
     document.documentElement.setAttribute('data-app-theme', themeId);
     if (theme) applyTheme(theme.dark ? 'dark' : 'light');
@@ -7877,6 +7945,7 @@ function applyAppTheme(themeId) {
 // '-dark' variants fall back to their light counterpart's emoji set with a
 // dimmer wave color, since the mood/motif stays the same at night.
 const THEME_BG_CONFIG = {
+  none:      { wave: 'transparent', emojis: [] },
   ocean:     { wave: '#3b82f6', emojis: ['🌊','💧','🐚','⛵'] },
   dark:      { wave: '#60a5fa', emojis: ['🌙','✨','⭐','🌌'] },
   forest:    { wave: '#16a34a', emojis: ['🌿','🍃','🌲','🍂'] },
@@ -8152,14 +8221,26 @@ function clearAllData() {
 // =========== PAGE NAV (with smooth transitions) ===========
 const PAGE_ORDER = ['tracker', 'mood', 'weekly', 'gym', 'quotes', 'journal', 'achievements'];
 let _pageTransitioning = false;
+let _finishPendingPageTransition = null;
 
 function showPage(p) {
   if (currentPage === p) return;
 
+  // Guard against rapid/overlapping navigation (e.g. clicking several tabs
+  // quickly). Without this, a second showPage() call could start fading in
+  // a page whose *previous* transition never finished, leaving elements
+  // with contradictory classes (active but never page-visible) — this was
+  // the real cause of pages getting stuck blank.
+  if (_pageTransitioning) {
+    // Finish the in-flight transition instantly, then proceed with the new one.
+    if (typeof _finishPendingPageTransition === 'function') _finishPendingPageTransition();
+  }
+  _pageTransitioning = true;
+
   const prevPage = currentPage;
   const prevEl   = document.getElementById('page-' + prevPage);
   const nextEl   = document.getElementById('page-' + p);
-  if (!nextEl) return;
+  if (!nextEl) { _pageTransitioning = false; return; }
 
   // Direction: moving right or left in the nav order?
   const prevIdx = PAGE_ORDER.indexOf(prevPage);
@@ -8178,10 +8259,18 @@ function showPage(p) {
   const sk = document.getElementById('skeletonScreen');
   if (sk && !sk.classList.contains('hiding') && !sk.classList.contains('hidden')) {
     if (prevEl) { prevEl.classList.remove('active','page-visible'); }
-    nextEl.classList.add('active');
+    nextEl.classList.add('active','page-visible');
     renderAll();
+    _pageTransitioning = false;
     return;
   }
+
+  // Reset EVERY page's transition classes first, not just prev/next. This
+  // cleans up any leftover state from an interrupted earlier transition so
+  // stale classes can never accumulate on off-screen pages.
+  document.querySelectorAll('.page').forEach(el => {
+    if (el !== nextEl) el.classList.remove('slide-from-left','slide-from-right');
+  });
 
   // Fade out previous page
   if (prevEl && prevEl.classList.contains('active')) {
@@ -8214,7 +8303,14 @@ function showPage(p) {
     _revealed = true;
     nextEl.classList.remove('slide-from-left','slide-from-right');
     nextEl.classList.add('page-visible');
+    _pageTransitioning = false;
+    _finishPendingPageTransition = null;
   };
+  // Exposed so a subsequent showPage() call (if the user navigates again
+  // before this transition finishes) can force-complete this one instantly
+  // instead of leaving it half-applied.
+  _finishPendingPageTransition = reveal;
+
   requestAnimationFrame(() => {
     try {
       renderAll();
@@ -8227,7 +8323,7 @@ function showPage(p) {
   // Safety net: if rAF is delayed (backgrounded tab, slow device, or an
   // error above prevented the chain from completing) force the page visible
   // anyway so it can never get stuck blank.
-  setTimeout(reveal, 600);
+  setTimeout(reveal, 350);
 }
 
 function changeMonth(d) {
@@ -12730,6 +12826,89 @@ renderWeekly = function() {
   }
   setupWeeklyDragDrop();
 };
+
+// =========== PARALLAX SCROLL for Theme Background ===========
+(function() {
+  let _rafId = null;
+  let _lastScroll = -1;
+
+  // Assign a parallax speed factor to each emoji once (stable across renders)
+  function _assignParallaxSpeeds() {
+    const emojis = document.querySelectorAll('.theme-bg-emoji');
+    emojis.forEach((el, i) => {
+      // Speed: some fast (go up more), some slow — creates depth
+      // Range: 0.08 to 0.38 (fraction of scroll moved)
+      const speed = 0.08 + ((i * 7 + 3) % 8) * 0.038;
+      const direction = (i % 3 === 0) ? -1 : 1; // some move opposite
+      el._parallaxSpeed = speed * direction;
+      el._parallaxBase = parseFloat(el.style.top) || 0; // base % position
+    });
+    const waves = document.querySelector('.theme-bg-waves');
+    if (waves) waves._parallaxSpeed = 0.12;
+  }
+
+  function _applyParallax() {
+    const scrollY = window.scrollY || window.pageYOffset;
+    if (scrollY === _lastScroll) { _rafId = null; return; }
+    _lastScroll = scrollY;
+
+    const emojis = document.querySelectorAll('.theme-bg-emoji');
+    emojis.forEach(el => {
+      if (el._parallaxSpeed === undefined) return;
+      const offset = scrollY * el._parallaxSpeed;
+      // We translate in px — adds to CSS animation, doesn't replace it
+      el.style.setProperty('--parallax-y', offset + 'px');
+    });
+
+    // Waves move slightly slower than content for depth
+    const waves = document.querySelector('.theme-bg-waves');
+    if (waves && waves._parallaxSpeed !== undefined) {
+      const wOffset = scrollY * waves._parallaxSpeed;
+      waves.style.setProperty('--parallax-y', wOffset + 'px');
+    }
+
+    _rafId = null;
+  }
+
+  function _onScroll() {
+    if (!_rafId) _rafId = requestAnimationFrame(_applyParallax);
+  }
+
+  // Inject CSS to use the parallax custom property alongside existing animation
+  const style = document.createElement('style');
+  style.textContent = `
+    .theme-bg-emoji {
+      /* translateY from parallax stacks onto the float animation */
+      transform: translateY(var(--parallax-y, 0px));
+      animation: themeBgFloatP linear infinite;
+    }
+    @keyframes themeBgFloatP {
+      0%   { transform: translateY(calc(var(--parallax-y, 0px) + 0px)) rotate(0deg); }
+      50%  { transform: translateY(calc(var(--parallax-y, 0px) - 22px)) rotate(8deg); }
+      100% { transform: translateY(calc(var(--parallax-y, 0px) + 0px)) rotate(0deg); }
+    }
+    .theme-bg-waves {
+      transform: translateY(calc(-1 * var(--parallax-y, 0px) * 0.5));
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Setup on scroll
+  window.addEventListener('scroll', _onScroll, { passive: true });
+
+  // Re-assign speeds after any theme change (emojis are re-rendered)
+  const _origApplyTheme = window.applyAppTheme;
+  if (_origApplyTheme) {
+    window.applyAppTheme = function(id) {
+      _origApplyTheme(id);
+      setTimeout(_assignParallaxSpeeds, 100);
+    };
+  }
+
+  // Initial assignment
+  document.addEventListener('DOMContentLoaded', () => setTimeout(_assignParallaxSpeeds, 300));
+  setTimeout(_assignParallaxSpeeds, 800); // fallback if DOMContentLoaded already fired
+})();
 </script>
 </body>
 </html>
