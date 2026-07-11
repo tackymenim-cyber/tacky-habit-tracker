@@ -359,7 +359,7 @@ function fbsReset() {
   --green-mid: #86efac;
   --red: #ef4444;
   --red-light: #fee2e2;
-  --orange: #f97316;
+  --orange: var(--blue-500);
   --yellow: #eab308;
   --yellow-light: #fef9c3;
   --purple: #a855f7;
@@ -396,7 +396,7 @@ function fbsReset() {
   --green-mid: #166534;
   --red: #f87171;
   --red-light: #2d0b0b;
-  --orange: #fb923c;
+  --orange: var(--blue-500);
   --yellow: #fbbf24;
   --yellow-light: #1c1500;
   --purple: #c084fc;
@@ -532,6 +532,7 @@ html, body { position: relative; }
   --blue-300:#86efac; --blue-400:#4ade80; --blue-500:#16a34a;
   --blue-600:#15803d; --blue-700:#14532d;
   --border:#bbf7d0; --text:#14532d; --text-2:#166534; --text-3:#4ade80;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(22,163,74,.08),0 1px 2px rgba(0,0,0,.04);
   --shadow:0 4px 16px rgba(22,163,74,.14),0 1px 4px rgba(0,0,0,.04);
   --shadow-lg:0 12px 40px rgba(22,163,74,.18),0 2px 8px rgba(0,0,0,.06);
@@ -542,7 +543,7 @@ html, body { position: relative; }
   --blue-300:#15803d; --blue-400:#22c55e; --blue-500:#4ade80;
   --blue-600:#86efac; --blue-700:#bbf7d0;
   --green:#4ade80; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#f0fdf4; --text-2:#bbf7d0; --text-3:#4ade80;
   --border:#144d28;
@@ -557,6 +558,7 @@ html, body { position: relative; }
   --blue-300:#fdba74; --blue-400:#fb923c; --blue-500:#ea580c;
   --blue-600:#c2410c; --blue-700:#9a3412;
   --border:#fed7aa; --text:#7c2d12; --text-2:#9a3412; --text-3:#fb923c;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(234,88,12,.08); --shadow:0 4px 16px rgba(234,88,12,.14); --shadow-lg:0 12px 40px rgba(234,88,12,.18);
 }
 [data-app-theme="sunset-dark"] {
@@ -565,7 +567,7 @@ html, body { position: relative; }
   --blue-300:#9a3412; --blue-400:#ea580c; --blue-500:#fb923c;
   --blue-600:#fdba74; --blue-700:#fed7aa;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#fff7ed; --text-2:#fed7aa; --text-3:#fb923c;
   --border:#431407;
@@ -580,6 +582,7 @@ html, body { position: relative; }
   --blue-300:#fda4af; --blue-400:#fb7185; --blue-500:#e11d48;
   --blue-600:#be123c; --blue-700:#9f1239;
   --border:#fecdd3; --text:#881337; --text-2:#9f1239; --text-3:#fb7185;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(225,29,72,.08); --shadow:0 4px 16px rgba(225,29,72,.14); --shadow-lg:0 12px 40px rgba(225,29,72,.18);
 }
 [data-app-theme="rose-dark"] {
@@ -588,7 +591,7 @@ html, body { position: relative; }
   --blue-300:#9f1239; --blue-400:#e11d48; --blue-500:#fb7185;
   --blue-600:#fda4af; --blue-700:#fecdd3;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#fff1f2; --text-2:#fecdd3; --text-3:#fb7185;
   --border:#4c0519;
@@ -603,6 +606,7 @@ html, body { position: relative; }
   --blue-300:#d8b4fe; --blue-400:#c084fc; --blue-500:#7c3aed;
   --blue-600:#6d28d9; --blue-700:#5b21b6;
   --border:#e9d5ff; --text:#3b0764; --text-2:#4c1d95; --text-3:#c084fc;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(124,58,237,.08); --shadow:0 4px 16px rgba(124,58,237,.14); --shadow-lg:0 12px 40px rgba(124,58,237,.18);
 }
 [data-app-theme="violet-dark"] {
@@ -611,7 +615,7 @@ html, body { position: relative; }
   --blue-300:#4c1d95; --blue-400:#7c3aed; --blue-500:#c084fc;
   --blue-600:#d8b4fe; --blue-700:#e9d5ff;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#faf5ff; --text-2:#e9d5ff; --text-3:#c084fc;
   --border:#2e1065;
@@ -625,7 +629,7 @@ html, body { position: relative; }
   --blue-300:#71717a; --blue-400:#a1a1aa; --blue-500:#e4e4e7;
   --blue-600:#f4f4f5; --blue-700:#fafafa;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#fafafa; --text-2:#d4d4d8; --text-3:#71717a;
   --border:#3f3f46;
@@ -640,6 +644,7 @@ html, body { position: relative; }
   --blue-300:#fcd34d; --blue-400:#fbbf24; --blue-500:#b45309;
   --blue-600:#92400e; --blue-700:#78350f;
   --border:#fde68a; --text:#78350f; --text-2:#92400e; --text-3:#fbbf24;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(180,83,9,.08); --shadow:0 4px 16px rgba(180,83,9,.14); --shadow-lg:0 12px 40px rgba(180,83,9,.18);
 }
 [data-app-theme="gold-dark"] {
@@ -648,7 +653,7 @@ html, body { position: relative; }
   --blue-300:#92400e; --blue-400:#b45309; --blue-500:#fbbf24;
   --blue-600:#fcd34d; --blue-700:#fde68a;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#fffbeb; --text-2:#fde68a; --text-3:#fbbf24;
   --border:#451a03;
@@ -663,6 +668,7 @@ html, body { position: relative; }
   --blue-300:#67e8f9; --blue-400:#22d3ee; --blue-500:#0e7490;
   --blue-600:#155e75; --blue-700:#164e63;
   --border:#a5f3fc; --text:#164e63; --text-2:#155e75; --text-3:#22d3ee;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(14,116,144,.08); --shadow:0 4px 16px rgba(14,116,144,.14); --shadow-lg:0 12px 40px rgba(14,116,144,.18);
 }
 [data-app-theme="arctic-dark"] {
@@ -671,7 +677,7 @@ html, body { position: relative; }
   --blue-300:#0369a1; --blue-400:#0e7490; --blue-500:#22d3ee;
   --blue-600:#67e8f9; --blue-700:#a5f3fc;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#ecfeff; --text-2:#a5f3fc; --text-3:#22d3ee;
   --border:#0c4a6e;
@@ -686,6 +692,7 @@ html, body { position: relative; }
   --blue-300:#ffb399; --blue-400:#ff7f5e; --blue-500:#e8471f;
   --blue-600:#c73d18; --blue-700:#a63213;
   --border:#ffd4c2; --text:#7b1e09; --text-2:#a63213; --text-3:#ff7f5e;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(232,71,31,.08); --shadow:0 4px 16px rgba(232,71,31,.14); --shadow-lg:0 12px 40px rgba(232,71,31,.18);
 }
 [data-app-theme="coral-dark"] {
@@ -694,7 +701,7 @@ html, body { position: relative; }
   --blue-300:#a63213; --blue-400:#e8471f; --blue-500:#ff7f5e;
   --blue-600:#ffb399; --blue-700:#ffd4c2;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#fff5f0; --text-2:#ffd4c2; --text-3:#ff7f5e;
   --border:#560e02;
@@ -709,6 +716,7 @@ html, body { position: relative; }
   --blue-300:#6ee7b7; --blue-400:#10b981; --blue-500:#059669;
   --blue-600:#047857; --blue-700:#065f46;
   --border:#bbf7d0; --text:#064e3b; --text-2:#065f46; --text-3:#10b981;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(5,150,105,.08); --shadow:0 4px 16px rgba(5,150,105,.14); --shadow-lg:0 12px 40px rgba(5,150,105,.18);
 }
 [data-app-theme="neon-dark"] {
@@ -717,7 +725,7 @@ html, body { position: relative; }
   --blue-300:#047857; --blue-400:#059669; --blue-500:#10b981;
   --blue-600:#6ee7b7; --blue-700:#a7f3d0;
   --green:#4ade80; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#f0fff4; --text-2:#a7f3d0; --text-3:#10b981;
   --border:#064e3b;
@@ -732,6 +740,7 @@ html, body { position: relative; }
   --blue-300:#c4b5fd; --blue-400:#a78bfa; --blue-500:#6d28d9;
   --blue-600:#5b21b6; --blue-700:#4c1d95;
   --border:#ddd6fe; --text:#2e1065; --text-2:#4c1d95; --text-3:#a78bfa;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(109,40,217,.08); --shadow:0 4px 16px rgba(109,40,217,.14); --shadow-lg:0 12px 40px rgba(109,40,217,.18);
 }
 [data-app-theme="lavender-dark"] {
@@ -740,7 +749,7 @@ html, body { position: relative; }
   --blue-300:#4c1d95; --blue-400:#6d28d9; --blue-500:#a78bfa;
   --blue-600:#c4b5fd; --blue-700:#ddd6fe;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#a78bfa; --purple-light:#1e0533;
   --text:#f5f3ff; --text-2:#ddd6fe; --text-3:#a78bfa;
   --border:#2e1065;
@@ -755,6 +764,7 @@ html, body { position: relative; }
   --blue-300:#5eead4; --blue-400:#2dd4bf; --blue-500:#0f766e;
   --blue-600:#0d9488; --blue-700:#115e59;
   --border:#99f6e4; --text:#134e4a; --text-2:#115e59; --text-3:#2dd4bf;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(15,118,110,.08); --shadow:0 4px 16px rgba(15,118,110,.14); --shadow-lg:0 12px 40px rgba(15,118,110,.18);
 }
 [data-app-theme="mint-dark"] {
@@ -763,7 +773,7 @@ html, body { position: relative; }
   --blue-300:#0d9488; --blue-400:#0f766e; --blue-500:#2dd4bf;
   --blue-600:#5eead4; --blue-700:#99f6e4;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#f0fdfa; --text-2:#99f6e4; --text-3:#2dd4bf;
   --border:#134e4a;
@@ -778,6 +788,7 @@ html, body { position: relative; }
   --blue-300:#e879f9; --blue-400:#d946ef; --blue-500:#a21caf;
   --blue-600:#86198f; --blue-700:#701a75;
   --border:#f5d0fe; --text:#4a044e; --text-2:#701a75; --text-3:#d946ef;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(162,28,175,.08); --shadow:0 4px 16px rgba(162,28,175,.14); --shadow-lg:0 12px 40px rgba(162,28,175,.18);
 }
 [data-app-theme="candy-dark"] {
@@ -786,7 +797,7 @@ html, body { position: relative; }
   --blue-300:#86198f; --blue-400:#a21caf; --blue-500:#d946ef;
   --blue-600:#e879f9; --blue-700:#f5d0fe;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#d946ef; --purple-light:#1e0533;
   --text:#fdf4ff; --text-2:#f5d0fe; --text-3:#d946ef;
   --border:#4a044e;
@@ -801,6 +812,7 @@ html, body { position: relative; }
   --blue-300:#cbd5e1; --blue-400:#94a3b8; --blue-500:#475569;
   --blue-600:#334155; --blue-700:#1e293b;
   --border:#e2e8f0; --text:#0f172a; --text-2:#1e293b; --text-3:#64748b;
+  --orange:var(--blue-500);
   --shadow-sm:0 1px 3px rgba(71,85,105,.08); --shadow:0 4px 16px rgba(71,85,105,.14); --shadow-lg:0 12px 40px rgba(71,85,105,.18);
 }
 [data-app-theme="slate-dark"] {
@@ -809,7 +821,7 @@ html, body { position: relative; }
   --blue-300:#475569; --blue-400:#64748b; --blue-500:#94a3b8;
   --blue-600:#cbd5e1; --blue-700:#e2e8f0;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#f8fafc; --text-2:#e2e8f0; --text-3:#94a3b8;
   --border:#1e293b;
@@ -824,7 +836,7 @@ html, body { position: relative; }
   --blue-300:#ff9fdb; --blue-400:#f472b6; --blue-500:#ec4899;
   --blue-600:#db2777; --blue-700:#be185d;
   --green:#22c55e; --green-light:#dcfce7; --green-mid:#16a34a;
-  --red:#ef4444; --red-light:#fee2e2; --orange:#f97316;
+  --red:#ef4444; --red-light:#fee2e2; --orange:var(--blue-500);
   --yellow:#eab308; --yellow-light:#fef9c3; --purple:#a855f7; --purple-light:#f3e8ff;
   --border:#ffc9ec; --text:#831843; --text-2:#9d174d; --text-3:#f472b6;
   --shadow-sm:0 1px 3px rgba(236,72,153,.1); --shadow:0 4px 16px rgba(236,72,153,.16); --shadow-lg:0 12px 40px rgba(236,72,153,.2);
@@ -838,7 +850,7 @@ html, body { position: relative; }
   --blue-300:#ffa8d4; --blue-400:#f472b6; --blue-500:#db2777;
   --blue-600:#be185d; --blue-700:#9d174d;
   --green:#22c55e; --green-light:#dcfce7; --green-mid:#16a34a;
-  --red:#ef4444; --red-light:#fee2e2; --orange:#d97706;
+  --red:#ef4444; --red-light:#fee2e2; --orange:var(--blue-500);
   --yellow:#d4a017; --yellow-light:#fef3c7; --purple:#a855f7; --purple-light:#f3e8ff;
   --border:#ffd3e8; --text:#701a3f; --text-2:#9d174d; --text-3:#e879b9;
   --shadow-sm:0 1px 3px rgba(219,39,119,.1); --shadow:0 4px 16px rgba(219,39,119,.16); --shadow-lg:0 12px 40px rgba(219,39,119,.2);
@@ -852,7 +864,7 @@ html, body { position: relative; }
   --blue-300:#8fb3ff; --blue-400:#4d84f7; --blue-500:#2563eb;
   --blue-600:#1d4ed8; --blue-700:#1e40af;
   --green:#16a34a; --green-light:#dcfce7; --green-mid:#15803d;
-  --red:#dc2626; --red-light:#fee2e2; --orange:#ea580c;
+  --red:#dc2626; --red-light:#fee2e2; --orange:var(--blue-500);
   --yellow:#eab308; --yellow-light:#fef9c3; --purple:#7c3aed; --purple-light:#ede9fe;
   --border:#bfd4ff; --text:#1e3a8a; --text-2:#1e40af; --text-3:#3b82f6;
   --shadow-sm:0 1px 3px rgba(37,99,235,.1); --shadow:0 4px 16px rgba(37,99,235,.18); --shadow-lg:0 12px 40px rgba(37,99,235,.22);
@@ -876,7 +888,7 @@ html, body { position: relative; }
   --blue-300:#4a4a4a; --blue-400:#6e6e6e; --blue-500:#9e9e9e;
   --blue-600:#c0c0c0; --blue-700:#e0e0e0;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#fbbf24; --yellow-light:#1c1500; --purple:#c084fc; --purple-light:#1e0533;
   --text:#f0f0f0; --text-2:#c8c8c8; --text-3:#6e6e6e;
   --border:#2d2d2d;
@@ -893,7 +905,7 @@ html, body { position: relative; }
   --blue-300:#3b5385; --blue-400:#38bdf8; --blue-500:#0ea5e9;
   --blue-600:#38bdf8; --blue-700:#7dd3fc;
   --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
-  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --red:#f87171; --red-light:#2d0b0b; --orange:var(--blue-500);
   --yellow:#facc15; --yellow-light:#1c1500; --purple:#a78bfa; --purple-light:#1e0533;
   --text:#e0f2fe; --text-2:#bae6fd; --text-3:#7dd3fc;
   --border:#243157;
@@ -1635,23 +1647,20 @@ body.auth-active {
 .page {
   display: none;
   opacity: 0;
-  transform: translateY(8px) scale(0.99);
-  transition: opacity 0.22s cubic-bezier(0.4,0,0.2,1), transform 0.22s cubic-bezier(0.4,0,0.2,1);
-  will-change: opacity, transform;
   pointer-events: none;
 }
 .page.active {
   display: block;
   opacity: 0;
-  transform: translateY(8px) scale(0.99);
   pointer-events: auto;
+  transition: opacity 0.18s ease;
 }
 .page.page-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
 }
-.page.slide-from-right { transform: translateX(14px) scale(0.99); }
-.page.slide-from-left  { transform: translateX(-14px) scale(0.99); }
+/* slide classes kept for any external code that may still reference them */
+.page.slide-from-right { opacity: 0; }
+.page.slide-from-left  { opacity: 0; }
 
 /* ===== HERO STATS ===== */
 .hero-stats {
@@ -3222,8 +3231,8 @@ table { border-collapse: collapse; min-width: 100%; }
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
   font-size: 0.85rem; transition: var(--transition); color: transparent;
 }
-.gym-day-check:hover { border-color: var(--orange); background: #fff7ed; }
-.gym-day-check.done { background: var(--orange); border-color: var(--orange); color: white; }
+.gym-day-check:hover { border-color: var(--blue-400); background: var(--blue-50); }
+.gym-day-check.done { background: var(--blue-500); border-color: var(--blue-500); color: white; }
 .gym-day-check.rest { background: var(--bg3); border-color: var(--border); color: var(--text-3); cursor: default; }
 .gym-day-check.rest:hover { border-color: var(--border); background: var(--bg3); }
 .gym-week-stats { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
@@ -3313,14 +3322,14 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .gym-select:focus { border-color: var(--orange); }
 .gym-add-btn {
-  background: linear-gradient(135deg, var(--orange), #ea580c);
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
   color: white; border: none; border-radius: var(--radius-sm);
   padding: 9px 20px; font-family: 'Tajawal', sans-serif;
   font-weight: 700; font-size: 0.9rem; cursor: pointer;
-  box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   transition: var(--transition); white-space: nowrap;
 }
-.gym-add-btn:hover { box-shadow: 0 6px 20px rgba(249,115,22,0.4); transform: translateY(-1px); }
+.gym-add-btn:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.22); transform: translateY(-1px); }
 /* Progress Log */
 .progress-log { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; padding-left: 4px; }
 .log-entry {
@@ -3890,7 +3899,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 .bw-input { width: 100%; background: transparent; border: none; outline: none; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--orange); font-weight: 700; text-align: center; padding: 2px 0; }
 .bw-input::placeholder { color: var(--border); font-size: 0.7rem; }
 .bw-unit { font-size: 0.55rem; color: var(--text-3); }
-.gym-banner { background: linear-gradient(135deg, #ff6b35, #f7931e, #ff6b35); background-size: 200% 200%; animation: gradShift 4s ease infinite; border-radius: var(--radius); padding: 18px 22px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; box-shadow: 0 6px 24px rgba(249,115,22,0.3); color: white; }
+.gym-banner { background: linear-gradient(135deg, var(--blue-500), var(--blue-700)); background-size: 200% 200%; animation: gradShift 4s ease infinite; border-radius: var(--radius); padding: 18px 22px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); color: white; }
 @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
 .gym-banner-icon { font-size: 2rem; flex-shrink: 0; }
 .gym-banner-text { flex: 1; font-size: 0.95rem; font-weight: 700; line-height: 1.5; }
@@ -3963,8 +3972,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 .nutri-input-label { font-size: 0.62rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.3px; }
 .nutri-num-input { width: 100%; background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; color: var(--text); padding: 7px 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; outline: none; text-align: center; transition: var(--transition); }
 .nutri-num-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
-.nutri-save-btn { width: 100%; margin-top: 10px; background: linear-gradient(135deg, var(--orange), #ea580c); color: white; border: none; border-radius: var(--radius-sm); padding: 8px 16px; font-family: 'Tajawal', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 4px 12px rgba(249,115,22,0.25); transition: var(--transition); }
-.nutri-save-btn:hover { box-shadow: 0 6px 20px rgba(249,115,22,0.4); transform: translateY(-1px); }
+.nutri-save-btn { width: 100%; margin-top: 10px; background: linear-gradient(135deg, var(--blue-500), var(--blue-700)); color: white; border: none; border-radius: var(--radius-sm); padding: 8px 16px; font-family: 'Tajawal', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: var(--transition); }
+.nutri-save-btn:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.22); transform: translateY(-1px); }
 .nutri-history { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; margin-top: 12px; }
 .nutri-history-row { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; }
 .nutri-history-date { font-family: 'JetBrains Mono', monospace; color: var(--orange); font-weight: 700; min-width: 80px; }
@@ -7861,20 +7870,99 @@ function renderSettingsStats() {
 // =========== THEME ===========
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
   settings.theme = t;
   save();
   renderThemeBackground();
   setTimeout(() => { renderAll(); }, 50);
 }
 
+// Map each light theme to its dark twin and vice-versa
+const _THEME_DARK_PAIR = {
+  'none':         'none-dark',
+  'none-dark':    'none',
+  'ocean':        'dark',
+  'dark':         'ocean',
+  'forest':       'forest-dark',
+  'forest-dark':  'forest',
+  'sunset':       'sunset-dark',
+  'sunset-dark':  'sunset',
+  'rose':         'rose-dark',
+  'rose-dark':    'rose',
+  'violet':       'violet-dark',
+  'violet-dark':  'violet',
+  'midnight':     'midnight',   // always dark, no light pair
+  'gold':         'gold-dark',
+  'gold-dark':    'gold',
+  'arctic':       'arctic-dark',
+  'arctic-dark':  'arctic',
+  'coral':        'coral-dark',
+  'coral-dark':   'coral',
+  'neon':         'neon-dark',
+  'neon-dark':    'neon',
+  'lavender':     'lavender-dark',
+  'lavender-dark':'lavender',
+  'mint':         'mint-dark',
+  'mint-dark':    'mint',
+  'candy':        'candy-dark',
+  'candy-dark':   'candy',
+  'slate':        'slate-dark',
+  'slate-dark':   'slate',
+  'unicorn':      'unicorn',    // light only
+  'princess':     'princess',   // light only
+  'hero':         'hero',       // light only
+  'space':        'space',      // always dark
+};
+
 function toggleTheme() {
-  applyTheme(settings.theme === 'dark' ? 'light' : 'dark');
-  document.getElementById('darkToggle').checked = settings.theme === 'dark';
+  const cur = settings.appTheme || 'ocean';
+  const curTheme = APP_THEMES.find(t => t.id === cur);
+  const isDark = settings.theme === 'dark';
+
+  if (isDark) {
+    // Switch to light twin
+    const lightId = _THEME_DARK_PAIR[cur] || cur;
+    const lightTheme = APP_THEMES.find(t => t.id === lightId);
+    if (lightTheme && !lightTheme.dark) {
+      applyAppTheme(lightId);
+    } else {
+      // Fallback: same theme, force light
+      applyTheme('light');
+    }
+  } else {
+    // Switch to dark twin
+    const darkId = _THEME_DARK_PAIR[cur] || cur;
+    const darkTheme = APP_THEMES.find(t => t.id === darkId);
+    if (darkTheme && darkTheme.dark) {
+      applyAppTheme(darkId);
+    } else {
+      // Fallback: same theme, force dark
+      applyTheme('dark');
+    }
+  }
+  const tog = document.getElementById('darkToggle');
+  if (tog) tog.checked = settings.theme === 'dark';
 }
 
 function toggleThemeFromSettings(el) {
-  applyTheme(el.checked ? 'dark' : 'light');
+  const isDark = el.checked;
+  const cur = settings.appTheme || 'ocean';
+  const curTheme = APP_THEMES.find(t => t.id === cur);
+
+  // Already in the desired mode — nothing to do.
+  if (curTheme && curTheme.dark === isDark) return;
+
+  // Find the twin (same theme family, opposite mode).
+  const pairId = _THEME_DARK_PAIR[cur] || cur;
+  const pairTheme = APP_THEMES.find(t => t.id === pairId);
+
+  if (pairTheme && pairTheme.dark === isDark) {
+    applyAppTheme(pairId);
+  } else {
+    // No matching twin (e.g. light-only or dark-only theme) — just flip the base mode.
+    applyTheme(isDark ? 'dark' : 'light');
+  }
 }
 
 // =========== APP THEME SYSTEM ===========
@@ -7934,6 +8022,11 @@ function applyAppTheme(themeId) {
   }
   settings.appTheme = themeId;
   save();
+  // Sync dark toggle checkbox to match the chosen theme
+  const _togEl = document.getElementById('darkToggle');
+  if (_togEl) _togEl.checked = settings.theme === 'dark';
+  const _themeBtnEl = document.getElementById('themeBtn');
+  if (_themeBtnEl) _themeBtnEl.textContent = settings.theme === 'dark' ? '☀️' : '🌙';
   renderThemePicker();
   renderThemeBackground();
   setTimeout(() => renderAll(), 50);
@@ -8220,111 +8313,60 @@ function clearAllData() {
 
 // =========== PAGE NAV (with smooth transitions) ===========
 const PAGE_ORDER = ['tracker', 'mood', 'weekly', 'gym', 'quotes', 'journal', 'achievements'];
-let _pageTransitioning = false;
-let _finishPendingPageTransition = null;
+let _pageTransitioning = false;      // kept for backward-compat (unused in new showPage)
+let _finishPendingPageTransition = null; // kept for backward-compat
+let _pageTransTimerId = null;         // clearTimeout handle for safety reveal
+let _pageTransRafId   = null;         // cancelAnimationFrame handle
 
 function showPage(p) {
-  if (currentPage === p) return;
+  // ── Cancel any in-flight transition immediately ──────────────────────────
+  // Clear pending timers/rAFs from the previous call so they can never
+  // interfere with this new navigation.
+  if (_pageTransTimerId)  { clearTimeout(_pageTransTimerId);  _pageTransTimerId  = null; }
+  if (_pageTransRafId)    { cancelAnimationFrame(_pageTransRafId); _pageTransRafId = null; }
 
-  // Guard against rapid/overlapping navigation (e.g. clicking several tabs
-  // quickly). Without this, a second showPage() call could start fading in
-  // a page whose *previous* transition never finished, leaving elements
-  // with contradictory classes (active but never page-visible) — this was
-  // the real cause of pages getting stuck blank.
-  if (_pageTransitioning) {
-    // Finish the in-flight transition instantly, then proceed with the new one.
-    if (typeof _finishPendingPageTransition === 'function') _finishPendingPageTransition(true);
-  }
-  _pageTransitioning = true;
+  // ── Always hide ALL pages, show only the target ──────────────────────────
+  // This is the nuclear option that guarantees no page is ever left in a
+  // half-visible / contradictory state regardless of how fast the user taps.
+  document.querySelectorAll('.page').forEach(el => {
+    el.classList.remove('active', 'page-visible', 'slide-from-left', 'slide-from-right');
+  });
 
-  const prevPage = currentPage;
-  const prevEl   = document.getElementById('page-' + prevPage);
-  const nextEl   = document.getElementById('page-' + p);
-  if (!nextEl) { _pageTransitioning = false; return; }
+  const nextEl = document.getElementById('page-' + p);
+  if (!nextEl) return;
 
-  // Direction: moving right or left in the nav order?
-  const prevIdx = PAGE_ORDER.indexOf(prevPage);
-  const nextIdx = PAGE_ORDER.indexOf(p);
-  const goingRight = nextIdx > prevIdx;
+  // ── Update state & nav ───────────────────────────────────────────────────
+  currentPage = p;
 
-  // Update nav tabs
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-  if (nextIdx >= 0) document.querySelectorAll('.nav-tab')[nextIdx].classList.add('active');
+  const nextIdx = PAGE_ORDER.indexOf(p);
+  if (nextIdx >= 0) {
+    const tabs = document.querySelectorAll('.nav-tab');
+    if (tabs[nextIdx]) tabs[nextIdx].classList.add('active');
+  }
   const bBtn = document.querySelector(`.bottom-nav-btn[data-page="${p}"]`);
   if (bBtn) _syncBottomNav(bBtn);
 
-  currentPage = p;
+  // ── Render content synchronously FIRST ──────────────────────────────────
+  // Content must exist before we reveal the page — this eliminates the blank
+  // flash entirely. renderAll is fast enough (< 16 ms on typical data sets).
+  try { renderAll(p); } catch(e) { console.error('showPage renderAll:', e); }
 
-  // If skeleton still showing (not yet revealed), just switch silently
-  const sk = document.getElementById('skeletonScreen');
-  if (sk && !sk.classList.contains('hiding') && !sk.classList.contains('hidden')) {
-    if (prevEl) { prevEl.classList.remove('active','page-visible'); }
-    nextEl.classList.add('active','page-visible');
-    renderAll();
-    _pageTransitioning = false;
-    return;
-  }
-
-  // Reset EVERY page's transition classes first, not just prev/next. This
-  // cleans up any leftover state from an interrupted earlier transition so
-  // stale classes can never accumulate on off-screen pages.
-  document.querySelectorAll('.page').forEach(el => {
-    if (el !== nextEl) el.classList.remove('slide-from-left','slide-from-right');
-  });
-
-  // Fade out previous page
-  if (prevEl && prevEl.classList.contains('active')) {
-    prevEl.classList.remove('page-visible');
-    // After transition, hide it
-    const hidePrev = () => {
-      prevEl.classList.remove('active');
-      prevEl.removeEventListener('transitionend', hidePrev);
-    };
-    prevEl.addEventListener('transitionend', hidePrev, { once: true });
-    // Safety fallback
-    setTimeout(() => prevEl.classList.remove('active'), 260);
-  }
-
-  // Prepare next page: position off-screen in slide direction.
-  // Switching display:none -> block is itself cheap; the historical "white
-  // flash" came from renderAll() running synchronously right here, blocking
-  // the browser from ever painting this intermediate state. So: paint first,
-  // render after.
-  nextEl.classList.remove('page-visible','slide-from-left','slide-from-right');
-  nextEl.classList.add('active', goingRight ? 'slide-from-right' : 'slide-from-left');
-
-  // Let the browser paint the (empty/last-rendered) next page in its
-  // off-screen position on this frame, THEN do the expensive render work,
-  // THEN kick off the slide-in animation on the following frame. This keeps
-  // the transition itself buttery even while renderAll() is busy.
-  let _revealed = false;
-  const reveal = (forceRender) => {
-    if (_revealed) return;
-    _revealed = true;
-    if (forceRender) { try { renderAll(p); } catch(e) {} }
-    nextEl.classList.remove('slide-from-left','slide-from-right');
+  // ── Show the page with a lightweight fade ────────────────────────────────
+  // .active sets display:block + opacity:0; one rAF later we add .page-visible
+  // which CSS transitions to opacity:1. Using a single rAF (not double) keeps
+  // the animation tight while still letting the browser paint the initial state.
+  nextEl.classList.add('active');
+  _pageTransRafId = requestAnimationFrame(() => {
+    _pageTransRafId = null;
     nextEl.classList.add('page-visible');
-    _pageTransitioning = false;
-    _finishPendingPageTransition = null;
-  };
-  // Exposed so a subsequent showPage() call (if the user navigates again
-  // before this transition finishes) can force-complete this one instantly
-  // instead of leaving it half-applied.
-  _finishPendingPageTransition = reveal;
-
-  requestAnimationFrame(() => {
-    try {
-      renderAll(p);
-      if (p === 'achievements') { try { renderAchievementsPage(); } catch(e) {} }
-    } catch (err) {
-      console.error('showPage render error:', err);
-    }
-    requestAnimationFrame(reveal);
   });
-  // Safety net: if rAF is delayed (backgrounded tab, slow device, or an
-  // error above prevented the chain from completing) force the page visible
-  // anyway so it can never get stuck blank.
-  setTimeout(reveal, 350);
+
+  // ── Belt-and-suspenders: force visible after 200 ms no matter what ───────
+  _pageTransTimerId = setTimeout(() => {
+    _pageTransTimerId = null;
+    nextEl.classList.add('active', 'page-visible');
+  }, 200);
 }
 
 function changeMonth(d) {
