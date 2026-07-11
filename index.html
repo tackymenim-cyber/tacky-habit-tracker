@@ -1096,67 +1096,87 @@ table { border-collapse: collapse; min-width: 100%; }
 
 /* ===== QUICK TASKS (TO-DO LIST) ===== */
 .quick-tasks-section {
+  position: relative;
   margin-bottom: 28px;
+  background: linear-gradient(160deg, rgba(139,92,246,0.08), rgba(109,40,217,0.02) 65%, transparent);
+  border: 1px solid rgba(139,92,246,0.16);
+  border-radius: 24px;
+  padding: 22px 20px 20px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 24px 54px -26px rgba(109,40,217,0.32), var(--shadow-sm);
+  overflow: hidden;
+}
+[data-theme="dark"] .quick-tasks-section {
+  background: linear-gradient(160deg, rgba(139,92,246,0.12), rgba(109,40,217,0.03) 65%, transparent);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 24px 54px -26px rgba(0,0,0,0.55), var(--shadow-sm);
+}
+.quick-tasks-section::after {
+  content: ''; position: absolute; top: -60px; inset-inline-end: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,0.18), transparent 70%);
+  pointer-events: none;
 }
 .quick-tasks-header {
+  position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+  margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
 }
 .quick-tasks-title {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 12px;
 }
 .quick-tasks-title-icon {
-  width: 40px; height: 40px; border-radius: 12px;
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  width: 44px; height: 44px; border-radius: 14px;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem;
-  box-shadow: 0 4px 12px rgba(139,92,246,0.35);
+  font-size: 1.2rem;
+  box-shadow: 0 6px 18px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
 }
-.quick-tasks-title-text { font-size: 1rem; font-weight: 800; color: var(--text); }
+.quick-tasks-title-text { font-size: 1.02rem; font-weight: 800; color: var(--text); }
 .quick-tasks-title-sub { font-size: 0.72rem; color: var(--text-3); font-weight: 500; margin-top: 1px; }
 .quick-tasks-count-badge {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-  color: white; border-radius: 99px; padding: 3px 12px;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: white; border-radius: 99px; padding: 4px 13px;
   font-size: 0.75rem; font-weight: 800; font-family: 'JetBrains Mono', monospace;
-  box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+  box-shadow: 0 4px 12px rgba(124,58,237,0.38), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 .qt-add-row {
+  position: relative; z-index: 1;
   display: flex; gap: 8px; margin-bottom: 16px; align-items: center;
 }
 .qt-input {
   flex: 1; min-width: 0;
   background: var(--white);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
+  border: 1.5px solid rgba(139,92,246,0.2);
+  border-radius: 13px;
   color: var(--text);
   padding: 11px 18px;
   font-family: 'Tajawal', sans-serif;
   font-size: 0.95rem;
   outline: none;
-  box-shadow: var(--shadow-sm);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03), var(--shadow-sm);
   transition: var(--transition);
 }
 .qt-input:focus {
   border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.14);
 }
 .qt-input::placeholder { color: var(--text-3); }
 .qt-add-btn {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
   color: white; border: none;
-  border-radius: 12px;
+  border-radius: 13px;
   padding: 11px 22px;
   font-family: 'Tajawal', sans-serif;
   font-weight: 700; font-size: 0.92rem;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(139,92,246,0.35);
+  box-shadow: 0 6px 18px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
   transition: var(--transition); white-space: nowrap; flex-shrink: 0;
   display: flex; align-items: center; gap: 6px;
 }
-.qt-add-btn:hover { box-shadow: 0 6px 20px rgba(139,92,246,0.5); transform: translateY(-1px); }
+.qt-add-btn:hover { box-shadow: 0 8px 24px rgba(124,58,237,0.55), inset 0 1px 0 rgba(255,255,255,0.25); transform: translateY(-1px); }
 .qt-add-btn:active { transform: translateY(0); }
 
 .qt-filters {
+  position: relative; z-index: 1;
   display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;
 }
 .qt-filter-btn {
@@ -1167,17 +1187,18 @@ table { border-collapse: collapse; min-width: 100%; }
   cursor: pointer; transition: var(--transition);
 }
 .qt-filter-btn:hover { border-color: #8b5cf6; color: #8b5cf6; }
-.qt-filter-btn.active { background: #8b5cf6; border-color: #8b5cf6; color: white; }
+.qt-filter-btn.active { background: linear-gradient(135deg, #a78bfa, #7c3aed); border-color: transparent; color: white; box-shadow: 0 3px 10px rgba(124,58,237,0.35); }
 
 .qt-list {
-  display: flex; flex-direction: column; gap: 8px;
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 10px;
 }
 .qt-item {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--white);
-  border: 1.5px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(160deg, var(--white), rgba(139,92,246,0.02));
+  border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 13px 16px;
+  padding: 11px 14px;
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
   cursor: pointer;
@@ -1186,68 +1207,79 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .qt-item::before {
   content: '';
-  position: absolute; right: 0; top: 0; bottom: 0;
+  position: absolute; inset-inline-end: 0; top: 0; bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, #8b5cf6, #6d28d9);
-  border-radius: 0 14px 14px 0;
+  background: linear-gradient(180deg, #a78bfa, #7c3aed);
+  border-start-end-radius: 16px; border-end-end-radius: 16px;
   transition: var(--transition);
 }
-.qt-item:hover { box-shadow: var(--shadow); transform: translateX(-2px); border-color: rgba(139,92,246,0.3); }
+.qt-item:hover { box-shadow: 0 12px 30px -16px rgba(124,58,237,0.4), var(--shadow); transform: translateY(-2px); border-color: rgba(139,92,246,0.35); }
 .qt-item.done-item {
-  opacity: 0.72;
+  opacity: 0.7;
   background: var(--bg);
 }
 .qt-item.done-item::before {
   background: linear-gradient(180deg, var(--green), #15803d);
 }
 .qt-checkbox {
-  width: 24px; height: 24px; border-radius: 8px;
+  width: 26px; height: 26px; border-radius: 50%;
   border: 2px solid var(--border);
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 0.8rem; color: transparent;
+  font-size: 0.82rem; color: transparent;
   background: var(--white);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
   transition: var(--transition);
 }
 .qt-item:hover .qt-checkbox { border-color: #8b5cf6; }
 .qt-checkbox.checked {
-  background: linear-gradient(135deg, var(--green), #15803d);
+  background: linear-gradient(135deg, var(--green), #16a34a);
   border-color: var(--green); color: white;
-  box-shadow: 0 2px 8px rgba(34,197,94,0.35);
+  box-shadow: 0 3px 10px rgba(34,197,94,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
 }
+.qt-item-body { flex: 1; min-width: 0; display: flex; align-items: center; }
 .qt-item-text {
-  flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text);
-  line-height: 1.4; min-width: 0;
+  font-size: 0.92rem; font-weight: 600; color: var(--text);
+  line-height: 1.4; min-width: 0; flex: 1;
 }
 .qt-item-text.struck {
   text-decoration: line-through;
   color: var(--text-3);
 }
+.qt-item-date {
+  display: none; /* hidden — no date shown in daily tasks */
+}
 .qt-done-label {
-  font-size: 0.65rem; font-weight: 800; color: var(--green);
-  background: var(--green-light); border-radius: 99px;
-  padding: 2px 8px; white-space: nowrap;
-  flex-shrink: 0;
+  width: 22px; height: 22px;
+  font-size: 0.78rem; font-weight: 800; color: white;
+  background: linear-gradient(135deg, var(--green), #16a34a);
+  border-radius: 50%;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(34,197,94,0.4);
+  direction: ltr;
 }
 .qt-delete-btn {
-  width: 28px; height: 28px; border-radius: 8px; border: none;
+  width: 30px; height: 30px; border-radius: 10px; border: none;
   background: transparent; color: var(--text-3);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   font-size: 0.85rem; transition: var(--transition); flex-shrink: 0;
-  opacity: 0;
+  opacity: 0.5; /* visible-ish by default so it's discoverable on touch devices too */
 }
 .qt-item:hover .qt-delete-btn { opacity: 1; }
 .qt-delete-btn:hover { background: var(--red-light); color: var(--red); }
 
 .qt-empty {
   text-align: center; padding: 40px 20px;
-  background: var(--white); border: 2px dashed var(--border);
-  border-radius: 16px;
+  background: linear-gradient(160deg, var(--white), rgba(139,92,246,0.04));
+  border: 2px dashed rgba(139,92,246,0.28);
+  border-radius: 18px;
+  position: relative; z-index: 1;
 }
 .qt-empty-icon { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.5; }
 .qt-empty-text { font-size: 0.88rem; color: var(--text-3); font-weight: 600; }
 
 .qt-progress-bar-wrap {
+  position: relative; z-index: 1;
   background: var(--bg); border-radius: 99px; height: 8px;
   overflow: hidden; margin-bottom: 6px; border: 1px solid var(--border);
 }
@@ -1257,8 +1289,9 @@ table { border-collapse: collapse; min-width: 100%; }
   transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
 }
 .qt-progress-text {
+  position: relative; z-index: 1;
   font-size: 0.72rem; color: var(--text-3); font-weight: 600;
-  text-align: left; margin-bottom: 16px;
+  margin-bottom: 16px;
   display: flex; align-items: center; justify-content: space-between;
 }
 .qt-clear-done-btn {
@@ -1269,22 +1302,31 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .qt-clear-done-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
 
+.qt-item-actions {
+  display: flex; align-items: center; gap: 2px; flex-shrink: 0;
+  margin-inline-start: auto;
+}
+.qt-move-group {
+  display: flex; flex-direction: column; gap: 1px; flex-shrink: 0;
+  opacity: 0.3; transition: opacity 0.2s;
+}
+.qt-item:hover .qt-move-group { opacity: 1; }
 .qt-move-btn {
-  width: 22px; height: 22px; border-radius: 6px; border: none;
+  width: 22px; height: 20px; border-radius: 5px; border: none;
   background: transparent; color: var(--text-3);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 0.55rem; transition: var(--transition); flex-shrink: 0;
+  font-size: 0.6rem; transition: var(--transition); flex-shrink: 0;
   padding: 0; line-height: 1;
 }
-.qt-move-btn:hover:not(:disabled) { background: var(--bg2); color: #8b5cf6; }
-.qt-move-btn:disabled { opacity: 0.2; cursor: default; }
+.qt-move-btn:hover:not(:disabled) { background: rgba(139,92,246,0.12); color: #8b5cf6; border-radius: 5px; }
+.qt-move-btn:disabled { opacity: 0.15; cursor: default; }
 
 .qt-edit-btn {
-  width: 28px; height: 28px; border-radius: 8px; border: none;
+  width: 30px; height: 30px; border-radius: 10px; border: none;
   background: transparent; color: var(--text-3);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   font-size: 0.8rem; transition: var(--transition); flex-shrink: 0;
-  opacity: 0;
+  opacity: 0.5; /* visible-ish by default so it's discoverable on touch devices too */
 }
 .qt-item:hover .qt-edit-btn { opacity: 1; }
 .qt-edit-btn:hover { background: var(--blue-50); color: var(--blue-500); }
@@ -1624,15 +1666,17 @@ table { border-collapse: collapse; min-width: 100%; }
 
 /* ===== DRAG HANDLE for tasks ===== */
 .drag-handle {
-  color: var(--text-3); cursor: grab; font-size: 0.85rem;
-  padding: 4px 2px; flex-shrink: 0; user-select: none;
-  opacity: 0.5; transition: opacity 0.15s;
-  display: flex; align-items: center;
+  color: var(--text-3); cursor: grab; font-size: 1rem;
+  padding: 4px 3px; flex-shrink: 0; user-select: none;
+  opacity: 0; transition: opacity 0.18s, color 0.18s;
+  display: flex; align-items: center; line-height: 1;
+  letter-spacing: -1px;
 }
-.drag-handle:active { cursor: grabbing; }
+.drag-handle:active { cursor: grabbing; color: #8b5cf6; }
+.drag-handle:hover { color: #8b5cf6; }
 .qt-item:hover .drag-handle,
-.task-item:hover .drag-handle { opacity: 1; }
-.qt-item.drag-over { border: 2px dashed var(--blue-400); background: var(--blue-50); border-radius: 8px; }
+.task-item:hover .drag-handle { opacity: 0.7; }
+.qt-item.drag-over { border: 2px dashed #8b5cf6; background: rgba(139,92,246,0.06); border-radius: 16px; }
 .task-item.drag-over { border: 2px dashed var(--blue-400); background: var(--blue-50); border-radius: 6px; }
 .qt-item.dragging { opacity: 0.4; }
 .task-item.dragging { opacity: 0.4; }
@@ -1693,69 +1737,109 @@ table { border-collapse: collapse; min-width: 100%; }
 .mood-day-emoji { font-size: 1.3rem; line-height: 1; }
 .mood-day-bar-wrap { width: 100%; height: 50px; background: var(--bg); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column-reverse; }
 .mood-day-bar { width: 100%; border-radius: 6px; transition: height 0.4s cubic-bezier(0.4,0,0.2,1); }
+/* ===== THOUGHTS SECTION BEAUTIFUL REDESIGN ===== */
+.thoughts-card-beautiful {
+  background: linear-gradient(160deg, rgba(59,130,246,0.06), rgba(99,102,241,0.03) 65%, transparent);
+  border: 1px solid rgba(59,130,246,0.18);
+  border-radius: 22px;
+  padding: 20px 20px 18px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 20px 50px -24px rgba(59,130,246,0.22), var(--shadow-sm);
+}
+[data-theme="dark"] .thoughts-card-beautiful {
+  background: linear-gradient(160deg, rgba(59,130,246,0.1), rgba(99,102,241,0.04) 65%, transparent);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 20px 50px -24px rgba(0,0,0,0.5), var(--shadow-sm);
+}
+.thoughts-card-beautiful::after {
+  content: '✍️'; position: absolute; inset-inline-end: 16px; top: 10px;
+  font-size: 4rem; opacity: 0.07; pointer-events: none;
+}
+.thoughts-card-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.thoughts-card-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 5px 14px rgba(59,130,246,0.38), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.thoughts-card-title-text { font-size: 1rem; font-weight: 800; color: var(--text); }
+.thoughts-card-title-sub { font-size: 0.7rem; color: var(--text-3); margin-top: 1px; }
 .thoughts-area {
-  width: 100%; min-height: 130px; resize: vertical;
-  background: var(--bg); border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  font-family: 'Tajawal', sans-serif; font-size: 0.92rem;
-  padding: 12px 16px; outline: none; transition: var(--transition); line-height: 1.7;
+  width: 100%; min-height: 120px; resize: vertical;
+  background: var(--white);
+  border: 1.5px solid rgba(59,130,246,0.2);
+  border-radius: 14px; color: var(--text);
+  font-family: 'Tajawal', sans-serif; font-size: 0.93rem;
+  padding: 13px 16px; outline: none; transition: var(--transition); line-height: 1.75;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+  box-sizing: border-box;
 }
-.thoughts-area:focus { border-color: var(--blue-400); }
+[data-theme="dark"] .thoughts-area { background: rgba(255,255,255,0.04); }
+.thoughts-area:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.thoughts-area::placeholder { color: var(--text-3); }
 .save-thoughts-btn {
-  margin-top: 10px; background: var(--blue-500); color: white; border: none;
-  border-radius: var(--radius-sm); padding: 8px 20px;
-  font-family: 'Tajawal', sans-serif; font-weight: 700; cursor: pointer; font-size: 0.88rem;
-  transition: var(--transition);
+  margin-top: 10px;
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  color: white; border: none;
+  border-radius: 12px; padding: 9px 22px;
+  font-family: 'Tajawal', sans-serif; font-weight: 700; cursor: pointer; font-size: 0.9rem;
+  box-shadow: 0 5px 14px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: var(--transition); display: inline-flex; align-items: center; gap: 6px;
 }
-.save-thoughts-btn:hover { background: var(--blue-600); transform: translateY(-1px); }
+.save-thoughts-btn:hover { box-shadow: 0 7px 20px rgba(59,130,246,0.5); transform: translateY(-1px); }
 
 /* ===== THOUGHT NOTES LIST ===== */
 .thought-notes-list {
-  display: flex; flex-direction: column; gap: 8px;
-  margin-top: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 16px;
 }
 .thought-note-item {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
+  background: var(--white);
+  border: 1px solid rgba(59,130,246,0.15);
+  border-radius: 14px;
+  padding: 13px 16px;
   position: relative;
   animation: fadeUp 0.25s ease both;
-  border-right: 3px solid var(--blue-400);
+  border-inline-start: 3px solid #60a5fa;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
 }
-[data-theme="dark"] .thought-note-item { background: var(--bg2); }
+.thought-note-item:hover { box-shadow: var(--shadow); transform: translateY(-1px); border-color: rgba(59,130,246,0.28); }
+[data-theme="dark"] .thought-note-item { background: rgba(255,255,255,0.03); }
 .thought-note-ts {
-  font-size: 0.65rem;
+  font-size: 0.63rem;
   color: var(--text-3);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
-  margin-bottom: 5px;
-  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 6px;
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--bg); border-radius: 99px; padding: 2px 8px;
 }
-.thought-note-ts::before { content: '🕐'; font-size: 0.7rem; }
 .thought-note-text {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--text);
-  line-height: 1.7;
+  line-height: 1.75;
   white-space: pre-wrap;
   word-break: break-word;
 }
 .thought-note-del {
-  position: absolute; top: 8px; left: 8px;
-  width: 22px; height: 22px; border-radius: 6px;
+  position: absolute; top: 8px; inset-inline-end: 8px;
+  width: 24px; height: 24px; border-radius: 8px;
   border: none; background: transparent;
   color: var(--text-3); cursor: pointer;
-  font-size: 0.7rem; opacity: 0;
+  font-size: 0.72rem; opacity: 0;
   display: flex; align-items: center; justify-content: center;
   transition: var(--transition);
 }
 .thought-note-item:hover .thought-note-del { opacity: 1; }
 .thought-note-del:hover { background: var(--red-light); color: var(--red); }
 .thought-notes-empty {
-  text-align: center; padding: 20px;
+  text-align: center; padding: 24px 20px;
   color: var(--text-3); font-size: 0.82rem;
-  border: 1.5px dashed var(--border); border-radius: 12px;
-  margin-top: 12px;
+  border: 1.5px dashed rgba(59,130,246,0.25); border-radius: 14px;
+  margin-top: 12px; background: rgba(59,130,246,0.02);
 }
 .sleep-days { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .sleep-day-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -2989,8 +3073,14 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     </div>
   </div>
 
-  <div class="mood-card fade-up" style="margin-bottom:18px">
-    <div class="card-title" id="thoughtsCardTitle">✍️ أفكاري اليوم</div>
+  <div class="thoughts-card-beautiful fade-up" style="margin-bottom:18px">
+    <div class="thoughts-card-header">
+      <div class="thoughts-card-icon">✍️</div>
+      <div>
+        <div class="thoughts-card-title-text" id="thoughtsCardTitle">أفكاري اليوم</div>
+        <div class="thoughts-card-title-sub" id="thoughtsCardSub">سجّل ما يدور في ذهنك — محفوظة بأمان</div>
+      </div>
+    </div>
     <textarea class="thoughts-area" id="thoughtsArea" placeholder="اكتب ما يدور في ذهنك..."></textarea>
     <button class="save-thoughts-btn" onclick="saveThoughts()">💾 حفظ</button>
     <div class="thought-notes-list" id="thoughtNotesList"></div>
@@ -4011,7 +4101,8 @@ const T = {
     moodGridTitle: '🕐 شبكة المزاج: الأيام × الأوقات',
     moodWeekTitle: '📊 ملخص الأسبوع', moodLineTitle: '📈 منحنى المزاج',
     sleepTitle: '😴 تتبع النوم', waterTitle: '💧 تتبع الماء',
-    thoughtsTitle: '✍️ أفكاري اليوم',
+    thoughtsTitle: 'أفكاري اليوم',
+    thoughtsSub: 'سجّل ما يدور في ذهنك — محفوظة بأمان',
     thoughtsPlaceholder: 'اكتب ما يدور في ذهنك...',
     saveThoughts: '💾 حفظ',
     moodLevels: ['😊 ممتاز','🙂 جيد','😐 عادي','😔 سيء','😤 صعب'],
@@ -4247,7 +4338,8 @@ const T = {
     moodGridTitle: '🕐 Grille des humeurs',
     moodWeekTitle: '📊 Résumé de la semaine', moodLineTitle: '📈 Courbe des humeurs',
     sleepTitle: '😴 Suivi du sommeil', waterTitle: "💧 Suivi de l'eau",
-    thoughtsTitle: "✍️ Mes pensées",
+    thoughtsTitle: "Mes pensées",
+    thoughtsSub: 'Notez ce qui vous traverse l\'esprit — sauvegardé en sécurité',
     thoughtsPlaceholder: 'Écrivez ce qui vous traverse l\'esprit...',
     saveThoughts: '💾 Enregistrer',
     moodLevels: ['😊 Excellent','🙂 Bon','😐 Normal','😔 Mauvais','😤 Difficile'],
@@ -4484,7 +4576,8 @@ const T = {
     moodGridTitle: '🕐 Mood Grid: Days × Times',
     moodWeekTitle: '📊 Weekly Summary', moodLineTitle: '📈 Mood Curve',
     sleepTitle: '😴 Sleep Tracking', waterTitle: '💧 Water Tracking',
-    thoughtsTitle: "✍️ Today's Thoughts",
+    thoughtsTitle: "Today's Thoughts",
+    thoughtsSub: 'Write what\'s on your mind — saved safely',
     thoughtsPlaceholder: 'Write what\'s on your mind...',
     saveThoughts: '💾 Save',
     moodLevels: ['😊 Excellent','🙂 Good','😐 Normal','😔 Bad','😤 Tough'],
@@ -4965,6 +5058,8 @@ function updateMoodPageText() {
   if (stb) stb.textContent = tr.saveThoughts;
   const thoughtsTitle = document.getElementById('thoughtsCardTitle');
   if (thoughtsTitle) thoughtsTitle.textContent = tr.thoughtsTitle;
+  const thoughtsSub = document.getElementById('thoughtsCardSub');
+  if (thoughtsSub) thoughtsSub.textContent = tr.thoughtsSub || '';
 
   const mlvls = document.querySelectorAll('.mood-level-btn');
   if (tr.moodLevels) {
@@ -5817,7 +5912,7 @@ function confirmGenericDelete() {
 }
 
 function escAttr(s) {
-  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 let _editingHabitModalId = null;
@@ -6685,6 +6780,9 @@ function deleteThoughtNote(idx) {
     const notes2 = thoughtsData[notesKey2] || [];
     notes2.splice(idx, 1);
     thoughtsData[notesKey2] = notes2;
+    // If that was the last note, also clear the old backward-compat field
+    // so it can never resurrect a deleted note on a future render/migration.
+    if (notes2.length === 0) delete thoughtsData[thoughtKey()];
     _saveImmediate();
     renderThoughtNotes();
   });
@@ -6696,25 +6794,29 @@ function renderThoughtNotes() {
   const notesKey = _thoughtNotesKey();
   let notes = thoughtsData[notesKey] || [];
 
-  // Migrate old single-text thought to notes list (one time)
-  const oldText = thoughtsData[thoughtKey()];
-  if (oldText && notes.length === 0) {
-    notes = [{ text: oldText, ts: Date.now() }];
-    thoughtsData[notesKey] = notes;
+  // Migrate old single-text thought to notes list — strictly ONE TIME, only
+  // when the notes list has never been created for this key (undefined).
+  // Previously this ran any time notes.length === 0, which meant deleting
+  // the very last note brought it right back from the old backward-compat
+  // field on the next render — deletion looked like it silently failed.
+  if (thoughtsData[notesKey] === undefined) {
+    const oldText = thoughtsData[thoughtKey()];
+    if (oldText) {
+      notes = [{ text: oldText, ts: Date.now() }];
+      thoughtsData[notesKey] = notes;
+    }
   }
 
   if (notes.length === 0) {
-    el.innerHTML = `<div class="thought-notes-empty">📭 لا توجد ملاحظات محفوظة اليوم</div>`;
+    const emptyMsg = currentLang === 'fr' ? '📭 Aucune note enregistrée aujourd\'hui'
+      : currentLang === 'en' ? '📭 No notes saved today'
+      : '📭 لا توجد ملاحظات محفوظة اليوم';
+    el.innerHTML = `<div class="thought-notes-empty">${emptyMsg}</div>`;
     return;
   }
 
   el.innerHTML = notes.map((n, i) => {
-    const d = new Date(n.ts);
-    const hh = String(d.getHours()).padStart(2,'0');
-    const mm = String(d.getMinutes()).padStart(2,'0');
-    const dayN = String(d.getDate()).padStart(2,'0');
-    const moN = String(d.getMonth()+1).padStart(2,'0');
-    const tsStr = `${dayN}/${moN}  ${hh}:${mm}`;
+    const tsStr = _formatFullDateTime(n.ts);
     return `<div class="thought-note-item">
       <div class="thought-note-ts">${tsStr}</div>
       <div class="thought-note-text">${n.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
@@ -7961,21 +8063,26 @@ function updateQuickTasksText() {
   renderQuickTasks();
 }
 
-function _formatTaskTime(ts) {
+// Locale-aware full date+time label — e.g. "الجمعة، 11 يوليو · 14:32" (ar),
+// "Fri, Jul 11 · 14:32" (en). Falls back to a plain numeric format if the
+// browser's Intl doesn't support the requested locale for some reason.
+function _formatFullDateTime(ts) {
   if (!ts) return '';
-  const now = Date.now();
-  const created = new Date(ts);
-  const diffMs = now - ts;
-  const diffDays = Math.floor(diffMs / 86400000);
-  const hh = String(created.getHours()).padStart(2, '0');
-  const mm = String(created.getMinutes()).padStart(2, '0');
-  const timeStr = `${hh}:${mm}`;
-  if (diffDays === 0) return timeStr;                           // نفس اليوم: ساعة فقط
-  if (diffDays === 1) return `بالأمس ${timeStr}`;               // أمس
-  // أقدم: يوم/شهر
-  const d = String(created.getDate()).padStart(2,'0');
-  const mo = String(created.getMonth()+1).padStart(2,'0');
-  return `${d}/${mo} ${timeStr}`;
+  const d = new Date(ts);
+  const lang = currentLang || 'ar';
+  const localeMap = { ar: 'ar', fr: 'fr-FR', en: 'en-US' };
+  const locale = localeMap[lang] || 'ar';
+  try {
+    const dateStr = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short' }).format(d);
+    const timeStr = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+    return `${dateStr} · ${timeStr}`;
+  } catch(e) {
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mo = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mo} ${hh}:${mm}`;
+  }
 }
 
 function renderQuickTasks() {
@@ -8022,21 +8129,21 @@ function renderQuickTasks() {
     const realIdx = quickTasks.findIndex(t => t.id === task.id);
     const upDis = realIdx === 0;
     const downDis = realIdx === quickTasks.length - 1;
-    const timeStr = _formatTaskTime(task.createdAt || task.id);
     return `
     <div class="qt-item${task.done ? ' done-item' : ''}" data-id="${task.id}">
       <div class="qt-checkbox${task.done ? ' checked' : ''}" onclick="toggleQuickTask(${task.id})">${task.done ? '✓' : ''}</div>
-      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
-        <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${task.text}</div>
-        <div style="font-size:0.62rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;font-weight:600;line-height:1;">${timeStr}</div>
+      <div class="qt-item-body">
+        <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${escAttr(task.text)}</div>
       </div>
-      ${task.done ? `<div class="qt-done-label">${doneLabel}</div>` : ''}
-      <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0">
-        <button class="qt-move-btn" onclick="moveQuickTask(${task.id},-1)" ${upDis ? 'disabled' : ''} title="▲">▲</button>
-        <button class="qt-move-btn" onclick="moveQuickTask(${task.id},1)" ${downDis ? 'disabled' : ''} title="▼">▼</button>
+      ${task.done ? `<div class="qt-done-label">✓</div>` : ''}
+      <div class="qt-item-actions" dir="ltr">
+        <div class="qt-move-group">
+          <button class="qt-move-btn" onclick="moveQuickTask(${task.id},-1)" ${upDis ? 'disabled' : ''} title="▲">▲</button>
+          <button class="qt-move-btn" onclick="moveQuickTask(${task.id},1)" ${downDis ? 'disabled' : ''} title="▼">▼</button>
+        </div>
+        <button class="qt-edit-btn" onclick="startEditTaskById(${task.id})" title="✎">✎</button>
+        <button class="qt-delete-btn" onclick="deleteQuickTask(${task.id})">✕</button>
       </div>
-      <button class="qt-edit-btn" onclick="startEditTaskById(${task.id})" title="✎">✎</button>
-      <button class="qt-delete-btn" onclick="deleteQuickTask(${task.id})">✕</button>
     </div>`;
   }).join('');
 }
@@ -8907,18 +9014,19 @@ function setupQtDragDrop() {
 const _orig_renderQuickTasks = renderQuickTasks;
 renderQuickTasks = function() {
   _orig_renderQuickTasks();
-  // Replace up/down buttons with drag handles in qt-items
+  // Replace qt-move-group (▲▼ buttons) with drag handle
   const list = document.getElementById('qtList');
   if (!list) return;
   list.querySelectorAll('.qt-item[data-id]').forEach(el => {
-    // Find the move btn group (column of ▲▼ buttons) and replace with drag handle
-    const moveBtns = el.querySelector('div[style*="flex-direction:column"]');
-    if (moveBtns) {
+    const actions = el.querySelector('.qt-item-actions');
+    const moveGroup = el.querySelector('.qt-move-group');
+    if (moveGroup && actions) {
       const handle = document.createElement('div');
       handle.className = 'drag-handle';
       handle.innerHTML = '⠿';
       handle.title = currentLang === 'ar' ? 'اسحب لإعادة الترتيب' : currentLang === 'fr' ? 'Glisser pour réorganiser' : 'Drag to reorder';
-      moveBtns.replaceWith(handle);
+      actions.insertBefore(handle, actions.firstChild);
+      moveGroup.remove();
     }
   });
   setupQtDragDrop();
