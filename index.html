@@ -3673,6 +3673,20 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
           <span class="toggle-slider"></span>
         </label>
       </div>
+
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-item-icon sicon-purple">🕐</div>
+          <div>
+            <div class="settings-item-label" id="showTaskDateLabel">تاريخ المهام السريعة</div>
+            <div class="settings-item-desc" id="showTaskDateDesc">عرض وقت إضافة كل مهمة</div>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="showTaskDateToggle" checked onchange="settings.showTaskDate=this.checked;save();renderQuickTasks();">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </div>
 
     <!-- Notifications -->
@@ -5567,6 +5581,7 @@ function updateSettingsUI() {
   document.getElementById('confettiToggle').checked = settings.confetti;
   document.getElementById('soundToggle').checked = settings.sound;
   document.getElementById('streakAlertToggle').checked = settings.streakAlert;
+  document.getElementById('showTaskDateToggle').checked = settings.showTaskDate !== false;
   document.querySelectorAll('.color-swatch').forEach(sw => {
     sw.classList.toggle('active', sw.style.background === settings.accent || sw.getAttribute('style').includes(settings.accent));
   });
@@ -8025,8 +8040,42 @@ function deleteQuickTask(id) {
   if (!task) return;
   openGenericDeleteConfirm(task.text || '', () => {
     quickTasks = quickTasks.filter(t => t.id !== id);
-    _saveImmediate();
     renderQuickTasks();
+    // Retry save up to 3 times to handle transient cloud errors on delete
+    let _delRetry = 0;
+    function _trySave() {
+      const user = window._currentUser;
+      if (!user || !window._fbDb) { save(); return; }
+      const docRef = window._fbDoc(window._fbDb, 'users', user.uid, 'data', 'main');
+      window._fbSetDoc(docRef, {
+        habits:           JSON.parse(JSON.stringify(habits)),
+        checks:           JSON.parse(JSON.stringify(checks)),
+        moodData:         JSON.parse(JSON.stringify(moodData)),
+        waterData:        JSON.parse(JSON.stringify(waterData)),
+        sleepData:        JSON.parse(JSON.stringify(sleepData)),
+        thoughtsData:     JSON.parse(JSON.stringify(thoughtsData)),
+        weeklyTasks:      JSON.parse(JSON.stringify(weeklyTasks)),
+        gymSchedule:      JSON.parse(JSON.stringify(gymSchedule  || {})),
+        gymExercises:     JSON.parse(JSON.stringify(gymExercises || [])),
+        gymLogs:          JSON.parse(JSON.stringify(gymLogs      || [])),
+        quickTasks:       JSON.parse(JSON.stringify(quickTasks   || [])),
+        bodyWeightData:   JSON.parse(JSON.stringify(bodyWeightData || {})),
+        workoutNotesData: JSON.parse(JSON.stringify(workoutNotesData || {})),
+        bmiSavedData:     bmiSavedData ? JSON.parse(JSON.stringify(bmiSavedData)) : null,
+        measurementsData: JSON.parse(JSON.stringify(measurementsData || {})),
+        nutritionData:    JSON.parse(JSON.stringify(nutritionData || {})),
+        updatedAt:        new Date().toISOString(),
+        _writerId:        _sessionId,
+      }).catch(e => {
+        if (_delRetry < 3) {
+          _delRetry++;
+          setTimeout(_trySave, 1000 * _delRetry);
+        } else {
+          showToast(t('cloudSaveFail'));
+        }
+      });
+    }
+    _trySave();
   });
 }
 
@@ -8162,7 +8211,7 @@ function renderQuickTasks() {
       <div class="qt-checkbox${task.done ? ' checked' : ''}" onclick="toggleQuickTask(${task.id})">${task.done ? '✓' : ''}</div>
       <div class="qt-item-body">
         <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${escAttr(task.text)}</div>
-        <div class="qt-item-date"><span class="qt-clock-icon">🕐</span>${task.createdAt ? _formatFullDateTime(task.createdAt) : (currentLang === 'fr' ? "Aujourd'hui" : currentLang === 'en' ? 'Today' : 'اليوم')}</div>
+        ${settings.showTaskDate !== false ? `<div class="qt-item-date"><span class="qt-clock-icon">🕐</span>${task.createdAt ? _formatFullDateTime(task.createdAt) : (currentLang === 'fr' ? "Aujourd'hui" : currentLang === 'en' ? 'Today' : 'اليوم')}</div>` : ''}
       </div>
       ${task.done ? `<div class="qt-done-label">✓</div>` : ''}
       <div class="qt-item-actions" dir="ltr">
