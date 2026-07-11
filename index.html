@@ -1440,23 +1440,23 @@ body.auth-active {
 .page {
   display: none;
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.28s cubic-bezier(0.4,0,0.2,1), transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  transform: translateY(8px) scale(0.99);
+  transition: opacity 0.22s cubic-bezier(0.4,0,0.2,1), transform 0.22s cubic-bezier(0.4,0,0.2,1);
   will-change: opacity, transform;
   pointer-events: none;
 }
 .page.active {
   display: block;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px) scale(0.99);
   pointer-events: auto;
 }
 .page.page-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
-.page.slide-from-right { transform: translateX(18px); }
-.page.slide-from-left  { transform: translateX(-18px); }
+.page.slide-from-right { transform: translateX(14px) scale(0.99); }
+.page.slide-from-left  { transform: translateX(-14px) scale(0.99); }
 
 /* ===== HERO STATS ===== */
 .hero-stats {
@@ -4555,7 +4555,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
       </div>
 
       <div class="journal-composer-actions">
-        <span class="journal-char-count" id="journalCharCount">0 حرف</span>
+        <span class="journal-char-count" id="journalCharCount">0</span>
         <button class="journal-save-btn" id="journalSaveBtn" onclick="saveJournalEntry()">💾 حفظ المقال</button>
       </div>
     </div>
@@ -5854,7 +5854,7 @@ const T = {
     achHeatmapLess: 'أقل',
     achHeatmapMore: 'أكثر',
     achStatActiveDay: 'يوم نشط', achStatPerfectDay: 'يوم مثالي 💎',
-    achStatLoggedAch: 'إنجاز مسجّل', achStatConsistency: 'معدل الاتساق',
+    achStatLoggedAch: 'إنجاز مسجّل', achStatConsistency: 'معدل الاتساق', achNoData: 'لا بيانات',
     achHeatmapDays: ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'],
     achLevelTitle: 'مستواك وتقدمك',
     achLevelSub: 'كل إنجاز يكسبك XP ويرفعك لمستوى أعلى',
@@ -6197,7 +6197,7 @@ const T = {
     achHeatmapLess: 'Moins',
     achHeatmapMore: 'Plus',
     achStatActiveDay: 'Jour actif', achStatPerfectDay: 'Jour parfait 💎',
-    achStatLoggedAch: 'Réussite enregistrée', achStatConsistency: 'Taux de régularité',
+    achStatLoggedAch: 'Réussite enregistrée', achStatConsistency: 'Taux de régularité', achNoData: 'Aucune donnée',
     achHeatmapDays: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
     achLevelTitle: 'Ton niveau et ta progression',
     achLevelSub: 'Chaque réussite te rapporte des XP et te fait monter de niveau',
@@ -6540,7 +6540,7 @@ const T = {
     achHeatmapLess: 'Less',
     achHeatmapMore: 'More',
     achStatActiveDay: 'Active day', achStatPerfectDay: 'Perfect day 💎',
-    achStatLoggedAch: 'Logged achievement', achStatConsistency: 'Consistency rate',
+    achStatLoggedAch: 'Logged achievement', achStatConsistency: 'Consistency rate', achNoData: 'No data',
     achHeatmapDays: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
     achLevelTitle: 'Your Level & Progress',
     achLevelSub: 'Every achievement earns you XP and levels you up',
@@ -6715,6 +6715,7 @@ function updateJournalPageText() {
   se('journalTagsLabel', tr.journalTagsLabel);
   se('journalEntriesTitle', tr.journalEntriesTitle);
   se('journalSaveBtn', tr.journalSaveBtn);
+  updateJournalCharCount();
   const ta = document.getElementById('journalTextarea');
   if (ta) ta.placeholder = tr.journalTextareaPlaceholder;
   const js = document.getElementById('journalSearch');
@@ -7897,19 +7898,24 @@ function showPage(p) {
     };
     prevEl.addEventListener('transitionend', hidePrev, { once: true });
     // Safety fallback
-    setTimeout(() => prevEl.classList.remove('active'), 320);
+    setTimeout(() => prevEl.classList.remove('active'), 260);
   }
 
-  // Prepare next page: position off-screen in slide direction
+  // Prepare next page: position off-screen in slide direction.
+  // Switching display:none -> block is itself cheap; the historical "white
+  // flash" came from renderAll() running synchronously right here, blocking
+  // the browser from ever painting this intermediate state. So: paint first,
+  // render after.
   nextEl.classList.remove('page-visible','slide-from-left','slide-from-right');
   nextEl.classList.add('active', goingRight ? 'slide-from-right' : 'slide-from-left');
 
-  // Render data so content is ready before it animates in
-  renderAll();
-  if (p === 'achievements') { try { renderAchievementsPage(); } catch(e) {} }
-
-  // Trigger transition on next paint
+  // Let the browser paint the (empty/last-rendered) next page in its
+  // off-screen position on this frame, THEN do the expensive render work,
+  // THEN kick off the slide-in animation on the following frame. This keeps
+  // the transition itself buttery even while renderAll() is busy.
   requestAnimationFrame(() => {
+    renderAll();
+    if (p === 'achievements') { try { renderAchievementsPage(); } catch(e) {} }
     requestAnimationFrame(() => {
       nextEl.classList.remove('slide-from-left','slide-from-right');
       nextEl.classList.add('page-visible');
@@ -9489,7 +9495,7 @@ function toggleJournalTag(btn) {
 function updateJournalCharCount() {
   const ta = document.getElementById('journalTextarea');
   const cc = document.getElementById('journalCharCount');
-  if (ta && cc) cc.textContent = ta.value.length + ' ' + t('journalCharUnit');
+  if (ta && cc) cc.textContent = ta.value.length + ' ' + t('journalCharCountUnit');
 }
 
 function saveJournalEntry() {
@@ -12146,8 +12152,8 @@ function renderHeatmap() {
     const firstReal = col.find(d => d !== null);
     if (firstReal && firstReal.getMonth() !== lastMonth) {
       lastMonth = firstReal.getMonth();
-      const MONTH_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-      monthLabels.push({ col: ci, label: MONTH_AR[firstReal.getMonth()] });
+      const monthNamesLoc = (T[currentLang] || T.ar).monthNames;
+      monthLabels.push({ col: ci, label: monthNamesLoc[firstReal.getMonth()] });
     }
   });
 
@@ -12230,8 +12236,8 @@ function showHmTooltip(e, el) {
   if (!dateStr) return;
   const parts = dateStr.split('-');
   const y = parseInt(parts[0]), m = parseInt(parts[1]) - 1, d = parseInt(parts[2]);
-  const MONTH_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  const label = `${d} ${MONTH_AR[m]} ${y}${pct ? ' · ' + pct : ' · لا بيانات'}`;
+  const monthNamesLoc = (T[currentLang] || T.ar).monthNames;
+  const label = `${d} ${monthNamesLoc[m]} ${y}${pct ? ' · ' + pct : ' · ' + t('achNoData')}`;
   const tip = document.createElement('div');
   tip.className = 'hm-tooltip';
   tip.textContent = label;
