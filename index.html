@@ -2,8 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>TACKY Habit Tracker Pro ✨</title>
+<meta name="description" content="تطبيق TACKY لتتبع العادات اليومية — نظّم مهامك، تابع تقدمك، وحقق أهدافك اليومية بسهولة واحترافية.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%233b82f6'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 
 <!-- ===== FIREBASE SETUP WIZARD STYLES ===== -->
@@ -706,50 +709,189 @@ function fbsReset() {
   --shadow-sm:0 1px 3px rgba(0,0,0,.3); --shadow:0 4px 16px rgba(0,0,0,.4); --shadow-lg:0 12px 40px rgba(0,0,0,.5);
 }
 
+/* ── UNICORN 🦄 (girly, dreamy, playful) ── */
+[data-app-theme="unicorn"] {
+  --bg:#fff0fa; --bg2:#ffe0f5; --bg3:#ffc9ec;
+  --white:#ffffff;
+  --blue-50:#fff0fa; --blue-100:#ffe0f5; --blue-200:#ffc9ec;
+  --blue-300:#ff9fdb; --blue-400:#f472b6; --blue-500:#ec4899;
+  --blue-600:#db2777; --blue-700:#be185d;
+  --green:#22c55e; --green-light:#dcfce7; --green-mid:#16a34a;
+  --red:#ef4444; --red-light:#fee2e2; --orange:#f97316;
+  --yellow:#eab308; --yellow-light:#fef9c3; --purple:#a855f7; --purple-light:#f3e8ff;
+  --border:#ffc9ec; --text:#831843; --text-2:#9d174d; --text-3:#f472b6;
+  --shadow-sm:0 1px 3px rgba(236,72,153,.1); --shadow:0 4px 16px rgba(236,72,153,.16); --shadow-lg:0 12px 40px rgba(236,72,153,.2);
+}
+
+/* ── PRINCESS 👑 (elegant pink & gold) ── */
+[data-app-theme="princess"] {
+  --bg:#fff6fb; --bg2:#ffe8f4; --bg3:#ffd3e8;
+  --white:#ffffff;
+  --blue-50:#fff6fb; --blue-100:#ffe8f4; --blue-200:#ffd3e8;
+  --blue-300:#ffa8d4; --blue-400:#f472b6; --blue-500:#db2777;
+  --blue-600:#be185d; --blue-700:#9d174d;
+  --green:#22c55e; --green-light:#dcfce7; --green-mid:#16a34a;
+  --red:#ef4444; --red-light:#fee2e2; --orange:#d97706;
+  --yellow:#d4a017; --yellow-light:#fef3c7; --purple:#a855f7; --purple-light:#f3e8ff;
+  --border:#ffd3e8; --text:#701a3f; --text-2:#9d174d; --text-3:#e879b9;
+  --shadow-sm:0 1px 3px rgba(219,39,119,.1); --shadow:0 4px 16px rgba(219,39,119,.16); --shadow-lg:0 12px 40px rgba(219,39,119,.2);
+}
+
+/* ── SUPERHERO 🦸 (bold blue & red, energetic) ── */
+[data-app-theme="hero"] {
+  --bg:#eef4ff; --bg2:#dbe7ff; --bg3:#bfd4ff;
+  --white:#ffffff;
+  --blue-50:#eef4ff; --blue-100:#dbe7ff; --blue-200:#bfd4ff;
+  --blue-300:#8fb3ff; --blue-400:#4d84f7; --blue-500:#2563eb;
+  --blue-600:#1d4ed8; --blue-700:#1e40af;
+  --green:#16a34a; --green-light:#dcfce7; --green-mid:#15803d;
+  --red:#dc2626; --red-light:#fee2e2; --orange:#ea580c;
+  --yellow:#eab308; --yellow-light:#fef9c3; --purple:#7c3aed; --purple-light:#ede9fe;
+  --border:#bfd4ff; --text:#1e3a8a; --text-2:#1e40af; --text-3:#3b82f6;
+  --shadow-sm:0 1px 3px rgba(37,99,235,.1); --shadow:0 4px 16px rgba(37,99,235,.18); --shadow-lg:0 12px 40px rgba(37,99,235,.22);
+}
+
+/* ── SPACE 🚀 (dark, boyish, cosmic) ── */
+[data-app-theme="space"] {
+  --white:#141c34; --bg:#0c1224; --bg2:#141c34; --bg3:#1c2748;
+  --blue-50:#1c2748; --blue-100:#243157; --blue-200:#2d3f6e;
+  --blue-300:#3b5385; --blue-400:#38bdf8; --blue-500:#0ea5e9;
+  --blue-600:#38bdf8; --blue-700:#7dd3fc;
+  --green:#22c55e; --green-light:#052e16; --green-mid:#166534;
+  --red:#f87171; --red-light:#2d0b0b; --orange:#fb923c;
+  --yellow:#facc15; --yellow-light:#1c1500; --purple:#a78bfa; --purple-light:#1e0533;
+  --text:#e0f2fe; --text-2:#bae6fd; --text-3:#7dd3fc;
+  --border:#243157;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.35); --shadow:0 4px 16px rgba(56,189,248,.15); --shadow-lg:0 12px 40px rgba(56,189,248,.2);
+}
+
+/* ── THEME TRIGGER ROW ── */
+.settings-item-clickable { cursor: pointer; transition: background 0.15s; border-radius: 10px; }
+.settings-item-clickable:hover { background: var(--bg); }
+.theme-trigger {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px 6px 8px; border-radius: 10px;
+  background: var(--bg); border: 1px solid var(--border);
+}
+.theme-trigger-swatch {
+  width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+  border: 1.5px solid rgba(0,0,0,0.06);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+}
+.theme-trigger-name { font-size: 0.78rem; font-weight: 700; color: var(--text-2); white-space: nowrap; }
+.theme-trigger-chevron { font-size: 0.9rem; color: var(--text-3); }
+
+/* ── THEME PICKER POPUP ── */
+.theme-popup-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1200; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease;
+  padding: 20px;
+}
+.theme-popup-overlay.open { opacity: 1; pointer-events: auto; }
+.theme-popup-card {
+  background: var(--white); border-radius: 20px;
+  width: 100%; max-width: 460px; max-height: 82vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  transform: translateY(14px) scale(0.97); opacity: 0;
+  transition: transform 0.22s cubic-bezier(.2,.9,.3,1.2), opacity 0.2s ease;
+}
+.theme-popup-overlay.open .theme-popup-card { transform: translateY(0) scale(1); opacity: 1; }
+.theme-popup-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.theme-popup-title { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+.theme-popup-close {
+  width: 30px; height: 30px; border-radius: 8px; border: none;
+  background: var(--bg); color: var(--text-2); cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; transition: var(--transition);
+}
+.theme-popup-close:hover { background: var(--red-light); color: var(--red); }
+.theme-popup-body { padding: 16px 18px 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; flex: 1 1 auto; min-height: 0; }
+
 /* ── THEME CARD UI ── */
 .theme-picker-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 12px;
 }
 .theme-card {
-  border-radius: 14px;
-  border: 2.5px solid transparent;
+  border-radius: 15px;
+  border: 2px solid var(--border);
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.2s;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
+  background: var(--white);
 }
-.theme-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.theme-card:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.14); }
+.theme-card:active { transform: translateY(-1px) scale(0.98); }
 .theme-card.active {
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 3px var(--blue-50), 0 0 0 5px var(--blue-500);
+  box-shadow: 0 0 0 3px var(--blue-50), 0 6px 16px rgba(0,0,0,0.12);
 }
 .theme-card-preview {
-  height: 52px;
+  height: 58px;
   display: flex;
-  padding: 8px;
+  padding: 9px;
   gap: 5px;
   align-items: flex-end;
+  position: relative;
 }
-.tcp-bg   { flex: 1; border-radius: 6px; height: 100%; }
-.tcp-card { width: 36%; border-radius: 6px; height: 78%; }
-.tcp-btn  { width: 22%; border-radius: 5px; height: 50%; }
+.tcp-bg   { flex: 1; border-radius: 7px; height: 100%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04); }
+.tcp-card { width: 38%; border-radius: 6px; height: 76%; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+.tcp-btn  { width: 24%; border-radius: 5px; height: 46%; box-shadow: 0 2px 5px rgba(0,0,0,0.18); }
 .theme-card-name {
-  font-size: 0.72rem; font-weight: 800;
-  text-align: center; padding: 5px 4px 7px;
+  font-size: 0.7rem; font-weight: 800;
+  text-align: center; padding: 6px 4px 8px;
   background: var(--white); color: var(--text);
   line-height: 1.2;
 }
 .theme-card .active-check {
-  position: absolute; top: 5px; right: 6px;
+  position: absolute; top: 6px; left: 6px;
   background: var(--blue-500); color: #fff;
-  border-radius: 50%; width: 18px; height: 18px;
+  border-radius: 50%; width: 20px; height: 20px;
   display: none; align-items: center; justify-content: center;
-  font-size: 0.65rem; font-weight: 900;
+  font-size: 0.68rem; font-weight: 900;
+  box-shadow: 0 2px 6px rgba(59,130,246,0.5);
 }
 .theme-card.active .active-check { display: flex; }
+
+/* ── THEME POPUP — MOBILE (bottom-sheet, guaranteed scroll) ── */
+@media (max-width: 600px) {
+  .theme-popup-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .theme-popup-card {
+    max-width: 100%;
+    width: 100%;
+    max-height: 88vh;
+    max-height: 88dvh;
+    border-radius: 18px 18px 0 0;
+    transform: translateY(100%);
+  }
+  .theme-popup-overlay.open .theme-popup-card { transform: translateY(0); }
+  .theme-popup-header { padding: 16px 16px 12px; }
+  .theme-popup-body {
+    padding: 14px 14px calc(20px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .theme-picker-grid {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 10px;
+  }
+  .theme-card-preview { height: 50px; }
+  .theme-trigger-name { display: none; }
+}
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html {
@@ -1182,7 +1324,7 @@ body.auth-active {
 .badges-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,0.55);
   z-index: 2100; display: none; align-items: flex-start; justify-content: center;
-  padding: 6vh 16px; overflow-y: auto; backdrop-filter: blur(2px);
+  padding: 6vh 16px; overflow-y: auto; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
 }
 .badges-overlay.show { display: flex; }
 .badges-modal {
@@ -1280,6 +1422,7 @@ body.auth-active {
 }
 .lang-btn:hover { background: var(--blue-50); border-color: var(--blue-300); }
 .lang-switcher { display: flex; gap: 3px; background: var(--bg); border: 1px solid var(--border); border-radius: 11px; padding: 3px; }
+.settings-lang-item { display: none; }
 .lang-opt { padding: 4px 9px; border-radius: 8px; border: none; background: transparent; color: var(--text-2); font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: var(--transition); }
 .lang-opt:hover { background: var(--white); }
 .lang-opt.active { background: var(--blue-500); color: white; }
@@ -1868,7 +2011,7 @@ table { border-collapse: collapse; min-width: 100%; }
 #celebrationOverlay {
   position: fixed; inset: 0; z-index: 9999;
   display: none; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   animation: celebFadeIn 0.3s ease both;
 }
 #celebrationOverlay.show { display: flex; }
@@ -1922,7 +2065,7 @@ table { border-collapse: collapse; min-width: 100%; }
 #firstTimeWelcomeOverlay {
   position: fixed; inset: 0; z-index: 100000;
   display: none; align-items: center; justify-content: center;
-  background: rgba(15,23,42,0.68); backdrop-filter: blur(8px);
+  background: rgba(15,23,42,0.68); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   animation: celebFadeIn 0.3s ease both;
   padding: 16px;
 }
@@ -1990,7 +2133,7 @@ table { border-collapse: collapse; min-width: 100%; }
 #delHabitOverlay {
   position: fixed; inset: 0; z-index: 9999;
   display: none; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   animation: celebFadeIn 0.25s ease both;
 }
 #delHabitOverlay.show { display: flex; }
@@ -2047,7 +2190,7 @@ table { border-collapse: collapse; min-width: 100%; }
 .delg-overlay {
   position: fixed; inset: 0; z-index: 9999;
   display: none; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   animation: celebFadeIn 0.25s ease both;
 }
 .delg-overlay.show { display: flex; }
@@ -2129,7 +2272,7 @@ table { border-collapse: collapse; min-width: 100%; }
 .moodtip-overlay {
   position: fixed; inset: 0; z-index: 9999;
   display: none; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   animation: celebFadeIn 0.25s ease both; padding: 16px;
 }
 .moodtip-overlay.show { display: flex; }
@@ -2659,7 +2802,7 @@ table { border-collapse: collapse; min-width: 100%; }
 
 /* ===== SETTINGS PANEL ===== */
 .settings-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
 .settings-overlay.open { opacity: 1; pointer-events: all; }
@@ -3316,6 +3459,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* Dark-mode & lang buttons → in settings */
   .theme-btn   { display: none !important; }
   .lang-switcher { display: none !important; }
+  .settings-lang-item { display: flex !important; }
+  .settings-lang-item .lang-switcher { display: flex !important; }
   /* Right side: compact row */
   .nav-right {
     flex: 1; display: flex; align-items: center;
@@ -3956,6 +4101,23 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   transform: translateX(-50%);
   transition: opacity 0.15s;
+}
+
+/* ===== توافق الأجهزة: إصلاحات تقنية بدون أي تغيير بصري في التصميم ===== */
+
+/* منع تكبير Safari التلقائي عند الكتابة في الحقول (لا يغيّر الشكل الظاهر، فقط يمنع القفزة/التذبذب) */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* شريط التنقل السفلي: احترام منطقة الخط السفلي على آيفون (Home Indicator) بدون تغيير الشكل الظاهري */
+@media (max-width: 900px) {
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
 }
 </style>
 </head>
@@ -4881,6 +5043,21 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         </select>
       </div>
 
+      <div class="settings-item settings-lang-item">
+        <div class="settings-item-left">
+          <div class="settings-item-icon sicon-blue">🌐</div>
+          <div>
+            <div class="settings-item-label" id="langSettingsLabel">اللغة</div>
+            <div class="settings-item-desc" id="langSettingsDesc">لغة التطبيق</div>
+          </div>
+        </div>
+        <div class="lang-switcher" id="settingsLangSwitcher">
+          <button class="lang-opt" id="settingsLangAr" data-lang="ar" onclick="setLang('ar')">ع</button>
+          <button class="lang-opt" id="settingsLangFr" data-lang="fr" onclick="setLang('fr')">FR</button>
+          <button class="lang-opt" id="settingsLangEn" data-lang="en" onclick="setLang('en')">EN</button>
+        </div>
+      </div>
+
       <div class="settings-item">
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-green">📐</div>
@@ -4929,7 +5106,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
       </div>
 
       <!-- THEME PICKER -->
-      <div class="settings-item" style="flex-direction:column;align-items:flex-start;gap:10px">
+      <div class="settings-item settings-item-clickable" onclick="openThemePicker()">
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-purple">🖼️</div>
           <div>
@@ -4937,7 +5114,24 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
             <div class="settings-item-desc">اختر لوحة ألوان كاملة للواجهة</div>
           </div>
         </div>
-        <div class="theme-picker-grid" id="themePickerGrid"></div>
+        <div class="theme-trigger" id="themeTrigger">
+          <div class="theme-trigger-swatch" id="themeTriggerSwatch"></div>
+          <span class="theme-trigger-name" id="themeTriggerName">أوقيانوس</span>
+          <span class="theme-trigger-chevron">‹</span>
+        </div>
+      </div>
+
+      <!-- THEME PICKER POPUP -->
+      <div class="theme-popup-overlay" id="themePopupOverlay" onclick="closeThemePicker()">
+        <div class="theme-popup-card" onclick="event.stopPropagation()">
+          <div class="theme-popup-header">
+            <div class="theme-popup-title">🖼️ اختر ثيم التطبيق</div>
+            <button class="theme-popup-close" onclick="closeThemePicker()">✕</button>
+          </div>
+          <div class="theme-popup-body">
+            <div class="theme-picker-grid" id="themePickerGrid"></div>
+          </div>
+        </div>
       </div>
 
       <!-- TABS VISIBILITY -->
@@ -5598,6 +5792,8 @@ const T = {
     achGym10Name: 'قوة الإرادة', achGym10Desc: 'سجّل 10 حصص جيم',
     achPerfectDayName: 'يوم مثالي', achPerfectDayDesc: 'أكمل كل عاداتك المجدولة في يوم واحد',
     achPerfectWeekName: 'أسبوع الكمال', achPerfectWeekDesc: 'أسبوع كامل بإنجاز 100٪',
+  },
+  fr: {
     dir: 'ltr', lang: 'fr',
     navTracker: '📋 Habitudes', navMood: '🧠 Humeur', navWeekly: '📅 Tâches', navGym: '🏋️ Gym', navQuotes: '💬 Citations',
     // GYM - FRENCH
@@ -5862,6 +6058,8 @@ const T = {
     achGym10Name: 'Force de volonté', achGym10Desc: 'Enregistre 10 séances de sport',
     achPerfectDayName: 'Jour parfait', achPerfectDayDesc: 'Termine toutes tes habitudes prévues en un jour',
     achPerfectWeekName: 'Semaine parfaite', achPerfectWeekDesc: 'Une semaine complète à 100%',
+  },
+  en: {
     dir: 'ltr', lang: 'en',
     navTracker: '📋 Habits', navMood: '🧠 Mood', navWeekly: '📅 Tasks', navGym: '🏋️ Gym', navQuotes: '💬 Quotes',
     // GYM - ENGLISH
@@ -7120,6 +7318,10 @@ const APP_THEMES = [
   { id:'candy-dark',  name:'🍭 حلوى ليلية', bg:'#12021a', bg2:'#1a0420', accent:'#d946ef', dark:true },
   { id:'slate',    name:'🩶 رمادي',       bg:'#f8fafc', bg2:'#f1f5f9', accent:'#475569', dark:false },
   { id:'slate-dark',  name:'🌫️ رمادي ليلي', bg:'#090e19', bg2:'#0f172a', accent:'#94a3b8', dark:true },
+  { id:'unicorn',  name:'🦄 يونيكورن',    bg:'#fff0fa', bg2:'#ffe0f5', accent:'#ec4899', dark:false },
+  { id:'princess', name:'👑 أميرة',       bg:'#fff6fb', bg2:'#ffe8f4', accent:'#db2777', dark:false },
+  { id:'hero',     name:'🦸 بطل خارق',    bg:'#eef4ff', bg2:'#dbe7ff', accent:'#2563eb', dark:false },
+  { id:'space',    name:'🚀 فضاء',        bg:'#0c1224', bg2:'#141c34', accent:'#38bdf8', dark:true },
 ];
 
 function applyAppTheme(themeId) {
@@ -7138,12 +7340,18 @@ function applyAppTheme(themeId) {
   save();
   renderThemePicker();
   setTimeout(() => renderAll(), 50);
+  setTimeout(() => closeThemePicker(), 260);
 }
 
 function renderThemePicker() {
   const grid = document.getElementById('themePickerGrid');
-  if (!grid) return;
   const current = settings.appTheme || 'ocean';
+  const t = APP_THEMES.find(x => x.id === current);
+  const swatch = document.getElementById('themeTriggerSwatch');
+  const nameEl = document.getElementById('themeTriggerName');
+  if (swatch && t) swatch.style.background = `linear-gradient(135deg, ${t.bg2}, ${t.accent})`;
+  if (nameEl && t) nameEl.textContent = t.name;
+  if (!grid) return;
   grid.innerHTML = APP_THEMES.map(t => {
     const isActive = current === t.id;
     return `<div class="theme-card ${isActive ? 'active' : ''}" onclick="applyAppTheme('${t.id}')" title="${t.name}">
@@ -7156,6 +7364,17 @@ function renderThemePicker() {
       <div class="active-check">✓</div>
     </div>`;
   }).join('');
+}
+
+function openThemePicker() {
+  renderThemePicker();
+  const ov = document.getElementById('themePopupOverlay');
+  if (ov) ov.classList.add('open');
+}
+
+function closeThemePicker() {
+  const ov = document.getElementById('themePopupOverlay');
+  if (ov) ov.classList.remove('open');
 }
 
 function setFontSize(v) {
@@ -10808,7 +11027,7 @@ init();
 
 
 <!-- ===== SIGN OUT CONFIRM MODAL ===== -->
-<div id="signOutOverlay" onclick="cancelSignOut()" style="display:none;position:fixed;inset:0;z-index:99997;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
+<div id="signOutOverlay" onclick="cancelSignOut()" style="display:none;position:fixed;inset:0;z-index:99997;background:rgba(15,23,42,0.6);-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);align-items:center;justify-content:center;padding:16px;">
   <div onclick="event.stopPropagation()" style="background:var(--white);border:1px solid var(--border);border-radius:24px;padding:32px 28px 26px;max-width:380px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.35);text-align:center;animation:mdpPopIn 0.3s cubic-bezier(.2,.9,.3,1.2) both;">
     <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,#fee2e2,#fecaca);display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 8px 20px rgba(239,68,68,0.25);">🚪</div>
     <div style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:8px;" id="soTitle">تسجيل الخروج؟</div>
@@ -10821,7 +11040,7 @@ init();
 </div>
 
 <!-- ===== ADD HABIT MODAL (with days) ===== -->
-<div id="addHabitModalOverlay" onclick="closeAddHabitModal()" style="display:none;position:fixed;inset:0;z-index:99990;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;">
+<div id="addHabitModalOverlay" onclick="closeAddHabitModal()" style="display:none;position:fixed;inset:0;z-index:99990;background:rgba(15,23,42,0.6);-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);align-items:center;justify-content:center;padding:16px;">
   <div onclick="event.stopPropagation()" style="position:relative;background:var(--white);border:1px solid var(--border);border-radius:24px;padding:28px 24px 22px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.35);animation:mdpPopIn 0.3s cubic-bezier(.2,.9,.3,1.2) both;">
     <button onclick="closeAddHabitModal()" style="position:absolute;top:16px;inset-inline-end:16px;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-3);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:2;">✕</button>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
@@ -10974,7 +11193,7 @@ const FTW_TEXTS = {
       'مبروك التسجيل! هذا يومك الأول معنا، وواصل ما توقف 🔥',
       'أنت الآن جزء من رحلة التطور اليومي — إحنا فخورين فيك من الآن 🌟',
       'خطوة أولى بسيطة تصنع فرقًا كبيرًا مع الوقت. أهلاً بك بيننا! ✨',
-      'حياك الله! سجّل عاداتك، تابع تقدمك، وشوف نفسك تتغيّر يوم بيوم 🌱'
+      'سجّل عاداتك، تابع تقدمك، وشوف نفسك تتغيّر يوم بيوم 🌱'
     ],
     btn: 'يلا نبدأ! 🚀'
   },
@@ -10986,7 +11205,8 @@ const FTW_TEXTS = {
       'Chaque petite habitude construite aujourd\u2019hui = un toi plus fort demain. Allons-y! 💪',
       'Félicitations pour ton inscription! C\u2019est ton premier jour, ne t\u2019arrête jamais 🔥',
       'Tu fais désormais partie du voyage quotidien — déjà fiers de toi 🌟',
-      'Un petit premier pas peut faire une grande différence avec le temps. Bienvenue! ✨'
+      'Un petit premier pas peut faire une grande différence avec le temps. Bienvenue! ✨',
+      'Enregistre tes habitudes, suis ta progression, et regarde-toi évoluer jour après jour 🌱'
     ],
     btn: 'C\u2019est parti! 🚀'
   },
@@ -10998,7 +11218,8 @@ const FTW_TEXTS = {
       'Every small habit you build today = a stronger you tomorrow. Let\u2019s go! 💪',
       'Congrats on signing up! This is day one — never stop 🔥',
       'You\u2019re now part of the daily growth journey — already proud of you 🌟',
-      'One small first step can make a huge difference over time. Welcome! ✨'
+      'One small first step can make a huge difference over time. Welcome! ✨',
+      'Track your habits, follow your progress, and watch yourself grow day by day 🌱'
     ],
     btn: 'Let\u2019s start! 🚀'
   }
@@ -11440,7 +11661,7 @@ function _showMissedYesterdayPopup(missedHabits) {
       #missedDayPopupOverlay {
         position: fixed; inset: 0; z-index: 99998;
         background: rgba(15,23,42,0.55);
-        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
         display: flex; align-items: center; justify-content: center;
         padding: 16px;
         animation: mdpFadeIn 0.25s ease both;
