@@ -1243,9 +1243,10 @@ table { border-collapse: collapse; min-width: 100%; }
   line-height: 1.4; min-width: 0; flex: 1;
 }
 .qt-item-date {
-  font-size: 0.63rem; font-weight: 700; color: var(--text-3);
+  font-size: 0.75rem; font-weight: 700; color: var(--text-2);
   font-family: 'JetBrains Mono', monospace;
   display: inline-flex; align-items: center; gap: 3px;
+  white-space: nowrap;
 }
 .qt-item-text.struck {
   text-decoration: line-through;
@@ -8158,16 +8159,16 @@ function renderQuickTasks() {
       <div class="qt-checkbox${task.done ? ' checked' : ''}" onclick="toggleQuickTask(${task.id})">${task.done ? '✓' : ''}</div>
       <div class="qt-item-body">
         <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${escAttr(task.text)}</div>
-        <div class="qt-item-date">${task.createdAt ? _formatFullDateTime(task.createdAt) : (currentLang === 'fr' ? "Aujourd'hui" : currentLang === 'en' ? 'Today' : 'اليوم')}</div>
       </div>
       ${task.done ? `<div class="qt-done-label">✓</div>` : ''}
       <div class="qt-item-actions" dir="ltr">
+        <div class="qt-item-date">${task.createdAt ? _formatFullDateTime(task.createdAt) : (currentLang === 'fr' ? "Aujourd'hui" : currentLang === 'en' ? 'Today' : 'اليوم')}</div>
         <div class="qt-move-group">
           <button class="qt-move-btn" onclick="moveQuickTask(${task.id},-1)" ${upDis ? 'disabled' : ''} title="▲">▲</button>
           <button class="qt-move-btn" onclick="moveQuickTask(${task.id},1)" ${downDis ? 'disabled' : ''} title="▼">▼</button>
         </div>
         <button class="qt-edit-btn" onclick="startEditTaskById(${task.id})" title="✎">✎</button>
-        <button class="qt-delete-btn" onclick="deleteQuickTask(${task.id})">✕</button>
+        <button class="qt-delete-btn" onclick="deleteQuickTask(${task.id})">🗑</button>
       </div>
     </div>`;
   }).join('');
