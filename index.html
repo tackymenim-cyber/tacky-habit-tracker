@@ -1356,6 +1356,74 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .celeb-close-btn:hover { box-shadow: 0 8px 28px rgba(59,130,246,0.5); transform: translateY(-2px); }
 
+/* ===== FIRST-TIME WELCOME MODAL (يظهر مرة واحدة فقط عند أول تسجيل) ===== */
+#firstTimeWelcomeOverlay {
+  position: fixed; inset: 0; z-index: 100000;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(15,23,42,0.68); backdrop-filter: blur(8px);
+  animation: celebFadeIn 0.3s ease both;
+  padding: 16px;
+}
+#firstTimeWelcomeOverlay.show { display: flex; }
+.ftw-card {
+  position: relative;
+  background: linear-gradient(160deg, var(--white) 0%, var(--bg-2, #f8fafc) 100%);
+  border-radius: 30px;
+  padding: 42px 32px 30px; text-align: center;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.4);
+  max-width: 380px; width: 92%;
+  animation: celebBounce 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+  overflow: hidden;
+}
+.ftw-poppers { position: absolute; inset: 0; pointer-events: none; }
+.ftw-popper {
+  position: absolute; font-size: 1.9rem;
+  animation: ftwPopperFloat 2.6s ease-in-out infinite;
+  opacity: 0.9;
+}
+.ftw-popper.p1 { top: 5%;  left: 5%;  animation-delay: 0s; }
+.ftw-popper.p2 { top: 7%;  right: 5%; animation-delay: 0.45s; }
+.ftw-popper.p3 { bottom: 8%; left: 8%; animation-delay: 0.9s; }
+.ftw-popper.p4 { bottom: 6%; right: 7%; animation-delay: 1.35s; }
+@keyframes ftwPopperFloat {
+  0%, 100% { transform: translateY(0) rotate(-8deg); opacity: 0.8; }
+  50%      { transform: translateY(-12px) rotate(10deg); opacity: 1; }
+}
+.ftw-emoji {
+  font-size: 4.6rem; line-height: 1; display: block; margin-bottom: 8px;
+  animation: ftwBurst 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes ftwBurst {
+  0%   { transform: scale(0) rotate(-25deg); opacity: 0; }
+  60%  { transform: scale(1.3) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.ftw-badge {
+  display: inline-block; font-size: 0.78rem; font-weight: 800;
+  background: var(--blue-50, #eff6ff); color: var(--blue-500);
+  border-radius: 20px; padding: 6px 16px; margin-bottom: 16px;
+  animation: celebStarPop 0.4s ease 0.5s both;
+}
+.ftw-title {
+  font-size: 1.55rem; font-weight: 900; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #f59e0b, #ec4899, #a855f7);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 10px;
+}
+.ftw-msg {
+  font-size: 0.98rem; color: var(--text-2); line-height: 1.8;
+  margin-bottom: 24px;
+}
+.ftw-close-btn {
+  border: none; border-radius: 16px; padding: 15px 22px;
+  font-family: 'Tajawal', sans-serif; font-size: 1rem; font-weight: 900;
+  color: white; cursor: pointer; width: 100%;
+  background: linear-gradient(135deg, #f59e0b, #ec4899);
+  box-shadow: 0 10px 30px rgba(236,72,153,0.4);
+  transition: all 0.2s;
+}
+.ftw-close-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(236,72,153,0.55); }
+
 /* ===== DELETE HABIT CONFIRM MODAL ===== */
 #delHabitOverlay {
   position: fixed; inset: 0; z-index: 9999;
@@ -1640,6 +1708,55 @@ table { border-collapse: collapse; min-width: 100%; }
   transition: var(--transition);
 }
 .save-thoughts-btn:hover { background: var(--blue-600); transform: translateY(-1px); }
+
+/* ===== THOUGHT NOTES LIST ===== */
+.thought-notes-list {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 14px;
+}
+.thought-note-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  position: relative;
+  animation: fadeUp 0.25s ease both;
+  border-right: 3px solid var(--blue-400);
+}
+[data-theme="dark"] .thought-note-item { background: var(--bg2); }
+.thought-note-ts {
+  font-size: 0.65rem;
+  color: var(--text-3);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.thought-note-ts::before { content: '🕐'; font-size: 0.7rem; }
+.thought-note-text {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.thought-note-del {
+  position: absolute; top: 8px; left: 8px;
+  width: 22px; height: 22px; border-radius: 6px;
+  border: none; background: transparent;
+  color: var(--text-3); cursor: pointer;
+  font-size: 0.7rem; opacity: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.thought-note-item:hover .thought-note-del { opacity: 1; }
+.thought-note-del:hover { background: var(--red-light); color: var(--red); }
+.thought-notes-empty {
+  text-align: center; padding: 20px;
+  color: var(--text-3); font-size: 0.82rem;
+  border: 1.5px dashed var(--border); border-radius: 12px;
+  margin-top: 12px;
+}
 .sleep-days { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .sleep-day-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .sleep-label { font-size: 0.65rem; color: var(--text-3); font-weight: 600; }
@@ -2402,6 +2519,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 }
 
 @media (max-width: 380px) {
+  .nav-tab { padding: 4px 7px; font-size: 0.68rem; }
   .hero-stats { grid-template-columns: 1fr 1fr; }
   .stat-value { font-size: 1.15rem; }
   .weekly-grid { grid-template-columns: 1fr; }
@@ -2762,25 +2880,20 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
 <!-- ===== BOTTOM NAV (Mobile) ===== -->
 <nav class="bottom-nav" id="bottomNav">
-  <button class="bottom-nav-btn active" data-page="tracker" onclick="showPage('tracker');updateBottomNav(this)">
-    <span class="bnav-icon">📋</span>
-    <span>العادات</span>
+  <button class="bottom-nav-btn active" data-page="tracker" onclick="showPage('tracker');_syncBottomNav(this)">
+    <span class="bnav-icon">📋</span><span>العادات</span>
   </button>
-  <button class="bottom-nav-btn" data-page="mood" onclick="showPage('mood');updateBottomNav(this)">
-    <span class="bnav-icon">🧠</span>
-    <span>المزاج</span>
+  <button class="bottom-nav-btn" data-page="mood" onclick="showPage('mood');_syncBottomNav(this)">
+    <span class="bnav-icon">🧠</span><span>المزاج</span>
   </button>
-  <button class="bottom-nav-btn" data-page="weekly" onclick="showPage('weekly');updateBottomNav(this)">
-    <span class="bnav-icon">📅</span>
-    <span>المهام</span>
+  <button class="bottom-nav-btn" data-page="weekly" onclick="showPage('weekly');_syncBottomNav(this)">
+    <span class="bnav-icon">📅</span><span>المهام</span>
   </button>
-  <button class="bottom-nav-btn" data-page="gym" onclick="showPage('gym');updateBottomNav(this)">
-    <span class="bnav-icon">🏋️</span>
-    <span>الجيم</span>
+  <button class="bottom-nav-btn" data-page="gym" onclick="showPage('gym');_syncBottomNav(this)">
+    <span class="bnav-icon">🏋️</span><span>الجيم</span>
   </button>
-  <button class="bottom-nav-btn" data-page="quotes" onclick="showPage('quotes');updateBottomNav(this)">
-    <span class="bnav-icon">💬</span>
-    <span>اقتباسات</span>
+  <button class="bottom-nav-btn" data-page="quotes" onclick="showPage('quotes');_syncBottomNav(this)">
+    <span class="bnav-icon">💬</span><span>اقتباسات</span>
   </button>
 </nav>
 
@@ -2880,6 +2993,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <div class="card-title" id="thoughtsCardTitle">✍️ أفكاري اليوم</div>
     <textarea class="thoughts-area" id="thoughtsArea" placeholder="اكتب ما يدور في ذهنك..."></textarea>
     <button class="save-thoughts-btn" onclick="saveThoughts()">💾 حفظ</button>
+    <div class="thought-notes-list" id="thoughtNotesList"></div>
   </div>
 </div>
 
@@ -4928,6 +5042,20 @@ let thoughtsData = {};
 let weeklyTasks = JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
 let editingTask = null;
 
+// Hide main content until real data loads — prevents default-data flash
+(function() {
+  const style = document.createElement('style');
+  style.id = '_loadingMask';
+  style.textContent = `.main, .topnav .month-nav { visibility: hidden; opacity: 0; transition: opacity 0.25s; }`;
+  document.head.appendChild(style);
+  window._revealApp = function() {
+    const s = document.getElementById('_loadingMask');
+    if (s) s.remove();
+    const main = document.querySelector('.main');
+    if (main) { main.style.visibility = ''; main.style.opacity = ''; }
+  };
+})();
+
 let selectedEmoji = '😊';
 let selectedDays = [0,1,2,3,4,5,6]; // days chosen for a NEW habit (0=Sun ... 6=Sat)
 let editSelectedDays = [0,1,2,3,4,5,6]; // days chosen while editing an existing habit
@@ -5099,6 +5227,17 @@ async function _saveToFirestore(expectedUid, _retryCount) {
   }
 }
 
+// ── حفظ فوري (بدون debounce) — يُستخدم في عمليات الحذف لضمان وصول البيانات ──
+function _saveImmediate() {
+  clearTimeout(_saveDebounceTimer);
+  _saveDebounceTimer = null;
+  _ls.setItem('hb2_settings', JSON.stringify(settings));
+  const user = window._currentUser;
+  if (user) {
+    _saveToFirestore(user.uid, 0).catch(() => {});
+  }
+}
+
 // ── Fix: حفظ فوري عند إغلاق الصفحة (beforeunload) ──────────────────────────
 window.addEventListener('beforeunload', () => {
   if (_saveDebounceTimer && window._currentUser) {
@@ -5186,20 +5325,26 @@ async function _loadFromFirestore(user, _retryCount) {
   }
 
   if (serverConfirmedNew) {
-    // Confirmed by the server: this account truly has no cloud document
-    // yet. Seed local state with starter defaults and create the doc once.
     habits      = JSON.parse(JSON.stringify(DEFAULT_HABITS));
     weeklyTasks = JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
-    // Render immediately — this IS the real state for a new user
     try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
     try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
     try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
+    try { renderThoughtNotes(); } catch(e) {}
+    if (typeof window._revealApp === 'function') window._revealApp();
     await _saveToFirestore(user.uid);
+    // This branch only runs when the server just confirmed there was NO
+    // existing document for this account — i.e. this is truly the very
+    // first registration ever, not a sign-out/sign-in, not a return after
+    // clearing data (clearAllData keeps the document, just empties it).
+    // Small delay lets the app UI finish revealing before the popup appears.
+    setTimeout(() => { try { showFirstTimeWelcome(user); } catch(e) {} }, 700);
   } else if (!serverCheckFailed) {
-    // Server confirmed data exists and we've applied it — render now
     try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
     try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
     try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
+    try { renderThoughtNotes(); } catch(e) {}
+    if (typeof window._revealApp === 'function') window._revealApp();
   }
   // If serverCheckFailed: don't render defaults — wait for the realtime
   // listener below to bring in real data from cache/server.
@@ -5223,7 +5368,9 @@ async function _loadFromFirestore(user, _retryCount) {
             try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
             try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
             try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
+            try { renderThoughtNotes(); } catch(e) {}
           }
+          if (isFirstSnapshot && typeof window._revealApp === 'function') window._revealApp();
         }
       }
       // No "else" branch: a missing doc on a later snapshot is never
@@ -5470,7 +5617,7 @@ function clearAllData() {
   sleepData = {};
   thoughtsData = {};
   weeklyTasks = { 1: [], 2: [], 3: [], 4: [] };
-  save();
+  _saveImmediate();
   renderAll();
   showToast(t('toastCleared'));
 }
@@ -5483,6 +5630,9 @@ function showPage(p) {
   const tabs = ['tracker', 'mood', 'weekly', 'gym', 'quotes'];
   const idx = tabs.indexOf(p);
   if (idx >= 0) document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  // Sync bottom nav
+  const bBtn = document.querySelector(`.bottom-nav-btn[data-page="${p}"]`);
+  if (bBtn) _syncBottomNav(bBtn);
   currentPage = p;
   renderAll();
 }
@@ -5617,7 +5767,7 @@ function confirmDeleteHabit() {
   });
   _pendingDeleteHabitId = null;
   document.getElementById('delHabitOverlay').classList.remove('show');
-  save();
+  _saveImmediate();
   renderAll();
   if (typeof playSound === 'function') { try { playSound(220, 0.1); } catch(e) {} }
 }
@@ -6240,7 +6390,8 @@ function renderMood() {
   document.getElementById('waterText').textContent = `${wCount} / ${wGoal} ${currentLang === 'ar' ? 'أكواب' : currentLang === 'fr' ? 'verres' : 'cups'}`;
 
   const tk = thoughtKey();
-  document.getElementById('thoughtsArea').value = thoughtsData[tk] || '';
+  document.getElementById('thoughtsArea').value = '';
+  renderThoughtNotes();
 }
 
 function renderMoodLine(totalDays) {
@@ -6502,10 +6653,74 @@ function setSleep(d, v) {
   save();
 }
 
+function _thoughtNotesKey() { return thoughtKey() + '_notes'; }
+
 function saveThoughts() {
-  thoughtsData[thoughtKey()] = document.getElementById('thoughtsArea').value;
+  const text = document.getElementById('thoughtsArea').value.trim();
+  if (!text) { showToast('✏️ اكتب شيئاً أولاً'); return; }
+
+  // Append new note with timestamp
+  const notesKey = _thoughtNotesKey();
+  const notes = thoughtsData[notesKey] ? JSON.parse(JSON.stringify(thoughtsData[notesKey])) : [];
+  notes.unshift({ text, ts: Date.now() });
+  thoughtsData[notesKey] = notes;
+
+  // Keep textarea text in old key too (backward compat)
+  thoughtsData[thoughtKey()] = text;
+
+  document.getElementById('thoughtsArea').value = '';
   save();
+  renderThoughtNotes();
   showToast(t('toastSaved'));
+}
+
+function deleteThoughtNote(idx) {
+  const notesKey = _thoughtNotesKey();
+  const notes = thoughtsData[notesKey] || [];
+  const note = notes[idx];
+  if (!note) return;
+  const preview = note.text.length > 40 ? note.text.slice(0, 40) + '…' : note.text;
+  openGenericDeleteConfirm(preview, () => {
+    const notesKey2 = _thoughtNotesKey();
+    const notes2 = thoughtsData[notesKey2] || [];
+    notes2.splice(idx, 1);
+    thoughtsData[notesKey2] = notes2;
+    _saveImmediate();
+    renderThoughtNotes();
+  });
+}
+
+function renderThoughtNotes() {
+  const el = document.getElementById('thoughtNotesList');
+  if (!el) return;
+  const notesKey = _thoughtNotesKey();
+  let notes = thoughtsData[notesKey] || [];
+
+  // Migrate old single-text thought to notes list (one time)
+  const oldText = thoughtsData[thoughtKey()];
+  if (oldText && notes.length === 0) {
+    notes = [{ text: oldText, ts: Date.now() }];
+    thoughtsData[notesKey] = notes;
+  }
+
+  if (notes.length === 0) {
+    el.innerHTML = `<div class="thought-notes-empty">📭 لا توجد ملاحظات محفوظة اليوم</div>`;
+    return;
+  }
+
+  el.innerHTML = notes.map((n, i) => {
+    const d = new Date(n.ts);
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    const dayN = String(d.getDate()).padStart(2,'0');
+    const moN = String(d.getMonth()+1).padStart(2,'0');
+    const tsStr = `${dayN}/${moN}  ${hh}:${mm}`;
+    return `<div class="thought-note-item">
+      <div class="thought-note-ts">${tsStr}</div>
+      <div class="thought-note-text">${n.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <button class="thought-note-del" onclick="deleteThoughtNote(${i})" title="حذف">✕</button>
+    </div>`;
+  }).join('');
 }
 
 // =========== RENDER WEEKLY ===========
@@ -6594,7 +6809,7 @@ function deleteTask(w, i) {
   openGenericDeleteConfirm(taskText, () => {
     if (weeklyTasks[w]) {
       weeklyTasks[w].splice(i, 1);
-      save();
+      _saveImmediate();
       renderWeekly();
     }
   });
@@ -6854,7 +7069,7 @@ function addExercise() {
 
 function deleteExercise(id) {
   gymExercises = gymExercises.filter(e => e.id !== id);
-  save();
+  _saveImmediate();
   renderExerciseList();
   populateLogSelects();
   renderGymPRs();
@@ -6989,7 +7204,7 @@ function renderProgressLog() {
 
 function deleteLog(id) {
   gymLogs = gymLogs.filter(l => l.id !== id);
-  save();
+  _saveImmediate();
   renderProgressLog();
   renderGymPRs();
   renderGymVolumeBars();
@@ -7677,7 +7892,7 @@ function addQuickTask() {
   const inp = document.getElementById('qtInput');
   const text = inp.value.trim();
   if (!text) { inp.focus(); return; }
-  quickTasks.unshift({ id: Date.now(), text, done: false });
+  quickTasks.unshift({ id: Date.now(), text, done: false, createdAt: Date.now() });
   inp.value = '';
   saveQuickTasks();
   renderQuickTasks();
@@ -7701,7 +7916,7 @@ function deleteQuickTask(id) {
   if (!task) return;
   openGenericDeleteConfirm(task.text || '', () => {
     quickTasks = quickTasks.filter(t => t.id !== id);
-    saveQuickTasks();
+    _saveImmediate();
     renderQuickTasks();
   });
 }
@@ -7715,7 +7930,7 @@ function clearDoneQuickTasks() {
     : `${doneCount} completed task(s) ✅`;
   openGenericDeleteConfirm(countLabel, () => {
     quickTasks = quickTasks.filter(t => !t.done);
-    saveQuickTasks();
+    _saveImmediate();
     renderQuickTasks();
   }, true);
 }
@@ -7744,6 +7959,23 @@ function updateQuickTasksText() {
   const clearBtn = document.querySelector('.qt-clear-done-btn');
   if (clearBtn) clearBtn.textContent = tr.qtClearDone;
   renderQuickTasks();
+}
+
+function _formatTaskTime(ts) {
+  if (!ts) return '';
+  const now = Date.now();
+  const created = new Date(ts);
+  const diffMs = now - ts;
+  const diffDays = Math.floor(diffMs / 86400000);
+  const hh = String(created.getHours()).padStart(2, '0');
+  const mm = String(created.getMinutes()).padStart(2, '0');
+  const timeStr = `${hh}:${mm}`;
+  if (diffDays === 0) return timeStr;                           // نفس اليوم: ساعة فقط
+  if (diffDays === 1) return `بالأمس ${timeStr}`;               // أمس
+  // أقدم: يوم/شهر
+  const d = String(created.getDate()).padStart(2,'0');
+  const mo = String(created.getMonth()+1).padStart(2,'0');
+  return `${d}/${mo} ${timeStr}`;
 }
 
 function renderQuickTasks() {
@@ -7790,10 +8022,14 @@ function renderQuickTasks() {
     const realIdx = quickTasks.findIndex(t => t.id === task.id);
     const upDis = realIdx === 0;
     const downDis = realIdx === quickTasks.length - 1;
+    const timeStr = _formatTaskTime(task.createdAt || task.id);
     return `
     <div class="qt-item${task.done ? ' done-item' : ''}" data-id="${task.id}">
       <div class="qt-checkbox${task.done ? ' checked' : ''}" onclick="toggleQuickTask(${task.id})">${task.done ? '✓' : ''}</div>
-      <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${task.text}</div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+        <div class="qt-item-text${task.done ? ' struck' : ''}" ondblclick="startEditQuickTask(${task.id}, this)">${task.text}</div>
+        <div style="font-size:0.62rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;font-weight:600;line-height:1;">${timeStr}</div>
+      </div>
       ${task.done ? `<div class="qt-done-label">${doneLabel}</div>` : ''}
       <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0">
         <button class="qt-move-btn" onclick="moveQuickTask(${task.id},-1)" ${upDis ? 'disabled' : ''} title="▲">▲</button>
@@ -8365,6 +8601,23 @@ init();
 .modal-preset-btn:hover { border-color:var(--blue-400);color:var(--blue-500);background:var(--blue-50); }
 </style>
 
+<!-- ===== FIRST-TIME WELCOME OVERLAY (مرة واحدة فقط عند أول تسجيل) ===== -->
+<div id="firstTimeWelcomeOverlay">
+  <div class="ftw-card" onclick="event.stopPropagation()">
+    <div class="ftw-poppers">
+      <span class="ftw-popper p1">🎉</span>
+      <span class="ftw-popper p2">🎊</span>
+      <span class="ftw-popper p3">✨</span>
+      <span class="ftw-popper p4">🎈</span>
+    </div>
+    <span class="ftw-emoji" id="ftwEmoji">🥳</span>
+    <div class="ftw-badge" id="ftwBadge">عضو جديد 🌟</div>
+    <div class="ftw-title" id="ftwTitle">أهلاً وسهلاً بك!</div>
+    <div class="ftw-msg" id="ftwMsg">حسابك جاهز الآن، ورحلتك الجديدة تبدأ من هنا 🚀</div>
+    <button class="ftw-close-btn" id="ftwCloseBtn" onclick="closeFirstTimeWelcome()">يلا نبدأ! 🚀</button>
+  </div>
+</div>
+
 <!-- ===== CELEBRATION OVERLAY ===== -->
 <div id="celebrationOverlay" onclick="closeCelebration()">
   <div class="celeb-card" onclick="event.stopPropagation()">
@@ -8444,6 +8697,101 @@ function playCelebrationSound() {
     });
     // Final pop
     _playTone(ctx, 1318.5, 1568, now + 0.7, 0.4, 0.28);
+  } catch(e) {}
+}
+
+// =========== FIRST-TIME WELCOME (يظهر مرة واحدة فقط عند أول تسجيل بالحساب — وليس بعد حذف بيانات أو تسجيل خروج/دخول) ===========
+const FTW_TEXTS = {
+  ar: {
+    badge: 'عضو جديد 🌟',
+    title: (name) => name ? `أهلاً ${name}! 🎉` : 'أهلاً وسهلاً بك! 🎉',
+    lines: [
+      'حسابك جاهز الآن، وأول خطوة نحو أفضل نسخة منك بدأت هذه اللحظة! 🚀',
+      'كل عادة صغيرة تبنيها اليوم = نسخة أقوى منك غدًا. يلا نبدأ! 💪',
+      'مبروك التسجيل! هذا يومك الأول معنا، وواصل ما توقف 🔥',
+      'أنت الآن جزء من رحلة التطور اليومي — إحنا فخورين فيك من الآن 🌟',
+      'خطوة أولى بسيطة تصنع فرقًا كبيرًا مع الوقت. أهلاً بك بيننا! ✨',
+      'حياك الله! سجّل عاداتك، تابع تقدمك، وشوف نفسك تتغيّر يوم بيوم 🌱'
+    ],
+    btn: 'يلا نبدأ! 🚀'
+  },
+  fr: {
+    badge: 'Nouveau membre 🌟',
+    title: (name) => name ? `Bienvenue ${name}! 🎉` : 'Bienvenue à toi! 🎉',
+    lines: [
+      'Ton compte est prêt — le premier pas vers la meilleure version de toi commence maintenant! 🚀',
+      'Chaque petite habitude construite aujourd\u2019hui = un toi plus fort demain. Allons-y! 💪',
+      'Félicitations pour ton inscription! C\u2019est ton premier jour, ne t\u2019arrête jamais 🔥',
+      'Tu fais désormais partie du voyage quotidien — déjà fiers de toi 🌟',
+      'Un petit premier pas peut faire une grande différence avec le temps. Bienvenue! ✨'
+    ],
+    btn: 'C\u2019est parti! 🚀'
+  },
+  en: {
+    badge: 'New Member 🌟',
+    title: (name) => name ? `Welcome, ${name}! 🎉` : 'Welcome aboard! 🎉',
+    lines: [
+      'Your account is ready — the first step to the best version of you starts right now! 🚀',
+      'Every small habit you build today = a stronger you tomorrow. Let\u2019s go! 💪',
+      'Congrats on signing up! This is day one — never stop 🔥',
+      'You\u2019re now part of the daily growth journey — already proud of you 🌟',
+      'One small first step can make a huge difference over time. Welcome! ✨'
+    ],
+    btn: 'Let\u2019s start! 🚀'
+  }
+};
+
+// Guards against ever showing more than once in this page load, even if
+// something calls it twice (e.g. an auth-state re-fire).
+let _firstTimeWelcomeShown = false;
+
+function showFirstTimeWelcome(user) {
+  if (_firstTimeWelcomeShown) return;
+  _firstTimeWelcomeShown = true;
+
+  const lang = currentLang || 'ar';
+  const txt = FTW_TEXTS[lang] || FTW_TEXTS.ar;
+  const firstName = user && user.displayName ? user.displayName.split(' ')[0] : '';
+  const line = txt.lines[Math.floor(Math.random() * txt.lines.length)];
+
+  document.getElementById('ftwBadge').textContent = txt.badge;
+  document.getElementById('ftwTitle').textContent = txt.title(firstName);
+  document.getElementById('ftwMsg').textContent = line;
+  document.getElementById('ftwCloseBtn').textContent = txt.btn;
+
+  const overlay = document.getElementById('firstTimeWelcomeOverlay');
+  overlay.classList.add('show');
+
+  playWelcomeFanfare();
+
+  if (settings.confetti) {
+    launchConfetti();
+    setTimeout(() => launchConfetti(), 350);
+    setTimeout(() => launchConfetti(), 800);
+    setTimeout(() => launchConfetti(), 1300);
+  }
+}
+
+function closeFirstTimeWelcome() {
+  const overlay = document.getElementById('firstTimeWelcomeOverlay');
+  if (overlay) overlay.classList.remove('show');
+}
+
+function playWelcomeFanfare() {
+  if (!settings.sound) return;
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    // Two quick "pop" bursts — like party poppers going off
+    _playTone(ctx, 210, 55, now, 0.14, 0.32);
+    _playTone(ctx, 230, 55, now + 0.1, 0.14, 0.32);
+    // Rising triumphant melody
+    const notes = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+    notes.forEach((freq, i) => {
+      _playTone(ctx, freq, freq * 1.06, now + 0.28 + i * 0.11, 0.32, 0.22);
+    });
+    // Sparkly finish
+    _playTone(ctx, 1568, 2093, now + 1.15, 0.5, 0.25);
   } catch(e) {}
 }
 
@@ -8763,23 +9111,12 @@ function _checkMidnightRollover() {
 }
 
 // ===== BOTTOM NAV SYNC =====
-function updateBottomNav(activeBtn) {
+function _syncBottomNav(activeBtn) {
   document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
   if (activeBtn) activeBtn.classList.add('active');
 }
-
-// Patch showPage to also sync bottom nav
-const _origShowPage = typeof showPage === 'function' ? showPage : null;
-(function() {
-  const _sp = window.showPage;
-  if (_sp) {
-    window.showPage = function(page) {
-      _sp(page);
-      const btn = document.querySelector(`.bottom-nav-btn[data-page="${page}"]`);
-      if (btn) updateBottomNav(btn);
-    };
-  }
-})();
+// Patch showPage to also sync bottom nav when called programmatically
+const _origShowPage = window.showPage;
 
 setInterval(_checkMidnightRollover, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) _checkMidnightRollover(); });
