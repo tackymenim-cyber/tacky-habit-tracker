@@ -3794,7 +3794,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
           <div class="settings-item-icon sicon-green">🔒</div>
           <div>
             <div class="settings-item-label" id="privacyLabel">الخصوصية</div>
-            <div class="settings-item-desc" id="privacyDesc">جميع البيانات محلية 100%</div>
+            <div class="settings-item-desc" id="privacyDesc">بياناتك خاصة بحسابك فقط، ولا يراها أي مستخدم آخر</div>
           </div>
         </div>
         <span style="font-size:1.1rem">✅</span>
@@ -3804,7 +3804,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   </div>
   <div class="settings-footer">
     <span class="settings-version">TACKY Habit Pro <strong>v2.0</strong></span>
-    <span class="settings-version" id="footerData">البيانات محفوظة محلياً 🔒</span>
+    <span class="settings-version" id="footerData">بياناتك محفوظة في حسابك ☁️</span>
   </div>
 </div>
 
@@ -4091,6 +4091,7 @@ const T = {
     waterGoal: 'هدف الماء اليومي', waterGoalDesc: 'عدد أكواب الماء المستهدف',
     sleepGoal: 'هدف ساعات النوم', sleepGoalDesc: 'عدد الساعات المثالية للنوم',
     streakAlert: 'تنبيه انقطاع السلسلة', streakAlertDesc: 'تحذير إذا لم تكمل عاداتك',
+    showTaskDate: 'تاريخ المهام السريعة', showTaskDateDesc: 'عرض وقت إضافة كل مهمة',
     secNotif: '🔔 الإشعارات والتذكيرات',
     morningNotif: 'تذكير صباحي', morningNotifDesc: 'تذكير يومي ببداية العادات',
     morningTime: 'وقت التذكير الصباحي',
@@ -4104,7 +4105,7 @@ const T = {
     secAbout: 'ℹ️ حول التطبيق',
     appName: 'TACKY Habit Tracker Pro', appVer: 'الإصدار 2.0 — بناء متقدم',
     privacy: 'الخصوصية', privacyDesc: 'بياناتك خاصة بحسابك فقط، ولا يراها أي مستخدم آخر',
-    footerData: 'البيانات محفوظة محلياً 🔒',
+    footerData: 'بياناتك محفوظة في حسابك ☁️',
     statHabits: 'عادة نشطة', statDone: 'إجمالي الإنجازات', statStreak: 'أطول سلسلة 🔥', statRate: 'معدل هذا الشهر',
     addHabitPlaceholder: 'أضف عادة جديدة... مثلاً: استيقظ الساعة 5 صباحاً',
     addHabitBtn: '＋ إضافة عادة',
@@ -4328,6 +4329,7 @@ const T = {
     waterGoal: "Objectif d'eau", waterGoalDesc: "Nombre de verres d'eau",
     sleepGoal: 'Objectif de sommeil', sleepGoalDesc: "Heures de sommeil idéales",
     streakAlert: 'Alerte de rupture', streakAlertDesc: 'Avertissement en cas de rupture',
+    showTaskDate: 'Date des tâches rapides', showTaskDateDesc: "Afficher l'heure d'ajout de chaque tâche",
     secNotif: '🔔 Notifications',
     morningNotif: 'Rappel matinal', morningNotifDesc: 'Rappel quotidien',
     morningTime: 'Heure du rappel',
@@ -4341,7 +4343,7 @@ const T = {
     secAbout: 'ℹ️ À propos',
     appName: 'TACKY Habit Tracker Pro', appVer: 'Version 2.0',
     privacy: 'Confidentialité', privacyDesc: 'Vos données sont privées, liées uniquement à votre compte, invisibles pour les autres',
-    footerData: 'Données locales 🔒',
+    footerData: 'Données liées à votre compte ☁️',
     statHabits: 'Habitudes actives', statDone: 'Réalisations', statStreak: 'Meilleure série 🔥', statRate: 'Taux ce mois',
     addHabitPlaceholder: 'Ajouter une habitude... Ex: Se réveiller à 5h',
     addHabitBtn: '＋ Ajouter',
@@ -4566,6 +4568,7 @@ const T = {
     waterGoal: 'Daily Water Goal', waterGoalDesc: 'Target number of water cups',
     sleepGoal: 'Sleep Goal', sleepGoalDesc: 'Ideal number of sleep hours',
     streakAlert: 'Streak Break Alert', streakAlertDesc: 'Warning if you don\'t complete your habits',
+    showTaskDate: 'Quick Task Date', showTaskDateDesc: 'Show the time each task was added',
     secNotif: '🔔 Notifications & Reminders',
     morningNotif: 'Morning Reminder', morningNotifDesc: 'Daily reminder to start habits',
     morningTime: 'Morning Reminder Time',
@@ -4579,7 +4582,7 @@ const T = {
     secAbout: 'ℹ️ About',
     appName: 'TACKY Habit Tracker Pro', appVer: 'Version 2.0',
     privacy: 'Privacy', privacyDesc: 'Your data is private to your account only, no other user can see it',
-    footerData: 'Data saved locally 🔒',
+    footerData: 'Data saved to your account ☁️',
     statHabits: 'Active Habits', statDone: 'Total Achievements', statStreak: 'Longest Streak 🔥', statRate: 'Rate This Month',
     addHabitPlaceholder: 'Add a new habit... E.g: Wake up at 5am',
     addHabitBtn: '＋ Add Habit',
@@ -5096,8 +5099,8 @@ function updateSettingsText() {
 
   const labels = document.querySelectorAll('.settings-item-label');
   const descs = document.querySelectorAll('.settings-item-desc');
-  const labelKeys = ['darkMode', 'fontSize', 'compact', 'focus', 'accent', 'dailyGoal', 'waterGoal', 'sleepGoal', 'streakAlert', 'morningNotif', 'morningTime', 'eveningNotif', 'confetti', 'sound', 'appName', 'privacy'];
-  const descKeys = ['darkModeDesc', 'fontSizeDesc', 'compactDesc', 'focusDesc', 'accentDesc', 'dailyGoalDesc', 'waterGoalDesc', 'sleepGoalDesc', 'streakAlertDesc', 'morningNotifDesc', '', 'eveningNotifDesc', 'confettiDesc', 'soundDesc', 'appVer', 'privacyDesc'];
+  const labelKeys = ['darkMode', 'fontSize', 'compact', 'focus', 'accent', 'dailyGoal', 'waterGoal', 'sleepGoal', 'streakAlert', 'showTaskDate', 'morningNotif', 'morningTime', 'eveningNotif', 'confetti', 'sound', 'appName', 'privacy'];
+  const descKeys = ['darkModeDesc', 'fontSizeDesc', 'compactDesc', 'focusDesc', 'accentDesc', 'dailyGoalDesc', 'waterGoalDesc', 'sleepGoalDesc', 'streakAlertDesc', 'showTaskDateDesc', 'morningNotifDesc', '', 'eveningNotifDesc', 'confettiDesc', 'soundDesc', 'appVer', 'privacyDesc'];
   labelKeys.forEach((k, i) => { if (labels[i]) labels[i].textContent = tr[k] || ''; });
   descKeys.forEach((k, i) => { if (descs[i] && k) descs[i].textContent = tr[k] || ''; });
 
@@ -5274,6 +5277,14 @@ let _saveDebounceTimer = null;
 // disrupt active typing every time our own save round-trips back to us.
 const _sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9) + '_' + Math.random().toString(36).slice(2, 9);
 let _firestoreUnsubscribe = null;
+// Every save fully overwrites the cloud document, so if two saves are ever
+// in flight at once (e.g. deleting two tasks back-to-back), nothing stops
+// the network from delivering their responses out of order — the OLDER
+// write can land AFTER the newer one and silently bring back data (like a
+// task) that had just been deleted. Chaining every write through this
+// queue forces them to reach the server strictly in the order they were
+// triggered, so the last one to arrive is always the most recent state.
+let _saveQueue = Promise.resolve();
 
 function save() {
   // Always save settings locally (device preferences)
@@ -5291,6 +5302,14 @@ function save() {
 }
 
 async function _saveToFirestore(expectedUid, _retryCount) {
+  // Enter the queue instead of writing immediately — this guarantees this
+  // write cannot start until every previously-triggered write has finished,
+  // so responses can never arrive out of order and overwrite newer data.
+  _saveQueue = _saveQueue.then(() => _doFirestoreWrite(expectedUid, _retryCount || 0));
+  return _saveQueue;
+}
+
+async function _doFirestoreWrite(expectedUid, _retryCount) {
   _retryCount = _retryCount || 0;
   const user = window._currentUser;
   if (!user || !window._fbDb) return;
@@ -8041,41 +8060,10 @@ function deleteQuickTask(id) {
   openGenericDeleteConfirm(task.text || '', () => {
     quickTasks = quickTasks.filter(t => t.id !== id);
     renderQuickTasks();
-    // Retry save up to 3 times to handle transient cloud errors on delete
-    let _delRetry = 0;
-    function _trySave() {
-      const user = window._currentUser;
-      if (!user || !window._fbDb) { save(); return; }
-      const docRef = window._fbDoc(window._fbDb, 'users', user.uid, 'data', 'main');
-      window._fbSetDoc(docRef, {
-        habits:           JSON.parse(JSON.stringify(habits)),
-        checks:           JSON.parse(JSON.stringify(checks)),
-        moodData:         JSON.parse(JSON.stringify(moodData)),
-        waterData:        JSON.parse(JSON.stringify(waterData)),
-        sleepData:        JSON.parse(JSON.stringify(sleepData)),
-        thoughtsData:     JSON.parse(JSON.stringify(thoughtsData)),
-        weeklyTasks:      JSON.parse(JSON.stringify(weeklyTasks)),
-        gymSchedule:      JSON.parse(JSON.stringify(gymSchedule  || {})),
-        gymExercises:     JSON.parse(JSON.stringify(gymExercises || [])),
-        gymLogs:          JSON.parse(JSON.stringify(gymLogs      || [])),
-        quickTasks:       JSON.parse(JSON.stringify(quickTasks   || [])),
-        bodyWeightData:   JSON.parse(JSON.stringify(bodyWeightData || {})),
-        workoutNotesData: JSON.parse(JSON.stringify(workoutNotesData || {})),
-        bmiSavedData:     bmiSavedData ? JSON.parse(JSON.stringify(bmiSavedData)) : null,
-        measurementsData: JSON.parse(JSON.stringify(measurementsData || {})),
-        nutritionData:    JSON.parse(JSON.stringify(nutritionData || {})),
-        updatedAt:        new Date().toISOString(),
-        _writerId:        _sessionId,
-      }).catch(e => {
-        if (_delRetry < 3) {
-          _delRetry++;
-          setTimeout(_trySave, 1000 * _delRetry);
-        } else {
-          showToast(t('cloudSaveFail'));
-        }
-      });
-    }
-    _trySave();
+    // Immediate (non-debounced) save so the deletion reaches the cloud
+    // right away. This now goes through the same write queue as every
+    // other save, so it can never be overtaken by an older, slower write.
+    _saveImmediate();
   });
 }
 
