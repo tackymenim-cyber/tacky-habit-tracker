@@ -134,8 +134,8 @@
     <div class="fbsetup-logo">
       <div class="fbsetup-logo-icon">🔥</div>
       <div class="fbsetup-logo-text">
-        <h1>إعداد Firebase</h1>
-        <p>اتصل بقاعدة بياناتك السحابية مرة واحدة فقط</p>
+        <h1 id="fbsTitle">إعداد Firebase</h1>
+        <p id="fbsSubtitle">اتصل بقاعدة بياناتك السحابية مرة واحدة فقط</p>
       </div>
     </div>
     <div class="fbsetup-steps">
@@ -146,10 +146,10 @@
 
     <!-- SECTION 1: Instructions -->
     <div class="fbsetup-section active" id="fbsec-1">
-      <div class="fbsetup-h2">🚀 كيف تحصل على بيانات Firebase؟</div>
-      <div class="fbsetup-desc">تحتاج إلى إنشاء مشروع مجاني على Firebase Console. اتبع الخطوات:</div>
+      <div class="fbsetup-h2" id="fbsH2Step1">🚀 كيف تحصل على بيانات Firebase؟</div>
+      <div class="fbsetup-desc" id="fbsDescStep1">تحتاج إلى إنشاء مشروع مجاني على Firebase Console. اتبع الخطوات:</div>
       <div class="fbsetup-instructions">
-        <ol>
+        <ol id="fbsInstructionsList">
           <li>اذهب إلى <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a> وأنشئ مشروعاً جديداً</li>
           <li>من القائمة الجانبية → <strong>Build → Authentication</strong> → <strong>Get started</strong> → فعّل <strong>Google</strong> كطريقة تسجيل دخول</li>
           <li>من القائمة الجانبية → <strong>Build → Firestore Database</strong> → <strong>Create database</strong> → اختر <strong>Start in test mode</strong></li>
@@ -157,16 +157,16 @@
           <li>انسخ كامل الكود <code>firebaseConfig = { ... }</code> والصقه في الخطوة التالية</li>
         </ol>
       </div>
-      <div class="fbsetup-tip">
+      <div class="fbsetup-tip" id="fbsTip">
         💡 <strong>مجاني 100%</strong> — Firebase Spark Plan يكفي لاستخدام شخصي بدون دفع أي شيء
       </div>
-      <button class="fbsetup-btn fbsetup-btn-primary" onclick="fbsGoTo(2)">التالي: إدخال البيانات ←</button>
+      <button class="fbsetup-btn fbsetup-btn-primary" id="fbsNextBtn" onclick="fbsGoTo(2)">التالي: إدخال البيانات ←</button>
     </div>
 
     <!-- SECTION 2: Paste Config -->
     <div class="fbsetup-section" id="fbsec-2">
-      <div class="fbsetup-h2">📋 الصق بيانات Firebase هنا</div>
-      <div class="fbsetup-desc">انسخ كامل كتلة <code>firebaseConfig</code> من Firebase Console والصقها أدناه، أو أدخل القيم يدوياً</div>
+      <div class="fbsetup-h2" id="fbsH2Step2">📋 الصق بيانات Firebase هنا</div>
+      <div class="fbsetup-desc" id="fbsDescStep2">انسخ كامل كتلة <code>firebaseConfig</code> من Firebase Console والصقها أدناه، أو أدخل القيم يدوياً</div>
       <div class="fbsetup-error" id="fbsErrorMsg"></div>
 
       <textarea class="fbsetup-paste-area" id="fbsPasteArea" placeholder="الصق هنا كود firebaseConfig من Firebase Console...
@@ -181,7 +181,7 @@ const firebaseConfig = {
   appId: &quot;1:123:web:abc&quot;
 };"></textarea>
 
-      <div class="fbsetup-or">أو أدخل القيم يدوياً</div>
+      <div class="fbsetup-or" id="fbsOrManual">أو أدخل القيم يدوياً</div>
 
       <div class="fbsetup-grid">
         <div>
@@ -210,14 +210,14 @@ const firebaseConfig = {
         </div>
       </div>
 
-      <button class="fbsetup-btn fbsetup-btn-primary" onclick="fbsParseAndNext()">حفظ والاتصال بـ Firebase 🔥</button>
-      <button class="fbsetup-btn fbsetup-btn-secondary" onclick="fbsGoTo(1)">← رجوع</button>
+      <button class="fbsetup-btn fbsetup-btn-primary" id="fbsSaveBtn" onclick="fbsParseAndNext()">حفظ والاتصال بـ Firebase 🔥</button>
+      <button class="fbsetup-btn fbsetup-btn-secondary" id="fbsBackBtn" onclick="fbsGoTo(1)">← رجوع</button>
     </div>
 
     <!-- SECTION 3: Confirmation -->
     <div class="fbsetup-section" id="fbsec-3">
-      <div class="fbsetup-h2">✅ تم الحفظ!</div>
-      <div class="fbsetup-desc">تم حفظ بيانات Firebase. يتم الآن تهيئة الاتصال...</div>
+      <div class="fbsetup-h2" id="fbsH2Step3">✅ تم الحفظ!</div>
+      <div class="fbsetup-desc" id="fbsDescStep3">تم حفظ بيانات Firebase. يتم الآن تهيئة الاتصال...</div>
       <div id="fbsCheckList" style="margin-bottom:20px"></div>
       <button class="fbsetup-btn fbsetup-btn-primary" id="fbsLaunchBtn" onclick="fbsLaunch()" style="display:none">
         🚀 ابدأ التطبيق
@@ -227,7 +227,7 @@ const firebaseConfig = {
       </button>
     </div>
 
-    <div class="fbsetup-reset-link" onclick="fbsReset()">🗑 مسح الإعدادات المحفوظة</div>
+    <div class="fbsetup-reset-link" id="fbsResetLink" onclick="fbsReset()">🗑 مسح الإعدادات المحفوظة</div>
   </div>
 </div>
 
@@ -256,7 +256,7 @@ const firebaseConfig = {
 
 // fbsReset kept for compatibility (no-op now since config is hardcoded)
 function fbsReset() {
-  alert('الإعدادات مدمجة مباشرة في الملف.');
+  alert((T[currentLang] || T.ar).fbsResetAlert);
 }
 </script>
 
@@ -782,12 +782,13 @@ function fbsReset() {
 .theme-trigger-chevron { font-size: 0.9rem; color: var(--text-3); }
 
 /* ── THEME PICKER POPUP ── */
+.settings-panel.behind-theme-popup { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
 .theme-popup-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,0.55);
   -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
   display: flex; align-items: center; justify-content: center;
   z-index: 1200; opacity: 0; pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
   padding: 20px;
 }
 .theme-popup-overlay.open { opacity: 1; pointer-events: auto; }
@@ -796,10 +797,15 @@ function fbsReset() {
   width: 100%; max-width: 460px; max-height: 82vh;
   display: flex; flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  transform: translateY(14px) scale(0.97); opacity: 0;
-  transition: transform 0.22s cubic-bezier(.2,.9,.3,1.2), opacity 0.2s ease;
+  transform: translateY(28px) scale(0.92); opacity: 0;
+  transition: transform 0.32s cubic-bezier(.2,.9,.3,1.28), opacity 0.25s ease;
 }
 .theme-popup-overlay.open .theme-popup-card { transform: translateY(0) scale(1); opacity: 1; }
+@keyframes themeCardPop { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.theme-popup-overlay.open .theme-card {
+  animation: themeCardPop 0.35s cubic-bezier(.2,.9,.3,1.2) both;
+  animation-delay: calc(var(--tc-i, 0) * 0.02s);
+}
 .theme-popup-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
@@ -4242,8 +4248,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <button class="nav-tab" onclick="showPage('weekly')">📅 المهام</button>
     <button class="nav-tab" onclick="showPage('gym')">🏋️ الجيم</button>
     <button class="nav-tab" id="navTabQuotes" onclick="showPage('quotes')">💬 اقتباسات</button>
-    <button class="nav-tab" id="navTabJournal" onclick="showPage('journal')">📖 يوميات</button>
-    <button class="nav-tab" onclick="showPage('achievements')">🏆 إنجازاتي</button>
+    <button class="nav-tab" id="navTabJournal" onclick="showPage('journal')"><span id="navJournalTxt">📖 يوميات</span></button>
+    <button class="nav-tab" id="navTabAchievements" onclick="showPage('achievements')"><span id="navAchievementsTxt">🏆 إنجازاتي</span></button>
   </div>
   <div class="nav-right">
     <div class="month-nav">
@@ -4278,25 +4284,25 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 <!-- ===== BOTTOM NAV (Mobile) ===== -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="bottom-nav-btn active" data-page="tracker" onclick="showPage('tracker');_syncBottomNav(this)">
-    <span class="bnav-icon">📋</span><span>العادات</span>
+    <span class="bnav-icon">📋</span><span id="bnavTrackerTxt">العادات</span>
   </button>
   <button class="bottom-nav-btn" data-page="mood" onclick="showPage('mood');_syncBottomNav(this)">
-    <span class="bnav-icon">🧠</span><span>المزاج</span>
+    <span class="bnav-icon">🧠</span><span id="bnavMoodTxt">المزاج</span>
   </button>
   <button class="bottom-nav-btn" data-page="weekly" onclick="showPage('weekly');_syncBottomNav(this)">
-    <span class="bnav-icon">📅</span><span>المهام</span>
+    <span class="bnav-icon">📅</span><span id="bnavWeeklyTxt">المهام</span>
   </button>
   <button class="bottom-nav-btn" data-page="gym" onclick="showPage('gym');_syncBottomNav(this)">
-    <span class="bnav-icon">🏋️</span><span>الجيم</span>
+    <span class="bnav-icon">🏋️</span><span id="bnavGymTxt">الجيم</span>
   </button>
   <button class="bottom-nav-btn" id="bnavQuotes" data-page="quotes" onclick="showPage('quotes');_syncBottomNav(this)">
-    <span class="bnav-icon">💬</span><span>اقتباسات</span>
+    <span class="bnav-icon">💬</span><span id="bnavQuotesTxt">اقتباسات</span>
   </button>
   <button class="bottom-nav-btn" id="bnavJournal" data-page="journal" onclick="showPage('journal');_syncBottomNav(this)">
-    <span class="bnav-icon">📖</span><span>يوميات</span>
+    <span class="bnav-icon">📖</span><span id="bnavJournalTxt">يوميات</span>
   </button>
-  <button class="bottom-nav-btn" data-page="achievements" onclick="showPage('achievements');_syncBottomNav(this)">
-    <span class="bnav-icon">🏆</span><span>إنجازاتي</span>
+  <button class="bottom-nav-btn" id="bnavAchievements" data-page="achievements" onclick="showPage('achievements');_syncBottomNav(this)">
+    <span class="bnav-icon">🏆</span><span id="bnavAchievementsTxt">إنجازاتي</span>
   </button>
 </nav>
 
@@ -4501,7 +4507,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
     <!-- Header -->
     <div class="journal-header-card fade-up">
-      <div class="journal-header-title">📖 يومياتي</div>
+      <div class="journal-header-title" id="journalHeaderTitle">📖 يومياتي</div>
       <div class="journal-header-sub">سجّل أفكارك وانعكاساتك اليومية — مكانك الخاص</div>
       <div class="journal-streak-badge" id="journalStreakBadge">🔥 0 يوم متواصل</div>
     </div>
@@ -5110,8 +5116,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-purple">🖼️</div>
           <div>
-            <div class="settings-item-label">ثيم التطبيق</div>
-            <div class="settings-item-desc">اختر لوحة ألوان كاملة للواجهة</div>
+            <div class="settings-item-label" id="themePickLabel">ثيم التطبيق</div>
+            <div class="settings-item-desc" id="themePickDesc">اختر لوحة ألوان كاملة للواجهة</div>
           </div>
         </div>
         <div class="theme-trigger" id="themeTrigger">
@@ -5121,26 +5127,13 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         </div>
       </div>
 
-      <!-- THEME PICKER POPUP -->
-      <div class="theme-popup-overlay" id="themePopupOverlay" onclick="closeThemePicker()">
-        <div class="theme-popup-card" onclick="event.stopPropagation()">
-          <div class="theme-popup-header">
-            <div class="theme-popup-title">🖼️ اختر ثيم التطبيق</div>
-            <button class="theme-popup-close" onclick="closeThemePicker()">✕</button>
-          </div>
-          <div class="theme-popup-body">
-            <div class="theme-picker-grid" id="themePickerGrid"></div>
-          </div>
-        </div>
-      </div>
-
       <!-- TABS VISIBILITY -->
       <div class="settings-item">
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-yellow">💬</div>
           <div>
-            <div class="settings-item-label">خانة الاقتباسات</div>
-            <div class="settings-item-desc">إظهار أو إخفاء تبويب الاقتباسات</div>
+            <div class="settings-item-label" id="quotesTabLabel">خانة الاقتباسات</div>
+            <div class="settings-item-desc" id="quotesTabDesc">إظهار أو إخفاء تبويب الاقتباسات</div>
           </div>
         </div>
         <label class="toggle">
@@ -5153,8 +5146,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-blue">📖</div>
           <div>
-            <div class="settings-item-label">خانة اليوميات</div>
-            <div class="settings-item-desc">سجّل أفكارك وانعكاساتك اليومية</div>
+            <div class="settings-item-label" id="journalTabLabel">خانة اليوميات</div>
+            <div class="settings-item-desc" id="journalTabDesc">سجّل أفكارك وانعكاساتك اليومية</div>
           </div>
         </div>
         <label class="toggle">
@@ -5358,6 +5351,19 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   </div>
 </div>
 
+<!-- THEME PICKER POPUP (sibling of settings-panel — NOT nested inside it, so position:fixed is relative to the real viewport, not clipped by the panel's transform) -->
+<div class="theme-popup-overlay" id="themePopupOverlay" onclick="closeThemePicker()">
+  <div class="theme-popup-card" onclick="event.stopPropagation()">
+    <div class="theme-popup-header">
+      <div class="theme-popup-title" id="themePopupTitle">🖼️ اختر ثيم التطبيق</div>
+      <button class="theme-popup-close" onclick="closeThemePicker()">✕</button>
+    </div>
+    <div class="theme-popup-body">
+      <div class="theme-picker-grid" id="themePickerGrid"></div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 <!-- CONFETTI -->
@@ -5533,6 +5539,24 @@ const T = {
   ar: {
     dir: 'rtl', lang: 'ar',
     navTracker: '📋 العادات', navMood: '🧠 المزاج', navWeekly: '📅 المهام', navGym: '🏋️ الجيم', navQuotes: '💬 اقتباسات',
+    navJournal: '📖 يوميات', navAchievements: '🏆 إنجازاتي', journalHeaderTitle: '📖 يومياتي',
+    fbsTitle: 'إعداد Firebase', fbsSubtitle: 'اتصل بقاعدة بياناتك السحابية مرة واحدة فقط',
+    fbsH2Step1: '🚀 كيف تحصل على بيانات Firebase؟', fbsDescStep1: 'تحتاج إلى إنشاء مشروع مجاني على Firebase Console. اتبع الخطوات:',
+    fbsLi1: 'اذهب إلى <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a> وأنشئ مشروعاً جديداً',
+    fbsLi2: 'من القائمة الجانبية → <strong>Build → Authentication</strong> → <strong>Get started</strong> → فعّل <strong>Google</strong> كطريقة تسجيل دخول',
+    fbsLi3: 'من القائمة الجانبية → <strong>Build → Firestore Database</strong> → <strong>Create database</strong> → اختر <strong>Start in test mode</strong>',
+    fbsLi4: 'اضغط على أيقونة الترس ⚙️ → <strong>Project settings</strong> → مرّر لأسفل → اضغط <strong>&lt;/&gt;</strong> (Web app) → سجّل التطبيق',
+    fbsLi5: 'انسخ كامل الكود <code>firebaseConfig = { ... }</code> والصقه في الخطوة التالية',
+    fbsTip: '💡 <strong>مجاني 100%</strong> — Firebase Spark Plan يكفي لاستخدام شخصي بدون دفع أي شيء',
+    fbsNextBtn: 'التالي: إدخال البيانات ←',
+    fbsH2Step2: '📋 الصق بيانات Firebase هنا',
+    fbsDescStep2: 'انسخ كامل كتلة <code>firebaseConfig</code> من Firebase Console والصقها أدناه، أو أدخل القيم يدوياً',
+    fbsPastePlaceholder: 'الصق هنا كود firebaseConfig من Firebase Console...\n\nمثال:\nconst firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "myapp.firebaseapp.com",\n  projectId: "myapp",\n  storageBucket: "myapp.appspot.com",\n  messagingSenderId: "123456",\n  appId: "1:123:web:abc"\n};',
+    fbsOrManual: 'أو أدخل القيم يدوياً',
+    fbsSaveBtn: 'حفظ والاتصال بـ Firebase 🔥', fbsBackBtn: '← رجوع',
+    fbsH2Step3: '✅ تم الحفظ!', fbsDescStep3: 'تم حفظ بيانات Firebase. يتم الآن تهيئة الاتصال...',
+    fbsLaunchBtn: '🚀 ابدأ التطبيق', fbsRetryBtn: '← تعديل البيانات',
+    fbsResetLink: '🗑 مسح الإعدادات المحفوظة', fbsResetAlert: 'الإعدادات مدمجة مباشرة في الملف.',
     // GYM - ARABIC (all translations)
     gymBannerQuote: '💡 اقتباس',
     gymBannerQuoteDefault: '"الألم مؤقت، الفخر دائم — تمرّن اليوم واشعر بالفرق غداً!"',
@@ -5792,10 +5816,32 @@ const T = {
     achGym10Name: 'قوة الإرادة', achGym10Desc: 'سجّل 10 حصص جيم',
     achPerfectDayName: 'يوم مثالي', achPerfectDayDesc: 'أكمل كل عاداتك المجدولة في يوم واحد',
     achPerfectWeekName: 'أسبوع الكمال', achPerfectWeekDesc: 'أسبوع كامل بإنجاز 100٪',
+    langSettingsLabel: 'اللغة', langSettingsDesc: 'لغة التطبيق',
+    themePickLabel: 'ثيم التطبيق', themePickDesc: 'اختر لوحة ألوان كاملة للواجهة', themePopupTitle: '🖼️ اختر ثيم التطبيق',
+    quotesTabLabel: 'خانة الاقتباسات', quotesTabDesc: 'إظهار أو إخفاء تبويب الاقتباسات',
+    journalTabLabel: 'خانة اليوميات', journalTabDesc: 'سجّل أفكارك وانعكاساتك اليومية',
   },
   fr: {
     dir: 'ltr', lang: 'fr',
     navTracker: '📋 Habitudes', navMood: '🧠 Humeur', navWeekly: '📅 Tâches', navGym: '🏋️ Gym', navQuotes: '💬 Citations',
+    navJournal: '📖 Journal', navAchievements: '🏆 Réussites', journalHeaderTitle: '📖 Mon journal',
+    fbsTitle: 'Configuration Firebase', fbsSubtitle: 'Connecte ta base de données cloud une seule fois',
+    fbsH2Step1: '🚀 Comment obtenir tes données Firebase ?', fbsDescStep1: 'Tu dois créer un projet gratuit sur Firebase Console. Suis les étapes :',
+    fbsLi1: 'Va sur <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a> et crée un nouveau projet',
+    fbsLi2: 'Dans le menu latéral → <strong>Build → Authentication</strong> → <strong>Get started</strong> → active <strong>Google</strong> comme méthode de connexion',
+    fbsLi3: 'Dans le menu latéral → <strong>Build → Firestore Database</strong> → <strong>Create database</strong> → choisis <strong>Start in test mode</strong>',
+    fbsLi4: "Clique sur l'icône d'engrenage ⚙️ → <strong>Project settings</strong> → descends → clique <strong>&lt;/&gt;</strong> (Web app) → enregistre l'app",
+    fbsLi5: 'Copie tout le code <code>firebaseConfig = { ... }</code> et colle-le à l\u2019étape suivante',
+    fbsTip: '💡 <strong>100% gratuit</strong> — Le plan Firebase Spark suffit pour un usage personnel, sans rien payer',
+    fbsNextBtn: 'Suivant : entrer les données ←',
+    fbsH2Step2: '📋 Colle tes données Firebase ici',
+    fbsDescStep2: 'Copie tout le bloc <code>firebaseConfig</code> depuis Firebase Console et colle-le ci-dessous, ou saisis les valeurs manuellement',
+    fbsPastePlaceholder: 'Colle ici le code firebaseConfig de Firebase Console...\n\nExemple :\nconst firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "myapp.firebaseapp.com",\n  projectId: "myapp",\n  storageBucket: "myapp.appspot.com",\n  messagingSenderId: "123456",\n  appId: "1:123:web:abc"\n};',
+    fbsOrManual: 'Ou saisis les valeurs manuellement',
+    fbsSaveBtn: 'Enregistrer et se connecter à Firebase 🔥', fbsBackBtn: '← Retour',
+    fbsH2Step3: '✅ Enregistré !', fbsDescStep3: 'Les données Firebase ont été enregistrées. Connexion en cours d\u2019initialisation...',
+    fbsLaunchBtn: '🚀 Lancer l\u2019application', fbsRetryBtn: '← Modifier les données',
+    fbsResetLink: '🗑 Effacer la configuration enregistrée', fbsResetAlert: 'La configuration est intégrée directement dans le fichier.',
     // GYM - FRENCH
     gymBannerQuote: '💡 Citation',
     gymBannerQuoteDefault: '"La douleur est temporaire, la fierté est éternelle — Entraînez-vous aujourd\'hui et sentez la différence demain!"',
@@ -6058,10 +6104,32 @@ const T = {
     achGym10Name: 'Force de volonté', achGym10Desc: 'Enregistre 10 séances de sport',
     achPerfectDayName: 'Jour parfait', achPerfectDayDesc: 'Termine toutes tes habitudes prévues en un jour',
     achPerfectWeekName: 'Semaine parfaite', achPerfectWeekDesc: 'Une semaine complète à 100%',
+    langSettingsLabel: 'Langue', langSettingsDesc: "Langue de l'application",
+    themePickLabel: "Thème de l'app", themePickDesc: "Choisis une palette de couleurs complète", themePopupTitle: "🖼️ Choisir un thème",
+    quotesTabLabel: 'Onglet citations', quotesTabDesc: "Afficher ou masquer l'onglet citations",
+    journalTabLabel: 'Onglet journal', journalTabDesc: 'Note tes pensées et réflexions quotidiennes',
   },
   en: {
     dir: 'ltr', lang: 'en',
     navTracker: '📋 Habits', navMood: '🧠 Mood', navWeekly: '📅 Tasks', navGym: '🏋️ Gym', navQuotes: '💬 Quotes',
+    navJournal: '📖 Journal', navAchievements: '🏆 Achievements', journalHeaderTitle: '📖 My Journal',
+    fbsTitle: 'Firebase Setup', fbsSubtitle: 'Connect your cloud database just once',
+    fbsH2Step1: '🚀 How to get your Firebase data?', fbsDescStep1: 'You need to create a free project on Firebase Console. Follow these steps:',
+    fbsLi1: 'Go to <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a> and create a new project',
+    fbsLi2: 'From the side menu → <strong>Build → Authentication</strong> → <strong>Get started</strong> → enable <strong>Google</strong> as a sign-in method',
+    fbsLi3: 'From the side menu → <strong>Build → Firestore Database</strong> → <strong>Create database</strong> → choose <strong>Start in test mode</strong>',
+    fbsLi4: 'Click the gear icon ⚙️ → <strong>Project settings</strong> → scroll down → click <strong>&lt;/&gt;</strong> (Web app) → register the app',
+    fbsLi5: 'Copy the full <code>firebaseConfig = { ... }</code> code and paste it in the next step',
+    fbsTip: '💡 <strong>100% free</strong> — The Firebase Spark Plan is enough for personal use without paying anything',
+    fbsNextBtn: 'Next: enter your data ←',
+    fbsH2Step2: '📋 Paste your Firebase data here',
+    fbsDescStep2: 'Copy the full <code>firebaseConfig</code> block from Firebase Console and paste it below, or enter the values manually',
+    fbsPastePlaceholder: 'Paste the firebaseConfig code from Firebase Console here...\n\nExample:\nconst firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "myapp.firebaseapp.com",\n  projectId: "myapp",\n  storageBucket: "myapp.appspot.com",\n  messagingSenderId: "123456",\n  appId: "1:123:web:abc"\n};',
+    fbsOrManual: 'Or enter the values manually',
+    fbsSaveBtn: 'Save and connect to Firebase 🔥', fbsBackBtn: '← Back',
+    fbsH2Step3: '✅ Saved!', fbsDescStep3: 'Firebase data has been saved. Initializing the connection now...',
+    fbsLaunchBtn: '🚀 Launch the app', fbsRetryBtn: '← Edit data',
+    fbsResetLink: '🗑 Clear saved settings', fbsResetAlert: 'The configuration is embedded directly in the file.',
     // GYM - ENGLISH
     gymBannerQuote: '💡 Quote',
     gymBannerQuoteDefault: '"Pain is temporary, pride is forever — Train today and feel the difference tomorrow!"',
@@ -6324,6 +6392,10 @@ const T = {
     achGym10Name: 'Willpower', achGym10Desc: 'Log 10 gym sessions',
     achPerfectDayName: 'Perfect Day', achPerfectDayDesc: 'Complete every scheduled habit in one day',
     achPerfectWeekName: 'Perfect Week', achPerfectWeekDesc: 'A full week at 100% completion',
+    langSettingsLabel: 'Language', langSettingsDesc: 'App language',
+    themePickLabel: 'App Theme', themePickDesc: 'Choose a full color palette for the interface', themePopupTitle: '🖼️ Choose App Theme',
+    quotesTabLabel: 'Quotes Tab', quotesTabDesc: 'Show or hide the quotes tab',
+    journalTabLabel: 'Journal Tab', journalTabDesc: 'Record your daily thoughts and reflections',
   },
 };
 
@@ -6391,6 +6463,39 @@ function setLang(lang) {
   if (tabs[2]) tabs[2].innerHTML = tr.navWeekly;
   if (tabs[3]) tabs[3].innerHTML = tr.navGym;
   if (tabs[4]) tabs[4].innerHTML = tr.navQuotes;
+  const njt = document.getElementById('navJournalTxt');
+  if (njt) njt.textContent = tr.navJournal;
+  const nat = document.getElementById('navAchievementsTxt');
+  if (nat) nat.textContent = tr.navAchievements;
+  // Bottom nav (mobile) — id-based, was never wired to translations before
+  const bnavMap = {
+    bnavTrackerTxt: 'navTracker', bnavMoodTxt: 'navMood', bnavWeeklyTxt: 'navWeekly',
+    bnavGymTxt: 'navGym', bnavQuotesTxt: 'navQuotes', bnavJournalTxt: 'navJournal',
+    bnavAchievementsTxt: 'navAchievements',
+  };
+  Object.keys(bnavMap).forEach(id => {
+    const el = document.getElementById(id);
+    const key = bnavMap[id];
+    if (el && tr[key]) el.textContent = tr[key].replace(/^[^\s]+\s/, '');
+  });
+  const jht = document.getElementById('journalHeaderTitle');
+  if (jht) jht.textContent = tr.journalHeaderTitle;
+  // ===== FIREBASE SETUP SCREEN (dead/unreachable in normal use, translated for future-proofing) =====
+  const fbsIds = ['fbsTitle','fbsSubtitle','fbsH2Step1','fbsDescStep1','fbsTip','fbsNextBtn',
+    'fbsH2Step2','fbsDescStep2','fbsOrManual','fbsSaveBtn','fbsBackBtn','fbsH2Step3','fbsDescStep3',
+    'fbsLaunchBtn','fbsRetryBtn','fbsResetLink'];
+  fbsIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && tr[id] !== undefined) el.innerHTML = tr[id];
+  });
+  const fbsList = document.getElementById('fbsInstructionsList');
+  if (fbsList) {
+    const liKeys = ['fbsLi1','fbsLi2','fbsLi3','fbsLi4','fbsLi5'];
+    const lis = fbsList.querySelectorAll('li');
+    liKeys.forEach((k, i) => { if (lis[i] && tr[k]) lis[i].innerHTML = tr[k]; });
+  }
+  const fbsPaste = document.getElementById('fbsPasteArea');
+  if (fbsPaste && tr.fbsPastePlaceholder) fbsPaste.placeholder = tr.fbsPastePlaceholder;
   const sh = document.querySelector('.settings-header h2');
   if (sh) sh.textContent = tr.settingsTitle;
   const sp = document.querySelector('.settings-header p');
@@ -6728,12 +6833,37 @@ function updateSettingsText() {
   const secKeys = ['secAppearance', 'secGoals', 'secNotif', 'secStats', 'secData', 'secAbout'];
   secKeys.forEach((k, i) => { if (secTitles[i]) secTitles[i].textContent = tr[k] || ''; });
 
-  const labels = document.querySelectorAll('.settings-item-label');
-  const descs = document.querySelectorAll('.settings-item-desc');
-  const labelKeys = ['darkMode', 'fontSize', 'compact', 'focus', 'accent', 'dailyGoal', 'waterGoal', 'sleepGoal', 'streakAlert', 'showTaskDate', 'morningNotif', 'morningTime', 'eveningNotif', 'confetti', 'sound', 'appName', 'privacy'];
-  const descKeys = ['darkModeDesc', 'fontSizeDesc', 'compactDesc', 'focusDesc', 'accentDesc', 'dailyGoalDesc', 'waterGoalDesc', 'sleepGoalDesc', 'streakAlertDesc', 'showTaskDateDesc', 'morningNotifDesc', '', 'eveningNotifDesc', 'confettiDesc', 'soundDesc', 'appVer', 'privacyDesc'];
-  labelKeys.forEach((k, i) => { if (labels[i]) labels[i].textContent = tr[k] || ''; });
-  descKeys.forEach((k, i) => { if (descs[i] && k) descs[i].textContent = tr[k] || ''; });
+  // Mapped by element id -> translation key (NOT DOM position), so adding or
+  // reordering settings items can never misalign a translation onto the wrong label again.
+  const settingsTextMap = {
+    darkModeLabel: 'darkMode', darkModeDesc: 'darkModeDesc',
+    fontSizeLabel: 'fontSize', fontSizeDesc: 'fontSizeDesc',
+    langSettingsLabel: 'langSettingsLabel', langSettingsDesc: 'langSettingsDesc',
+    compactLabel: 'compact', compactDesc: 'compactDesc',
+    focusLabel: 'focus', focusDesc: 'focusDesc',
+    accentLabel: 'accent', accentDesc: 'accentDesc',
+    themePickLabel: 'themePickLabel', themePickDesc: 'themePickDesc', themePopupTitle: 'themePopupTitle',
+    quotesTabLabel: 'quotesTabLabel', quotesTabDesc: 'quotesTabDesc',
+    journalTabLabel: 'journalTabLabel', journalTabDesc: 'journalTabDesc',
+    dailyGoalLabel: 'dailyGoal', dailyGoalDesc: 'dailyGoalDesc',
+    waterGoalLabel: 'waterGoal', waterGoalDesc: 'waterGoalDesc',
+    sleepGoalLabel: 'sleepGoal', sleepGoalDesc: 'sleepGoalDesc',
+    streakAlertLabel: 'streakAlert', streakAlertDesc: 'streakAlertDesc',
+    showTaskDateLabel: 'showTaskDate', showTaskDateDesc: 'showTaskDateDesc',
+    morningNotifLabel: 'morningNotif', morningNotifDesc: 'morningNotifDesc',
+    morningTimeLabel: 'morningTime',
+    eveningNotifLabel: 'eveningNotif', eveningNotifDesc: 'eveningNotifDesc',
+    confettiLabel: 'confetti', confettiDesc: 'confettiDesc',
+    soundLabel: 'sound', soundDesc: 'soundDesc',
+    privacyLabel: 'privacy', privacyDesc: 'privacyDesc',
+  };
+  Object.keys(settingsTextMap).forEach(id => {
+    const el = document.getElementById(id);
+    const key = settingsTextMap[id];
+    if (el && tr[key]) el.textContent = tr[key];
+  });
+  const appVerEl = document.getElementById('appNameLabel');
+  if (appVerEl && tr.appVer) appVerEl.textContent = tr.appVer;
 
   const fss = document.getElementById('fontSizeSelect');
   if (fss) {
@@ -7352,9 +7482,9 @@ function renderThemePicker() {
   if (swatch && t) swatch.style.background = `linear-gradient(135deg, ${t.bg2}, ${t.accent})`;
   if (nameEl && t) nameEl.textContent = t.name;
   if (!grid) return;
-  grid.innerHTML = APP_THEMES.map(t => {
+  grid.innerHTML = APP_THEMES.map((t, i) => {
     const isActive = current === t.id;
-    return `<div class="theme-card ${isActive ? 'active' : ''}" onclick="applyAppTheme('${t.id}')" title="${t.name}">
+    return `<div class="theme-card ${isActive ? 'active' : ''}" style="--tc-i:${i}" onclick="applyAppTheme('${t.id}')" title="${t.name}">
       <div class="theme-card-preview" style="background:${t.bg}">
         <div class="tcp-bg" style="background:${t.bg2}"></div>
         <div class="tcp-card" style="background:${t.dark ? '#1e2433' : '#fff'};opacity:0.9"></div>
@@ -7368,6 +7498,8 @@ function renderThemePicker() {
 
 function openThemePicker() {
   renderThemePicker();
+  const panel = document.getElementById('settingsPanel');
+  if (panel) panel.classList.add('behind-theme-popup');
   const ov = document.getElementById('themePopupOverlay');
   if (ov) ov.classList.add('open');
 }
@@ -7375,6 +7507,8 @@ function openThemePicker() {
 function closeThemePicker() {
   const ov = document.getElementById('themePopupOverlay');
   if (ov) ov.classList.remove('open');
+  const panel = document.getElementById('settingsPanel');
+  if (panel) setTimeout(() => panel.classList.remove('behind-theme-popup'), 200);
 }
 
 function setFontSize(v) {
