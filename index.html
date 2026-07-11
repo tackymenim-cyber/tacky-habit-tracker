@@ -8233,7 +8233,7 @@ function showPage(p) {
   // the real cause of pages getting stuck blank.
   if (_pageTransitioning) {
     // Finish the in-flight transition instantly, then proceed with the new one.
-    if (typeof _finishPendingPageTransition === 'function') _finishPendingPageTransition();
+    if (typeof _finishPendingPageTransition === 'function') _finishPendingPageTransition(true);
   }
   _pageTransitioning = true;
 
@@ -8298,9 +8298,10 @@ function showPage(p) {
   // THEN kick off the slide-in animation on the following frame. This keeps
   // the transition itself buttery even while renderAll() is busy.
   let _revealed = false;
-  const reveal = () => {
+  const reveal = (forceRender) => {
     if (_revealed) return;
     _revealed = true;
+    if (forceRender) { try { renderAll(p); } catch(e) {} }
     nextEl.classList.remove('slide-from-left','slide-from-right');
     nextEl.classList.add('page-visible');
     _pageTransitioning = false;
@@ -8313,7 +8314,7 @@ function showPage(p) {
 
   requestAnimationFrame(() => {
     try {
-      renderAll();
+      renderAll(p);
       if (p === 'achievements') { try { renderAchievementsPage(); } catch(e) {} }
     } catch (err) {
       console.error('showPage render error:', err);
@@ -10035,18 +10036,19 @@ function renderJournalPage() {
 }
 
 // =========== RENDER ALL ===========
-function renderAll() {
+function renderAll(forcePage) {
   const tr = T[currentLang] || T.ar;
   const monthLabelEl = document.getElementById('monthLabel');
   if (monthLabelEl) monthLabelEl.textContent = `${tr.monthNames[curM]} ${curY}`;
-  const safeRender = (name, fn) => { try { fn(); } catch (e) { console.error('render error in ' + name + ':', e); } };
-  if (currentPage === 'tracker') safeRender('renderTracker', renderTracker);
-  if (currentPage === 'mood') safeRender('renderMood', renderMood);
-  if (currentPage === 'weekly') safeRender('renderWeekly', renderWeekly);
-  if (currentPage === 'quotes') safeRender('renderQuotes', renderQuotes);
-  if (currentPage === 'journal') safeRender('renderJournalPage', renderJournalPage);
-  if (currentPage === 'gym') safeRender('renderGym', renderGym);
-  if (currentPage === 'achievements') safeRender('renderAchievementsPage', renderAchievementsPage);
+  const safeRender = (name, fn) => { try { fn(); } catch (e) { console.error('render error in ' + name + ':' , e); } };
+  const pg = forcePage || currentPage;
+  if (pg === 'tracker') safeRender('renderTracker', renderTracker);
+  if (pg === 'mood') safeRender('renderMood', renderMood);
+  if (pg === 'weekly') safeRender('renderWeekly', renderWeekly);
+  if (pg === 'quotes') safeRender('renderQuotes', renderQuotes);
+  if (pg === 'journal') safeRender('renderJournalPage', renderJournalPage);
+  if (pg === 'gym') safeRender('renderGym', renderGym);
+  if (pg === 'achievements') safeRender('renderAchievementsPage', renderAchievementsPage);
   safeRender('renderGamificationBar', renderGamificationBar);
 }
 
