@@ -1561,6 +1561,7 @@ body.auth-active {
 .badge-card {
   border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 10px;
   text-align: center; transition: var(--transition); background: var(--bg);
+  position: relative; overflow: hidden;
 }
 .badge-card.unlocked {
   background: linear-gradient(160deg, var(--white), var(--blue-50));
@@ -1576,6 +1577,12 @@ body.auth-active {
 .badge-name { font-size: 0.74rem; font-weight: 800; color: var(--text); margin-bottom: 3px; }
 .badge-card:not(.unlocked) .badge-name { color: var(--text-3); }
 .badge-desc { font-size: 0.64rem; color: var(--text-3); line-height: 1.35; }
+.badge-cat-tag {
+  position: absolute; top: 6px; right: 8px;
+  font-size: 0.54rem; font-weight: 800; padding: 2px 6px; border-radius: 99px;
+  background: var(--catbg); color: var(--cattext); white-space: nowrap;
+}
+[data-theme="dark"] .badge-cat-tag { background: var(--catbg-dark); color: var(--cattext-dark); }
 
 /* ===== LEVEL-UP OVERLAY ===== */
 .lvlup-overlay {
@@ -4318,6 +4325,15 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 .ach-badge-desc { font-size: 0.65rem; color: var(--text-3); line-height: 1.4; }
 .ach-badge-card.unlocked .ach-badge-name { color: #92400e; }
 [data-theme="dark"] .ach-badge-card.unlocked .ach-badge-name { color: var(--yellow); }
+.ach-badge-cat-tag {
+  position: absolute; top: 6px; right: 8px;
+  font-size: 0.56rem; font-weight: 800; padding: 2px 7px; border-radius: 99px;
+  background: var(--catbg); color: var(--cattext); white-space: nowrap;
+}
+[data-theme="dark"] .ach-badge-cat-tag { background: var(--catbg-dark); color: var(--cattext-dark); }
+.ach-badges-cat-filter { margin-top: 8px; flex-wrap: wrap; }
+.ach-cat-btn.active { background: #8b5cf6; border-color: #8b5cf6; }
+.ach-cat-btn.active:hover { background: #7c3aed; }
 
 /* Heatmap tooltip */
 .hm-tooltip {
@@ -4873,6 +4889,15 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
       <button class="ach-filter-btn active" id="achFilterAll" onclick="filterAchBadges('all',this)">الكل</button>
       <button class="ach-filter-btn" id="achFilterUnlocked" onclick="filterAchBadges('unlocked',this)">✅ مفتوحة</button>
       <button class="ach-filter-btn" id="achFilterLocked" onclick="filterAchBadges('locked',this)">🔒 مقفلة</button>
+    </div>
+    <div class="ach-badges-filter ach-badges-cat-filter" id="achBadgesCatFilter">
+      <button class="ach-filter-btn ach-cat-btn active" data-cat="all" id="achCatAll" onclick="filterAchCat('all',this)">🏅 الكل</button>
+      <button class="ach-filter-btn ach-cat-btn" data-cat="milestones" id="achCatMilestonesBtn" onclick="filterAchCat('milestones',this)">🏁 معالم</button>
+      <button class="ach-filter-btn ach-cat-btn" data-cat="streaks" id="achCatStreaksBtn" onclick="filterAchCat('streaks',this)">🔥 سلاسل</button>
+      <button class="ach-filter-btn ach-cat-btn" data-cat="wellness" id="achCatWellnessBtn" onclick="filterAchCat('wellness',this)">💧 عافية</button>
+      <button class="ach-filter-btn ach-cat-btn" data-cat="productivity" id="achCatProductivityBtn" onclick="filterAchCat('productivity',this)">📝 إنتاجية</button>
+      <button class="ach-filter-btn ach-cat-btn" data-cat="gym" id="achCatGymBtn" onclick="filterAchCat('gym',this)">💪 جيم</button>
+      <button class="ach-filter-btn ach-cat-btn" data-cat="special" id="achCatSpecialBtn" onclick="filterAchCat('special',this)">🌟 خاصة</button>
     </div>
     <div class="ach-badges-grid" id="achBadgesGrid"></div>
   </div>
@@ -6035,17 +6060,43 @@ const T = {
     achComp10Name: 'بداية موفقة', achComp10Desc: 'أكمل عاداتك 10 مرات',
     achComp100Name: 'مئوية!', achComp100Desc: 'أكمل عاداتك 100 مرة',
     achComp500Name: 'محارب الانضباط', achComp500Desc: 'أكمل عاداتك 500 مرة',
+    achComp1000Name: 'أسطورة الألف', achComp1000Desc: 'أكمل عاداتك 1000 مرة',
+    achComp2500Name: 'لا يُقهر', achComp2500Desc: 'أكمل عاداتك 2500 مرة',
+    achHabits5Name: 'مُنظّم', achHabits5Desc: 'أضف 5 عادات أو أكثر',
     achStreak3Name: 'شرارة البداية', achStreak3Desc: 'حافظ على سلسلة 3 أيام متتالية',
     achStreak7Name: 'أسبوع كامل', achStreak7Desc: 'حافظ على سلسلة 7 أيام متتالية',
+    achStreak14Name: 'أسبوعان بلا كلل', achStreak14Desc: 'حافظ على سلسلة 14 يوم متتالية',
     achStreak30Name: 'شهر من الالتزام', achStreak30Desc: 'حافظ على سلسلة 30 يوم متتالية',
+    achStreak60Name: 'قوة الاستمرار', achStreak60Desc: 'حافظ على سلسلة 60 يوم متتالية',
     achStreak100Name: 'أسطورة الثبات', achStreak100Desc: 'حافظ على سلسلة 100 يوم متتالية',
+    achStreak200Name: 'قمة الجبل', achStreak200Desc: 'حافظ على سلسلة 200 يوم متتالية',
+    achStreak365Name: 'دورة كاملة', achStreak365Desc: 'حافظ على سلسلة 365 يوم متتالية — سنة كاملة!',
     achMood7Name: 'واعٍ بمشاعرك', achMood7Desc: 'سجّل مزاجك 7 مرات',
     achMood30Name: 'توازن داخلي', achMood30Desc: 'سجّل مزاجك 30 مرة',
+    achMood100Name: 'خبير المشاعر', achMood100Desc: 'سجّل مزاجك 100 مرة',
+    achWater7Name: 'رطوبة كافية', achWater7Desc: 'حقق هدف الماء اليومي 7 مرات',
+    achWater30Name: 'نبع لا ينضب', achWater30Desc: 'حقق هدف الماء اليومي 30 مرة',
+    achSleep7Name: 'نوم منتظم', achSleep7Desc: 'سجّل ساعات نومك 7 مرات',
+    achSleep30Name: 'سيد الأحلام', achSleep30Desc: 'سجّل ساعات نومك 30 مرة',
+    achJournal5Name: 'كاتب مبتدئ', achJournal5Desc: 'اكتب 5 مقالات في اليوميات',
+    achJournal20Name: 'روائي اليوميات', achJournal20Desc: 'اكتب 20 مقالاً في اليوميات',
+    achJournalWordsName: 'قلم غزير', achJournalWordsDesc: 'اكتب 5000 كلمة إجمالاً في اليوميات',
     achTasks10Name: 'منجز المهام', achTasks10Desc: 'أنجز 10 مهام',
     achTasks50Name: 'آلة الإنتاجية', achTasks50Desc: 'أنجز 50 مهمة',
+    achTasks150Name: 'سيد الإنتاجية', achTasks150Desc: 'أنجز 150 مهمة',
     achGym10Name: 'قوة الإرادة', achGym10Desc: 'سجّل 10 حصص جيم',
+    achGym50Name: 'عضلات فولاذية', achGym50Desc: 'سجّل 50 حصة جيم',
+    achGym150Name: 'محارب الحديد', achGym150Desc: 'سجّل 150 حصة جيم',
     achPerfectDayName: 'يوم مثالي', achPerfectDayDesc: 'أكمل كل عاداتك المجدولة في يوم واحد',
     achPerfectWeekName: 'أسبوع الكمال', achPerfectWeekDesc: 'أسبوع كامل بإنجاز 100٪',
+    achPerfect10Name: 'عادة الكمال', achPerfect10Desc: 'حقق 10 أيام مثالية',
+    achPerfect30Name: 'ملك الانضباط', achPerfect30Desc: 'حقق 30 يوماً مثالياً',
+    achWeekendName: 'محارب نهاية الأسبوع', achWeekendDesc: 'أكمل يوماً مثالياً في 4 عطلات نهاية أسبوع',
+    achComebackName: 'العودة القوية', achComebackDesc: 'أكمل يوماً مثالياً بعد يوم فشلت فيه تماماً',
+    achComeback5Name: 'لا يستسلم أبداً', achComeback5Desc: 'اصنع 5 عودات قوية بعد أيام فاشلة',
+    achVariety3Name: 'متعدد المواهب', achVariety3Desc: 'أكمل 3 عادات مختلفة في نفس اليوم',
+    achVariety7Name: 'موسوعي', achVariety7Desc: 'أكمل 7 عادات مختلفة في نفس اليوم',
+    achAllRounderName: 'اللاعب الشامل', achAllRounderDesc: 'استخدم كل ميزات التطبيق: عادة، مزاج، مهمة، جيم، ويوميات',
     langSettingsLabel: 'اللغة', langSettingsDesc: 'لغة التطبيق',
     themePickLabel: 'ثيم التطبيق', themePickDesc: 'اختر لوحة ألوان كاملة للواجهة', themePopupTitle: '🖼️ اختر ثيم التطبيق',
     quotesTabLabel: 'خانة الاقتباسات', quotesTabDesc: 'إظهار أو إخفاء تبويب الاقتباسات',
@@ -6103,6 +6154,9 @@ const T = {
     achFilterAll: 'الكل',
     achFilterUnlocked: '✅ مفتوحة',
     achFilterLocked: '🔒 مقفلة',
+    achCatMilestones: '🏁 معالم', achCatStreaks: '🔥 سلاسل', achCatWellness: '💧 عافية',
+    achCatProductivity: '📝 إنتاجية', achCatGym: '💪 جيم', achCatSpecial: '🌟 خاصة',
+    achCatAllLabel: '🏅 الكل',
     achBadgesUnlocked: 'شارة مفتوحة',
     achXpHabits: 'إنجازات العادات', achXpHabitsUnit: 'إنجاز × ',
     achXpMood: 'تسجيلات المزاج', achXpMoodUnit: 'تسجيل × ',
@@ -6389,17 +6443,43 @@ const T = {
     achComp10Name: 'Bon départ', achComp10Desc: 'Complète tes habitudes 10 fois',
     achComp100Name: 'Centenaire !', achComp100Desc: 'Complète tes habitudes 100 fois',
     achComp500Name: 'Guerrier discipliné', achComp500Desc: 'Complète tes habitudes 500 fois',
+    achComp1000Name: 'Légende du millier', achComp1000Desc: 'Complète tes habitudes 1000 fois',
+    achComp2500Name: 'Invincible', achComp2500Desc: 'Complète tes habitudes 2500 fois',
+    achHabits5Name: 'Organisé', achHabits5Desc: 'Ajoute 5 habitudes ou plus',
     achStreak3Name: 'Étincelle', achStreak3Desc: 'Maintiens une série de 3 jours',
     achStreak7Name: 'Semaine complète', achStreak7Desc: 'Maintiens une série de 7 jours',
+    achStreak14Name: 'Deux semaines sans faiblir', achStreak14Desc: 'Maintiens une série de 14 jours',
     achStreak30Name: 'Mois de constance', achStreak30Desc: 'Maintiens une série de 30 jours',
+    achStreak60Name: 'Force de la constance', achStreak60Desc: 'Maintiens une série de 60 jours',
     achStreak100Name: 'Légende de la constance', achStreak100Desc: 'Maintiens une série de 100 jours',
+    achStreak200Name: 'Sommet de la montagne', achStreak200Desc: 'Maintiens une série de 200 jours',
+    achStreak365Name: 'Cycle complet', achStreak365Desc: 'Maintiens une série de 365 jours — une année entière !',
     achMood7Name: 'Conscient de tes émotions', achMood7Desc: 'Enregistre ton humeur 7 fois',
     achMood30Name: 'Équilibre intérieur', achMood30Desc: 'Enregistre ton humeur 30 fois',
+    achMood100Name: 'Expert des émotions', achMood100Desc: 'Enregistre ton humeur 100 fois',
+    achWater7Name: 'Bien hydraté', achWater7Desc: "Atteins ton objectif d'eau 7 fois",
+    achWater30Name: 'Source intarissable', achWater30Desc: "Atteins ton objectif d'eau 30 fois",
+    achSleep7Name: 'Sommeil régulier', achSleep7Desc: 'Enregistre ton sommeil 7 fois',
+    achSleep30Name: 'Maître des rêves', achSleep30Desc: 'Enregistre ton sommeil 30 fois',
+    achJournal5Name: 'Écrivain débutant', achJournal5Desc: 'Écris 5 entrées de journal',
+    achJournal20Name: 'Romancier du journal', achJournal20Desc: 'Écris 20 entrées de journal',
+    achJournalWordsName: 'Plume prolifique', achJournalWordsDesc: 'Écris 5000 mots au total dans ton journal',
     achTasks10Name: 'Accomplisseur', achTasks10Desc: 'Termine 10 tâches',
     achTasks50Name: 'Machine de productivité', achTasks50Desc: 'Termine 50 tâches',
+    achTasks150Name: 'Maître de la productivité', achTasks150Desc: 'Termine 150 tâches',
     achGym10Name: 'Force de volonté', achGym10Desc: 'Enregistre 10 séances de sport',
+    achGym50Name: 'Muscles d\'acier', achGym50Desc: 'Enregistre 50 séances de sport',
+    achGym150Name: 'Guerrier de fer', achGym150Desc: 'Enregistre 150 séances de sport',
     achPerfectDayName: 'Jour parfait', achPerfectDayDesc: 'Termine toutes tes habitudes prévues en un jour',
     achPerfectWeekName: 'Semaine parfaite', achPerfectWeekDesc: 'Une semaine complète à 100%',
+    achPerfect10Name: 'Habitude de perfection', achPerfect10Desc: 'Atteins 10 jours parfaits',
+    achPerfect30Name: 'Roi de la discipline', achPerfect30Desc: 'Atteins 30 jours parfaits',
+    achWeekendName: 'Guerrier du week-end', achWeekendDesc: 'Termine un jour parfait lors de 4 week-ends',
+    achComebackName: 'Retour en force', achComebackDesc: 'Termine un jour parfait après un jour totalement raté',
+    achComeback5Name: "N'abandonne jamais", achComeback5Desc: 'Fais 5 retours en force après des jours ratés',
+    achVariety3Name: 'Multi-talents', achVariety3Desc: 'Termine 3 habitudes différentes le même jour',
+    achVariety7Name: 'Encyclopédique', achVariety7Desc: 'Termine 7 habitudes différentes le même jour',
+    achAllRounderName: 'Joueur complet', achAllRounderDesc: "Utilise toutes les fonctionnalités : habitude, humeur, tâche, sport et journal",
     langSettingsLabel: 'Langue', langSettingsDesc: "Langue de l'application",
     themePickLabel: "Thème de l'app", themePickDesc: "Choisis une palette de couleurs complète", themePopupTitle: "🖼️ Choisir un thème",
     quotesTabLabel: 'Onglet citations', quotesTabDesc: "Afficher ou masquer l'onglet citations",
@@ -6457,6 +6537,9 @@ const T = {
     achFilterAll: 'Tout',
     achFilterUnlocked: '✅ Débloqués',
     achFilterLocked: '🔒 Verrouillés',
+    achCatMilestones: '🏁 Jalons', achCatStreaks: '🔥 Séries', achCatWellness: '💧 Bien-être',
+    achCatProductivity: '📝 Productivité', achCatGym: '💪 Sport', achCatSpecial: '🌟 Spécial',
+    achCatAllLabel: '🏅 Tout',
     achBadgesUnlocked: 'badge(s) débloqué(s)',
     achXpHabits: 'Réussites d\'habitudes', achXpHabitsUnit: 'réussite × ',
     achXpMood: 'Enregistrements d\'humeur', achXpMoodUnit: 'enreg. × ',
@@ -6743,17 +6826,43 @@ const T = {
     achComp10Name: 'Good Start', achComp10Desc: 'Complete your habits 10 times',
     achComp100Name: 'Century!', achComp100Desc: 'Complete your habits 100 times',
     achComp500Name: 'Discipline Warrior', achComp500Desc: 'Complete your habits 500 times',
+    achComp1000Name: 'Thousand Legend', achComp1000Desc: 'Complete your habits 1000 times',
+    achComp2500Name: 'Unstoppable', achComp2500Desc: 'Complete your habits 2500 times',
+    achHabits5Name: 'Organized', achHabits5Desc: 'Add 5 or more habits',
     achStreak3Name: 'Spark', achStreak3Desc: 'Keep a 3-day streak going',
     achStreak7Name: 'Full Week', achStreak7Desc: 'Keep a 7-day streak going',
+    achStreak14Name: 'Two Tireless Weeks', achStreak14Desc: 'Keep a 14-day streak going',
     achStreak30Name: 'Month of Consistency', achStreak30Desc: 'Keep a 30-day streak going',
+    achStreak60Name: 'Staying Power', achStreak60Desc: 'Keep a 60-day streak going',
     achStreak100Name: 'Consistency Legend', achStreak100Desc: 'Keep a 100-day streak going',
+    achStreak200Name: 'Mountain Peak', achStreak200Desc: 'Keep a 200-day streak going',
+    achStreak365Name: 'Full Cycle', achStreak365Desc: 'Keep a 365-day streak going — a whole year!',
     achMood7Name: 'Mood Aware', achMood7Desc: 'Log your mood 7 times',
     achMood30Name: 'Inner Balance', achMood30Desc: 'Log your mood 30 times',
+    achMood100Name: 'Emotion Expert', achMood100Desc: 'Log your mood 100 times',
+    achWater7Name: 'Well Hydrated', achWater7Desc: 'Hit your water goal 7 times',
+    achWater30Name: 'Endless Spring', achWater30Desc: 'Hit your water goal 30 times',
+    achSleep7Name: 'Regular Sleeper', achSleep7Desc: 'Log your sleep 7 times',
+    achSleep30Name: 'Dream Master', achSleep30Desc: 'Log your sleep 30 times',
+    achJournal5Name: 'Beginner Writer', achJournal5Desc: 'Write 5 journal entries',
+    achJournal20Name: 'Journal Novelist', achJournal20Desc: 'Write 20 journal entries',
+    achJournalWordsName: 'Prolific Pen', achJournalWordsDesc: 'Write 5000 words total in your journal',
     achTasks10Name: 'Task Doer', achTasks10Desc: 'Complete 10 tasks',
     achTasks50Name: 'Productivity Machine', achTasks50Desc: 'Complete 50 tasks',
+    achTasks150Name: 'Productivity Master', achTasks150Desc: 'Complete 150 tasks',
     achGym10Name: 'Willpower', achGym10Desc: 'Log 10 gym sessions',
+    achGym50Name: 'Steel Muscles', achGym50Desc: 'Log 50 gym sessions',
+    achGym150Name: 'Iron Warrior', achGym150Desc: 'Log 150 gym sessions',
     achPerfectDayName: 'Perfect Day', achPerfectDayDesc: 'Complete every scheduled habit in one day',
     achPerfectWeekName: 'Perfect Week', achPerfectWeekDesc: 'A full week at 100% completion',
+    achPerfect10Name: 'Habit of Perfection', achPerfect10Desc: 'Achieve 10 perfect days',
+    achPerfect30Name: 'King of Discipline', achPerfect30Desc: 'Achieve 30 perfect days',
+    achWeekendName: 'Weekend Warrior', achWeekendDesc: 'Complete a perfect day on 4 weekends',
+    achComebackName: 'Strong Comeback', achComebackDesc: 'Complete a perfect day right after a fully missed day',
+    achComeback5Name: 'Never Gives Up', achComeback5Desc: 'Make 5 strong comebacks after missed days',
+    achVariety3Name: 'Multi-Talented', achVariety3Desc: 'Complete 3 different habits in the same day',
+    achVariety7Name: 'Encyclopedic', achVariety7Desc: 'Complete 7 different habits in the same day',
+    achAllRounderName: 'All-Rounder', achAllRounderDesc: 'Use every feature: habit, mood, task, gym, and journal',
     langSettingsLabel: 'Language', langSettingsDesc: 'App language',
     themePickLabel: 'App Theme', themePickDesc: 'Choose a full color palette for the interface', themePopupTitle: '🖼️ Choose App Theme',
     quotesTabLabel: 'Quotes Tab', quotesTabDesc: 'Show or hide the quotes tab',
@@ -6811,6 +6920,9 @@ const T = {
     achFilterAll: 'All',
     achFilterUnlocked: '✅ Unlocked',
     achFilterLocked: '🔒 Locked',
+    achCatMilestones: '🏁 Milestones', achCatStreaks: '🔥 Streaks', achCatWellness: '💧 Wellness',
+    achCatProductivity: '📝 Productivity', achCatGym: '💪 Gym', achCatSpecial: '🌟 Special',
+    achCatAllLabel: '🏅 All',
     achBadgesUnlocked: 'badge(s) unlocked',
     achXpHabits: 'Habit Completions', achXpHabitsUnit: 'completion × ',
     achXpMood: 'Mood Logs', achXpMoodUnit: 'log × ',
@@ -7013,6 +7125,13 @@ function updateAchievementsPageText() {
   se('achFilterAll', tr.achFilterAll);
   se('achFilterUnlocked', tr.achFilterUnlocked);
   se('achFilterLocked', tr.achFilterLocked);
+  se('achCatAll', tr.achCatAllLabel);
+  se('achCatMilestonesBtn', tr.achCatMilestones);
+  se('achCatStreaksBtn', tr.achCatStreaks);
+  se('achCatWellnessBtn', tr.achCatWellness);
+  se('achCatProductivityBtn', tr.achCatProductivity);
+  se('achCatGymBtn', tr.achCatGym);
+  se('achCatSpecialBtn', tr.achCatSpecial);
   // Skeleton loading text (shown before auth)
   se('skeletonLoadingText', tr.skeletonLoading);
   // Heatmap day labels
@@ -8709,22 +8828,53 @@ function computeAllTimeStats() {
   let hasPerfectDay = false;
   let perfectWeekAchieved = false;
   let consecutivePerfectDays = 0;
+  let perfectDaysCount = 0;
+  let weekendPerfectCount = 0;
+  let comebackCount = 0; // مرات إكمال يوم مثالي بعد يوم فاشل تماماً (0 إنجازات)
+  let prevDayWasZero = false;
   dateList.forEach(([yy, mm, dd]) => {
     let scheduled = 0, done = 0;
     habits.forEach(h => { if (isHabitActiveOnDate(h, yy, mm, dd)) { scheduled++; if (checks[chkKeyFor(yy, mm, h.id, dd)]) done++; } });
     const isPerfect = scheduled > 0 && done === scheduled;
+    const dow = new Date(yy, mm, dd).getDay(); // 0=أحد 6=سبت
     if (isPerfect) {
       hasPerfectDay = true;
+      perfectDaysCount++;
       consecutivePerfectDays++;
       if (consecutivePerfectDays >= 7) perfectWeekAchieved = true;
+      if (dow === 5 || dow === 6) weekendPerfectCount++;
+      if (prevDayWasZero) comebackCount++;
     } else {
       consecutivePerfectDays = 0;
     }
+    prevDayWasZero = scheduled > 0 && done === 0;
   });
+
+  // تنوّع العادات: أكبر عدد عادات مختلفة أُنجزت في نفس اليوم الواحد
+  let maxHabitsVarietyInDay = 0;
+  dateList.forEach(([yy, mm, dd]) => {
+    let doneCount = 0;
+    habits.forEach(h => { if (isHabitActiveOnDate(h, yy, mm, dd) && checks[chkKeyFor(yy, mm, h.id, dd)]) doneCount++; });
+    if (doneCount > maxHabitsVarietyInDay) maxHabitsVarietyInDay = doneCount;
+  });
+
+  // أكواب الماء: كم مرة تحقق هدف الماء اليومي
+  let waterGoalHits = 0;
+  Object.keys(waterData || {}).forEach(k => { if ((waterData[k] || 0) >= (settings.waterGoal || 8)) waterGoalHits++; });
+
+  // النوم: كم مرة سُجّلت ساعات نوم
+  let sleepLogCount = 0;
+  Object.keys(sleepData || {}).forEach(k => { if (sleepData[k]) sleepLogCount++; });
+
+  // اليوميات
+  const journalCount = (journalEntries || []).length;
+  const journalWordsTotal = (journalEntries || []).reduce((s, e) => s + (e.wordCount || 0), 0);
 
   return {
     totalCompletions, moodLogCount, tasksCompletedCount, gymLogCount,
-    longestStreakEver, hasPerfectDay, perfectWeekAchieved,
+    longestStreakEver, hasPerfectDay, perfectWeekAchieved, perfectDaysCount,
+    weekendPerfectCount, comebackCount, maxHabitsVarietyInDay,
+    waterGoalHits, sleepLogCount, journalCount, journalWordsTotal,
     habitsCount: habits.length,
   };
 }
@@ -8772,22 +8922,60 @@ function levelTierName(level) {
 
 // Achievement definitions. `test` receives the object returned by
 // computeAllTimeStats() and returns whether the badge is unlocked.
+// `cat` groups badges for the category filter: streaks | milestones | wellness | productivity | gym | special
 const ACHIEVEMENTS = [
-  { id: 'first_habit', icon: '🌱', nameKey: 'achFirstHabitName', descKey: 'achFirstHabitDesc', test: s => s.habitsCount >= 1 },
-  { id: 'comp_10',     icon: '✅', nameKey: 'achComp10Name',     descKey: 'achComp10Desc',     test: s => s.totalCompletions >= 10 },
-  { id: 'comp_100',    icon: '💯', nameKey: 'achComp100Name',    descKey: 'achComp100Desc',    test: s => s.totalCompletions >= 100 },
-  { id: 'comp_500',    icon: '🎖️', nameKey: 'achComp500Name',    descKey: 'achComp500Desc',    test: s => s.totalCompletions >= 500 },
-  { id: 'streak_3',    icon: '🔥', nameKey: 'achStreak3Name',    descKey: 'achStreak3Desc',    test: s => s.longestStreakEver >= 3 },
-  { id: 'streak_7',    icon: '🔥', nameKey: 'achStreak7Name',    descKey: 'achStreak7Desc',    test: s => s.longestStreakEver >= 7 },
-  { id: 'streak_30',   icon: '🔥', nameKey: 'achStreak30Name',   descKey: 'achStreak30Desc',   test: s => s.longestStreakEver >= 30 },
-  { id: 'streak_100',  icon: '🏔️', nameKey: 'achStreak100Name',  descKey: 'achStreak100Desc',  test: s => s.longestStreakEver >= 100 },
-  { id: 'mood_7',      icon: '😊', nameKey: 'achMood7Name',      descKey: 'achMood7Desc',      test: s => s.moodLogCount >= 7 },
-  { id: 'mood_30',     icon: '🧘', nameKey: 'achMood30Name',     descKey: 'achMood30Desc',     test: s => s.moodLogCount >= 30 },
-  { id: 'tasks_10',    icon: '📝', nameKey: 'achTasks10Name',    descKey: 'achTasks10Desc',    test: s => s.tasksCompletedCount >= 10 },
-  { id: 'tasks_50',    icon: '📋', nameKey: 'achTasks50Name',    descKey: 'achTasks50Desc',    test: s => s.tasksCompletedCount >= 50 },
-  { id: 'gym_10',      icon: '💪', nameKey: 'achGym10Name',      descKey: 'achGym10Desc',      test: s => s.gymLogCount >= 10 },
-  { id: 'perfect_day', icon: '🌟', nameKey: 'achPerfectDayName', descKey: 'achPerfectDayDesc', test: s => s.hasPerfectDay },
-  { id: 'perfect_week',icon: '👑', nameKey: 'achPerfectWeekName',descKey: 'achPerfectWeekDesc',test: s => s.perfectWeekAchieved },
+  // ═══ البدايات / معالم عامة (milestones) ═══
+  { id: 'first_habit', icon: '🌱', cat: 'milestones', nameKey: 'achFirstHabitName', descKey: 'achFirstHabitDesc', test: s => s.habitsCount >= 1 },
+  { id: 'comp_10',     icon: '✅', cat: 'milestones', nameKey: 'achComp10Name',     descKey: 'achComp10Desc',     test: s => s.totalCompletions >= 10 },
+  { id: 'comp_100',    icon: '💯', cat: 'milestones', nameKey: 'achComp100Name',    descKey: 'achComp100Desc',    test: s => s.totalCompletions >= 100 },
+  { id: 'comp_500',    icon: '🎖️', cat: 'milestones', nameKey: 'achComp500Name',    descKey: 'achComp500Desc',    test: s => s.totalCompletions >= 500 },
+  { id: 'comp_1000',   icon: '🏆', cat: 'milestones', nameKey: 'achComp1000Name',   descKey: 'achComp1000Desc',   test: s => s.totalCompletions >= 1000 },
+  { id: 'comp_2500',   icon: '💎', cat: 'milestones', nameKey: 'achComp2500Name',   descKey: 'achComp2500Desc',   test: s => s.totalCompletions >= 2500 },
+  { id: 'habits_5',    icon: '🧩', cat: 'milestones', nameKey: 'achHabits5Name',    descKey: 'achHabits5Desc',    test: s => s.habitsCount >= 5 },
+
+  // ═══ السلاسل (streaks) ═══
+  { id: 'streak_3',    icon: '🔥', cat: 'streaks', nameKey: 'achStreak3Name',    descKey: 'achStreak3Desc',    test: s => s.longestStreakEver >= 3 },
+  { id: 'streak_7',    icon: '🔥', cat: 'streaks', nameKey: 'achStreak7Name',    descKey: 'achStreak7Desc',    test: s => s.longestStreakEver >= 7 },
+  { id: 'streak_14',   icon: '🔥', cat: 'streaks', nameKey: 'achStreak14Name',   descKey: 'achStreak14Desc',   test: s => s.longestStreakEver >= 14 },
+  { id: 'streak_30',   icon: '🔥', cat: 'streaks', nameKey: 'achStreak30Name',   descKey: 'achStreak30Desc',   test: s => s.longestStreakEver >= 30 },
+  { id: 'streak_60',   icon: '⚡', cat: 'streaks', nameKey: 'achStreak60Name',   descKey: 'achStreak60Desc',   test: s => s.longestStreakEver >= 60 },
+  { id: 'streak_100',  icon: '🏔️', cat: 'streaks', nameKey: 'achStreak100Name',  descKey: 'achStreak100Desc',  test: s => s.longestStreakEver >= 100 },
+  { id: 'streak_200',  icon: '🗻', cat: 'streaks', nameKey: 'achStreak200Name',  descKey: 'achStreak200Desc',  test: s => s.longestStreakEver >= 200 },
+  { id: 'streak_365',  icon: '🌟', cat: 'streaks', nameKey: 'achStreak365Name',  descKey: 'achStreak365Desc',  test: s => s.longestStreakEver >= 365 },
+
+  // ═══ الرفاهية والعافية (wellness) ═══
+  { id: 'mood_7',      icon: '😊', cat: 'wellness', nameKey: 'achMood7Name',      descKey: 'achMood7Desc',      test: s => s.moodLogCount >= 7 },
+  { id: 'mood_30',     icon: '🧘', cat: 'wellness', nameKey: 'achMood30Name',     descKey: 'achMood30Desc',     test: s => s.moodLogCount >= 30 },
+  { id: 'mood_100',    icon: '🌈', cat: 'wellness', nameKey: 'achMood100Name',    descKey: 'achMood100Desc',    test: s => s.moodLogCount >= 100 },
+  { id: 'water_7',     icon: '💧', cat: 'wellness', nameKey: 'achWater7Name',     descKey: 'achWater7Desc',     test: s => s.waterGoalHits >= 7 },
+  { id: 'water_30',    icon: '🌊', cat: 'wellness', nameKey: 'achWater30Name',    descKey: 'achWater30Desc',    test: s => s.waterGoalHits >= 30 },
+  { id: 'sleep_7',     icon: '🌙', cat: 'wellness', nameKey: 'achSleep7Name',     descKey: 'achSleep7Desc',     test: s => s.sleepLogCount >= 7 },
+  { id: 'sleep_30',    icon: '😴', cat: 'wellness', nameKey: 'achSleep30Name',    descKey: 'achSleep30Desc',    test: s => s.sleepLogCount >= 30 },
+  { id: 'journal_5',   icon: '📖', cat: 'wellness', nameKey: 'achJournal5Name',   descKey: 'achJournal5Desc',   test: s => s.journalCount >= 5 },
+  { id: 'journal_20',  icon: '✍️', cat: 'wellness', nameKey: 'achJournal20Name',  descKey: 'achJournal20Desc',  test: s => s.journalCount >= 20 },
+  { id: 'journal_words_5000', icon: '📚', cat: 'wellness', nameKey: 'achJournalWordsName', descKey: 'achJournalWordsDesc', test: s => s.journalWordsTotal >= 5000 },
+
+  // ═══ الإنتاجية (productivity) ═══
+  { id: 'tasks_10',    icon: '📝', cat: 'productivity', nameKey: 'achTasks10Name',    descKey: 'achTasks10Desc',    test: s => s.tasksCompletedCount >= 10 },
+  { id: 'tasks_50',    icon: '📋', cat: 'productivity', nameKey: 'achTasks50Name',    descKey: 'achTasks50Desc',    test: s => s.tasksCompletedCount >= 50 },
+  { id: 'tasks_150',   icon: '🗂️', cat: 'productivity', nameKey: 'achTasks150Name',   descKey: 'achTasks150Desc',   test: s => s.tasksCompletedCount >= 150 },
+
+  // ═══ الجيم (gym) ═══
+  { id: 'gym_10',      icon: '💪', cat: 'gym', nameKey: 'achGym10Name',      descKey: 'achGym10Desc',      test: s => s.gymLogCount >= 10 },
+  { id: 'gym_50',      icon: '🏋️', cat: 'gym', nameKey: 'achGym50Name',      descKey: 'achGym50Desc',      test: s => s.gymLogCount >= 50 },
+  { id: 'gym_150',     icon: '🦾', cat: 'gym', nameKey: 'achGym150Name',     descKey: 'achGym150Desc',     test: s => s.gymLogCount >= 150 },
+
+  // ═══ خاصة وممتعة (special) ═══
+  { id: 'perfect_day', icon: '🌟', cat: 'special', nameKey: 'achPerfectDayName', descKey: 'achPerfectDayDesc', test: s => s.hasPerfectDay },
+  { id: 'perfect_week',icon: '👑', cat: 'special', nameKey: 'achPerfectWeekName',descKey: 'achPerfectWeekDesc',test: s => s.perfectWeekAchieved },
+  { id: 'perfect_10',  icon: '💫', cat: 'special', nameKey: 'achPerfect10Name',  descKey: 'achPerfect10Desc',  test: s => s.perfectDaysCount >= 10 },
+  { id: 'perfect_30',  icon: '🪩', cat: 'special', nameKey: 'achPerfect30Name',  descKey: 'achPerfect30Desc',  test: s => s.perfectDaysCount >= 30 },
+  { id: 'weekend_warrior', icon: '🎉', cat: 'special', nameKey: 'achWeekendName',    descKey: 'achWeekendDesc',    test: s => s.weekendPerfectCount >= 4 },
+  { id: 'comeback',    icon: '🦅', cat: 'special', nameKey: 'achComebackName',   descKey: 'achComebackDesc',   test: s => s.comebackCount >= 1 },
+  { id: 'comeback_5',  icon: '🔁', cat: 'special', nameKey: 'achComeback5Name',  descKey: 'achComeback5Desc',  test: s => s.comebackCount >= 5 },
+  { id: 'variety_3',   icon: '🎨', cat: 'special', nameKey: 'achVariety3Name',   descKey: 'achVariety3Desc',   test: s => s.maxHabitsVarietyInDay >= 3 },
+  { id: 'variety_7',   icon: '🎭', cat: 'special', nameKey: 'achVariety7Name',   descKey: 'achVariety7Desc',   test: s => s.maxHabitsVarietyInDay >= 7 },
+  { id: 'all_rounder', icon: '🥇', cat: 'special', nameKey: 'achAllRounderName', descKey: 'achAllRounderDesc', test: s => s.totalCompletions >= 1 && s.moodLogCount >= 1 && s.tasksCompletedCount >= 1 && s.gymLogCount >= 1 && s.journalCount >= 1 },
 ];
 
 function playLevelUpSound() {
@@ -8805,13 +8993,17 @@ function renderBadgesGrid(stats, unlockedIds) {
   const grid = document.getElementById('badgesGrid');
   if (!grid) return;
   const unlockedSet = new Set(unlockedIds);
-  grid.innerHTML = ACHIEVEMENTS.map(a => `
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const col = ACH_CAT_COLORS[a.cat] || ACH_CAT_COLORS.special;
+    return `
     <div class="badge-card ${unlockedSet.has(a.id) ? 'unlocked' : ''}">
+      <span class="badge-cat-tag" style="--catbg:${col.bg};--cattext:${col.text};--catbg-dark:${col.dark};--cattext-dark:${col.darkText}">${achCatLabel(a.cat)}</span>
       <div class="badge-icon">${a.icon}</div>
       <div class="badge-name">${t(a.nameKey)}</div>
       <div class="badge-desc">${t(a.descKey)}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function openBadgesModal() {
@@ -12813,11 +13005,31 @@ function renderAchievementsLevel() {
 }
 
 let _achBadgeFilter = 'all';
+let _achCatFilter = 'all';
 function filterAchBadges(filter, btn) {
   _achBadgeFilter = filter;
-  document.querySelectorAll('.ach-filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#achBadgesFilter .ach-filter-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderAchBadgesGrid();
+}
+function filterAchCat(cat, btn) {
+  _achCatFilter = cat;
+  document.querySelectorAll('#achBadgesCatFilter .ach-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderAchBadgesGrid();
+}
+
+const ACH_CAT_COLORS = {
+  milestones:   { bg: '#e0f2fe', text: '#0369a1', dark: 'rgba(56,189,248,0.18)', darkText: '#7dd3fc' },
+  streaks:      { bg: '#ffedd5', text: '#c2410c', dark: 'rgba(251,146,60,0.18)', darkText: '#fdba74' },
+  wellness:     { bg: '#dcfce7', text: '#15803d', dark: 'rgba(74,222,128,0.18)', darkText: '#86efac' },
+  productivity: { bg: '#ede9fe', text: '#6d28d9', dark: 'rgba(167,139,250,0.18)', darkText: '#c4b5fd' },
+  gym:          { bg: '#fee2e2', text: '#b91c1c', dark: 'rgba(248,113,113,0.18)', darkText: '#fca5a5' },
+  special:      { bg: '#fef9c3', text: '#a16207', dark: 'rgba(250,204,21,0.18)', darkText: '#fde047' },
+};
+function achCatLabel(cat) {
+  const map = { milestones: 'achCatMilestones', streaks: 'achCatStreaks', wellness: 'achCatWellness', productivity: 'achCatProductivity', gym: 'achCatGym', special: 'achCatSpecial' };
+  return t(map[cat] || 'achCatSpecial');
 }
 
 function renderAchBadgesGrid() {
@@ -12831,14 +13043,17 @@ function renderAchBadgesGrid() {
   if (sub) sub.textContent = `${unlockedIds.size} / ${ACHIEVEMENTS.length} ${t('achBadgesUnlocked')}`;
 
   const filtered = ACHIEVEMENTS.filter(a => {
-    if (_achBadgeFilter === 'unlocked') return unlockedIds.has(a.id);
-    if (_achBadgeFilter === 'locked') return !unlockedIds.has(a.id);
+    if (_achBadgeFilter === 'unlocked' && !unlockedIds.has(a.id)) return false;
+    if (_achBadgeFilter === 'locked' && unlockedIds.has(a.id)) return false;
+    if (_achCatFilter !== 'all' && a.cat !== _achCatFilter) return false;
     return true;
   });
 
   grid.innerHTML = filtered.map(a => {
     const unlocked = unlockedIds.has(a.id);
+    const col = ACH_CAT_COLORS[a.cat] || ACH_CAT_COLORS.special;
     return `<div class="ach-badge-card ${unlocked ? 'unlocked' : 'locked'}">
+      <span class="ach-badge-cat-tag" style="--catbg:${col.bg};--cattext:${col.text};--catbg-dark:${col.dark};--cattext-dark:${col.darkText}">${achCatLabel(a.cat)}</span>
       <span class="ach-badge-icon">${a.icon}</span>
       <div class="ach-badge-name">${t(a.nameKey)}</div>
       <div class="ach-badge-desc">${t(a.descKey)}</div>
