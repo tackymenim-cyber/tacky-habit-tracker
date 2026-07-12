@@ -9630,27 +9630,32 @@ function _scrollTableToToday(force) {
   if (_tableScrolledOnce && !force) return;
 
   const wrap = document.querySelector('.table-wrap');
-  const headerCell = document.querySelector('.table-wrap th.today-th');
-  if (!wrap || !headerCell) return;
+  if (!wrap || !document.querySelector('.table-wrap th.today-th')) return;
 
   const isFirstScroll = !_tableScrolledOnce;
   _tableScrolledOnce = true;
 
   const doAlign = (behavior) => {
+    // Re-query fresh every time this runs — if the table re-rendered in
+    // between calls (e.g. an achievement popup triggering a re-render), an
+    // old cached reference would be a detached node with a zero-size rect,
+    // which produced a huge bogus offset and shot the scroll off to the
+    // wrong end of the month. Querying fresh + bailing on a zero-size rect
+    // prevents that entirely.
+    const headerCell = document.querySelector('.table-wrap th.today-th');
+    const stickyCol = document.querySelector('.table-wrap th.habit-col');
+    if (!headerCell || !stickyCol) return;
+
     const wrapRect = wrap.getBoundingClientRect();
     const cellRect = headerCell.getBoundingClientRect();
-    // The habit-name column is sticky (pinned to the right edge) and always
-    // visible — it isn't part of the scrollable day columns, so exclude its
-    // width from the visible area used to align today's column.
-    const stickyCol = document.querySelector('.table-wrap th.habit-col');
-    const stickyW = stickyCol ? stickyCol.getBoundingClientRect().width : 0;
+    const stickyRect = stickyCol.getBoundingClientRect();
+    if (cellRect.width === 0 || wrapRect.width === 0) return; // detached/not laid out yet — skip this pass
+
+    const stickyW = stickyRect.width;
     const visibleLeft = wrapRect.left;
     const visibleWidth = wrapRect.width - stickyW;
-    // Place today's column right next to the sticky habit-name column
-    // (hugging its edge) instead of centering it in the middle of the screen —
-    // this is the default position the user should see when opening the app.
-    const edgeGap = 4; // small breathing room between today's cell and the name column
-    const offset = (cellRect.left - visibleLeft) - (visibleWidth - cellRect.width - edgeGap);
+    // Center today's column within the visible (non-sticky) scroll area.
+    const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
     wrap.scrollBy({ left: offset, behavior });
     _clampTableScroll(wrap);
   };
