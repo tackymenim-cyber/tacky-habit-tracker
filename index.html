@@ -3778,7 +3778,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* مسكة السحب: تظهر دائماً وتعمل باللمس */
   .drag-handle { opacity: 1 !important; font-size: 1.05rem; padding: 6px 5px; color: var(--text-3); touch-action: none; cursor: grab; flex-shrink: 0; }
   .qt-item .drag-handle, .task-item .drag-handle { opacity: 1 !important; }
-  .habit-drag-handle { opacity: 1 !important; display: flex !important; min-width: 26px; min-height: 26px; padding: 6px 6px; justify-content: center; }
+  .habit-drag-handle { opacity: 1 !important; display: flex !important; min-width: 32px; min-height: 32px; padding: 6px 6px; justify-content: center; align-items: center; background: var(--blue-50); border-radius: 8px; font-size: 1.2rem !important; }
+  .habit-drag-handle:active, .habit-drag-handle.dragging-active { background: #8b5cf6 !important; color: #fff !important; transform: scale(1.15); }
   /* مقبض تحكم بعرض عمود اسم العادة */
   .habit-col-resizer {
     position: absolute; top: 0; bottom: 0; left: 0; width: 14px;
@@ -12543,6 +12544,7 @@ function _addTouchDrag(handle, rowSelector, getId, onDrop) {
   handle.addEventListener('touchstart', e => {
     e.preventDefault();
     e.stopPropagation();
+    handle.classList.add('dragging-active');
     _sourceRow = handle.closest(rowSelector);
     if (!_sourceRow) return;
     _sourceId = getId(_sourceRow);
@@ -12595,6 +12597,7 @@ function _addTouchDrag(handle, rowSelector, getId, onDrop) {
   }, { passive: false });
 
   handle.addEventListener('touchend', e => {
+    handle.classList.remove('dragging-active');
     if (_ghost) { _ghost.remove(); _ghost = null; }
     if (_sourceRow) _sourceRow.classList.remove('dragging');
 
@@ -12663,8 +12666,26 @@ function setupHabitColResizer() {
 }
 
 function setupTouchDragDrop() {
-  // ملاحظة: جدول العادات يستخدم نفس أسلوب مهام الأسبوع بالضبط — سحب HTML5
-  // أصلي (draggable="true") عبر setupHabitDragDrop، مو النظام اللمسي هنا.
+  // جدول العادات — نفس أسلوب مهام الأسبوع بالضبط: مقبض ⠿ مع _addTouchDrag.
+  // هذا هو النظام اللي فعلياً يشتغل باللمس على الهاتف (سحب HTML5 الأصلي
+  // ما يشتغل باللمس على المتصفحات، فقط بالماوس — لذلك كان لازم نرجّعه).
+  document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
+    const fresh = handle.cloneNode(true);
+    handle.parentNode.replaceChild(fresh, handle);
+    _addTouchDrag(
+      fresh,
+      'tr[data-hid]',
+      row => parseInt(row.getAttribute('data-hid')),
+      (fromHid, toHid) => {
+        const fromIdx = habits.findIndex(h => h.id === fromHid);
+        const toIdx   = habits.findIndex(h => h.id === toHid);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = habits.splice(fromIdx, 1);
+        habits.splice(toIdx, 0, moved);
+        save(); renderAll();
+      }
+    );
+  });
 
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
@@ -13102,6 +13123,12 @@ let _habitDragId = null;
 let _habitDragOverIdx = null;
 
 function setupHabitDragDrop() {
+  // على أجهزة اللمس، draggable="true" على الصف كامل يخطف لمسة الإصبع قبل
+  // ما توصل لمقبض السحب (.habit-drag-handle) ويمنع نظام اللمس المخصص من
+  // الاشتغال. نفعّل هذا النظام (سحب HTML5 بالماوس) بس على الأجهزة اللي
+  // ما تدعم اللمس، ونسيب الهاتف يعتمد كلياً على مقبض اللمس أسفل.
+  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (isTouchDevice) return;
   document.querySelectorAll('.habit-row[data-hid]').forEach(row => {
     const hid = parseInt(row.getAttribute('data-hid'));
     const hidx = parseInt(row.getAttribute('data-hidx'));
