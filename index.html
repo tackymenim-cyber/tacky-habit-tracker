@@ -9642,8 +9642,15 @@ function _scrollTableToToday(force) {
     requestAnimationFrame(() => {
       const wrapRect = wrap.getBoundingClientRect();
       const cellRect = headerCell.getBoundingClientRect();
-      // Center today's column within the visible scroll area
-      const offset = (cellRect.left - wrapRect.left) - (wrapRect.width / 2) + (cellRect.width / 2);
+      // The habit-name column is sticky (pinned to the right edge) and always
+      // visible — it isn't part of the scrollable day columns, so exclude its
+      // width from the visible area used to center today's column.
+      const stickyCol = document.querySelector('.table-wrap th.habit-col');
+      const stickyW = stickyCol ? stickyCol.getBoundingClientRect().width : 0;
+      const visibleLeft = wrapRect.left;
+      const visibleWidth = wrapRect.width - stickyW;
+      // Center today's column within the visible (non-sticky) scroll area
+      const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
       // On first load, jump instantly (no visible scrolling animation on open).
       // On manual re-trigger (force), animate smoothly.
       wrap.scrollBy({ left: offset, behavior: isFirstScroll && !force ? 'auto' : 'smooth' });
