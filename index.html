@@ -12586,7 +12586,11 @@ function _addTouchDrag(handle, rowSelector, getId, onDrop) {
     let closest = null, closestDist = Infinity;
     _allRows.forEach(row => {
       if (row === _sourceRow) return;
-      const r = row.getBoundingClientRect();
+      // لصفوف الجدول (<tr>) نقيس على خلية اسم العادة الثابتة (sticky) بدل
+      // الصف كامل — بعض المتصفحات تُرجع أبعاداً غير دقيقة لـ getBoundingClientRect
+      // على <tr> داخل جدول قابل للتمرير أفقياً.
+      const measureEl = row.querySelector ? (row.querySelector('.habit-name-cell') || row) : row;
+      const r = measureEl.getBoundingClientRect();
       const cy = r.top + r.height / 2;
       const d = Math.abs(cy - t.clientY);
       if (d < closestDist && t.clientY >= r.top - 4 && t.clientY <= r.bottom + 4) {
