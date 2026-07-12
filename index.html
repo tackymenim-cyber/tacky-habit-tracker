@@ -930,6 +930,7 @@ html, body { position: relative; }
 
 /* ── THEME PICKER POPUP ── */
 .settings-panel.behind-theme-popup { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+[dir="rtl"] .settings-panel.behind-theme-popup { transform: translateX(100%); }
 .theme-popup-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,0.55);
   -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
@@ -1805,6 +1806,16 @@ table { border-collapse: collapse; min-width: 100%; }
   border-bottom: 1px solid var(--border);
 }
 .week-header-row th.habit-col { text-align: right; padding-right: 20px; min-width: 185px; color: var(--text-3); }
+/* تثبيت رأس الجدول أثناء التمرير — يُفعّل من الإعدادات */
+body[data-sticky-header="true"] .week-header-row th,
+body[data-sticky-header="true"] .daynum-row th {
+  position: sticky;
+  background: var(--white);
+}
+body[data-sticky-header="true"] .week-header-row th { top: 0; z-index: 4; }
+body[data-sticky-header="true"] .daynum-row th { top: var(--week-header-h, 30px); z-index: 4; }
+[data-theme="dark"] body[data-sticky-header="true"] .week-header-row th,
+[data-theme="dark"] body[data-sticky-header="true"] .daynum-row th { background: var(--white); }
 .w1-header { background: #eff6ff; color: #1d4ed8; }
 .w2-header { background: #f0fdf4; color: #15803d; }
 .w3-header { background: #fef9c3; color: #a16207; }
@@ -3032,8 +3043,8 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .settings-overlay.open { opacity: 1; pointer-events: all; }
 .settings-panel {
-  position: fixed; left: 0; top: 0; bottom: 0; width: 380px;
-  background: var(--white); border-right: 1px solid var(--border);
+  position: fixed; inset-inline-start: 0; top: 0; bottom: 0; width: 380px;
+  background: var(--white); border-inline-end: 1px solid var(--border);
   z-index: 600; transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
   overflow-y: auto; display: flex; flex-direction: column;
@@ -3041,6 +3052,7 @@ table { border-collapse: collapse; min-width: 100%; }
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
+[dir="rtl"] .settings-panel { transform: translateX(100%); }
 .settings-panel.open { transform: translateX(0); }
 .settings-header {
   padding: 24px; border-bottom: 1px solid var(--border);
@@ -3780,7 +3792,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* مسكة السحب: تظهر دائماً وتعمل باللمس */
   .drag-handle { opacity: 1 !important; font-size: 1.05rem; padding: 6px 5px; color: var(--text-3); touch-action: none; cursor: grab; flex-shrink: 0; }
   .qt-item .drag-handle, .task-item .drag-handle { opacity: 1 !important; }
-  .habit-reorder-btn { opacity: 1 !important; display: flex !important; min-width: 32px; min-height: 32px; padding: 6px 6px; justify-content: center; align-items: center; background: var(--blue-50); border-radius: 8px; font-size: 1.2rem !important; }
+  .habit-reorder-btn { opacity: 1 !important; display: flex !important; min-width: 32px; min-height: 32px; padding: 6px 6px; justify-content: center; align-items: center; background: transparent; border-radius: 8px; font-size: 1.2rem !important; transition: background 0.15s, color 0.15s, transform 0.1s; }
   .habit-reorder-btn:active { background: #8b5cf6 !important; color: #fff !important; transform: scale(1.1); }
   /* مقبض تحكم بعرض عمود اسم العادة */
   .habit-col-resizer {
@@ -5404,6 +5416,21 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         </label>
       </div>
 
+      <!-- STICKY TABLE HEADER -->
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-item-icon sicon-blue">📌</div>
+          <div>
+            <div class="settings-item-label" id="stickyHeaderLabel">تثبيت رأس الجدول</div>
+            <div class="settings-item-desc" id="stickyHeaderDesc">إبقاء صف الأيام ثابتاً أعلى الشاشة أثناء التمرير</div>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="stickyHeaderToggle" onchange="setStickyTableHeader(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <div class="settings-item">
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-blue">📖</div>
@@ -6107,6 +6134,7 @@ const T = {
     langSettingsLabel: 'اللغة', langSettingsDesc: 'لغة التطبيق',
     themePickLabel: 'ثيم التطبيق', themePickDesc: 'اختر لوحة ألوان كاملة للواجهة', themePopupTitle: '🖼️ اختر ثيم التطبيق',
     quotesTabLabel: 'خانة الاقتباسات', quotesTabDesc: 'إظهار أو إخفاء تبويب الاقتباسات',
+    stickyHeaderLabel: 'تثبيت رأس الجدول', stickyHeaderDesc: 'إبقاء صف الأيام ثابتاً أعلى الشاشة أثناء التمرير',
     journalTabLabel: 'خانة اليوميات', journalTabDesc: 'سجّل أفكارك وانعكاساتك اليومية',
     // JOURNAL PAGE
     journalHeaderSub: 'سجّل أفكارك وانعكاساتك اليومية — مكانك الخاص',
@@ -6490,6 +6518,7 @@ const T = {
     langSettingsLabel: 'Langue', langSettingsDesc: "Langue de l'application",
     themePickLabel: "Thème de l'app", themePickDesc: "Choisis une palette de couleurs complète", themePopupTitle: "🖼️ Choisir un thème",
     quotesTabLabel: 'Onglet citations', quotesTabDesc: "Afficher ou masquer l'onglet citations",
+    stickyHeaderLabel: "Fixer l'en-tête du tableau", stickyHeaderDesc: 'Garder la ligne des jours fixe en haut pendant le défilement',
     journalTabLabel: 'Onglet journal', journalTabDesc: 'Note tes pensées et réflexions quotidiennes',
     // JOURNAL PAGE
     journalHeaderSub: 'Note tes pensées et réflexions quotidiennes — ton espace personnel',
@@ -6873,6 +6902,7 @@ const T = {
     langSettingsLabel: 'Language', langSettingsDesc: 'App language',
     themePickLabel: 'App Theme', themePickDesc: 'Choose a full color palette for the interface', themePopupTitle: '🖼️ Choose App Theme',
     quotesTabLabel: 'Quotes Tab', quotesTabDesc: 'Show or hide the quotes tab',
+    stickyHeaderLabel: 'Sticky Table Header', stickyHeaderDesc: 'Keep the days row fixed at the top while scrolling',
     journalTabLabel: 'Journal Tab', journalTabDesc: 'Record your daily thoughts and reflections',
     // JOURNAL PAGE
     journalHeaderSub: 'Record your thoughts and daily reflections — your personal space',
@@ -7456,6 +7486,7 @@ function updateSettingsText() {
     accentLabel: 'accent', accentDesc: 'accentDesc',
     themePickLabel: 'themePickLabel', themePickDesc: 'themePickDesc', themePopupTitle: 'themePopupTitle',
     quotesTabLabel: 'quotesTabLabel', quotesTabDesc: 'quotesTabDesc',
+    stickyHeaderLabel: 'stickyHeaderLabel', stickyHeaderDesc: 'stickyHeaderDesc',
     journalTabLabel: 'journalTabLabel', journalTabDesc: 'journalTabDesc',
     dailyGoalLabel: 'dailyGoal', dailyGoalDesc: 'dailyGoalDesc',
     waterGoalLabel: 'waterGoal', waterGoalDesc: 'waterGoalDesc',
@@ -7474,7 +7505,9 @@ function updateSettingsText() {
     const key = settingsTextMap[id];
     if (el && tr[key]) el.textContent = tr[key];
   });
-  const appVerEl = document.getElementById('appNameLabel');
+  const appNameEl = document.getElementById('appNameLabel');
+  if (appNameEl && tr.appName) appNameEl.textContent = tr.appName;
+  const appVerEl = document.getElementById('appVerDesc');
   if (appVerEl && tr.appVer) appVerEl.textContent = tr.appVer;
 
   const fss = document.getElementById('fontSizeSelect');
@@ -7545,6 +7578,7 @@ window._revealApp = (function() {
     // guards against any earlier timing issue (e.g. init() running before
     // some nav elements existed) leaving a hidden tab visible on first paint.
     if (typeof applyTabVisibility === 'function') applyTabVisibility();
+    if (typeof applyStickyTableHeaderSetting === 'function') applyStickyTableHeaderSetting();
     const sk = document.getElementById('skeletonScreen');
     if (sk) {
       sk.classList.add('hiding');
@@ -7655,6 +7689,7 @@ settings = Object.assign({
   lang: 'ar',
   showQuotesTab: false,
   showJournalTab: true,
+  stickyTableHeader: false,
 }, settings);
 
 // ترحيل: تبويب الاقتباسات مطفأ افتراضياً لكل الأجهزة (نُعيد التطبيق حتى
@@ -10153,6 +10188,31 @@ function applyTabVisibility() {
   if (jt) jt.checked = settings.showJournalTab !== false;
 }
 
+// =========== STICKY TABLE HEADER (تثبيت رأس جدول العادات أثناء التمرير) ===========
+function _measureStickyHeaderOffset() {
+  const weekHeaderRow = document.querySelector('.week-header-row');
+  if (!weekHeaderRow) return;
+  const h = weekHeaderRow.getBoundingClientRect().height;
+  if (h > 0) document.documentElement.style.setProperty('--week-header-h', h + 'px');
+}
+
+function setStickyTableHeader(on) {
+  settings.stickyTableHeader = !!on;
+  save();
+  document.body.setAttribute('data-sticky-header', on ? 'true' : 'false');
+  const toggle = document.getElementById('stickyHeaderToggle');
+  if (toggle) toggle.checked = !!on;
+  if (on) requestAnimationFrame(_measureStickyHeaderOffset);
+}
+
+function applyStickyTableHeaderSetting() {
+  const on = settings.stickyTableHeader === true;
+  document.body.setAttribute('data-sticky-header', on ? 'true' : 'false');
+  const toggle = document.getElementById('stickyHeaderToggle');
+  if (toggle) toggle.checked = on;
+  if (on) requestAnimationFrame(_measureStickyHeaderOffset);
+}
+
 // =========== JOURNAL ===========
 let _journalMood = '😊 ممتاز'; // fallback default; actual value set per-language on first mood button select
 let _journalTags = [];
@@ -11591,6 +11651,7 @@ function init() {
   if (settings.accent) setAccent(settings.accent, settings.accentDark || '#1d4ed8');
   if (settings.appTheme) applyAppTheme(settings.appTheme);
   applyTabVisibility();
+  applyStickyTableHeaderSetting();
   const savedLang = settings.lang || 'ar';
   setLang(savedLang);
   // Data will be loaded after auth
@@ -11605,6 +11666,7 @@ function init() {
     const sk = document.getElementById('skeletonScreen');
     if (sk && !sk.classList.contains('hidden') && !sk.classList.contains('hiding')) {
       if (typeof applyTabVisibility === 'function') applyTabVisibility();
+    if (typeof applyStickyTableHeaderSetting === 'function') applyStickyTableHeaderSetting();
       sk.classList.add('hiding');
       setTimeout(() => sk.classList.add('hidden'), 380);
       const ap = document.querySelector('.page.active');
@@ -12735,36 +12797,43 @@ function _hrmMoveHabit(hid, action) {
 
 function _hrmOpenMenu(hid, hname) {
   _hrmCloseMenu();
-  const idx = habits.findIndex(h => h.id === hid);
+  const h = habits.find(x => x.id === hid);
+  const idx = habits.findIndex(x => x.id === hid);
   const isFirst = idx <= 0;
   const isLast = idx >= habits.length - 1;
   const tr = {
-    ar: { title: 'ترتيب', up: '⬆️ لفوق', down: '⬇️ لتحت', first: '⏫ الأول', last: '⏬ الأخير', cancel: 'إلغاء' },
-    fr: { title: 'Réorganiser', up: '⬆️ Monter', down: '⬇️ Descendre', first: '⏫ Premier', last: '⏬ Dernier', cancel: 'Annuler' },
-    en: { title: 'Reorder', up: '⬆️ Move up', down: '⬇️ Move down', first: '⏫ Move to top', last: '⏬ Move to bottom', cancel: 'Cancel' }
-  }[currentLang] || { title: 'ترتيب', up: '⬆️ لفوق', down: '⬇️ لتحت', first: '⏫ الأول', last: '⏬ الأخير', cancel: 'إلغاء' };
+    ar: { title: 'إلى وين ننقلها؟ 🎯', up: '⬆️ خطوة لفوق', down: '⬇️ خطوة لتحت', first: '⏫ أول القائمة', last: '⏬ آخر القائمة', cancel: 'إلغاء' },
+    fr: { title: 'Où la déplacer ? 🎯', up: "⬆️ Monter d'un cran", down: "⬇️ Descendre d'un cran", first: '⏫ Tout en haut', last: '⏬ Tout en bas', cancel: 'Annuler' },
+    en: { title: 'Move it where? 🎯', up: '⬆️ Move up one', down: '⬇️ Move down one', first: '⏫ To the top', last: '⏬ To the bottom', cancel: 'Cancel' }
+  }[currentLang] || { title: 'إلى وين ننقلها؟ 🎯', up: '⬆️ خطوة لفوق', down: '⬇️ خطوة لتحت', first: '⏫ أول القائمة', last: '⏬ آخر القائمة', cancel: 'إلغاء' };
 
   const overlay = document.createElement('div');
   overlay.id = 'hrmOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99995;background:rgba(15,23,42,0.55);display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99995;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:celebFadeIn 0.25s ease both;padding:16px;';
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) _hrmCloseMenu();
   });
 
-  const btnStyle = 'width:100%;padding:14px;border:none;border-bottom:1px solid var(--border);background:var(--white);color:var(--text);font-family:\'Tajawal\',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:center;';
+  const btnBase = 'width:100%;border:none;border-radius:13px;padding:13px 14px;font-family:\'Tajawal\',sans-serif;font-size:0.92rem;font-weight:800;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;';
   const disabledStyle = 'opacity:0.35;pointer-events:none;';
 
   overlay.innerHTML = `
-    <div style="width:100%;max-width:480px;background:var(--white);border-radius:16px 16px 0 0;overflow:hidden;box-shadow:0 -8px 30px rgba(0,0,0,0.3);">
-      <div style="padding:14px;text-align:center;font-weight:800;color:var(--text-3);font-size:0.8rem;border-bottom:1px solid var(--border);">${tr.title}: ${escAttr(hname)}</div>
-      <button style="${btnStyle}${isFirst ? disabledStyle : ''}" data-act="up">${tr.up}</button>
-      <button style="${btnStyle}${isLast ? disabledStyle : ''}" data-act="down">${tr.down}</button>
-      <button style="${btnStyle}${isFirst ? disabledStyle : ''}" data-act="first">${tr.first}</button>
-      <button style="${btnStyle}${isLast ? disabledStyle : ''}" data-act="last">${tr.last}</button>
-      <button style="${btnStyle}color:var(--text-3);font-weight:600;" data-act="cancel">${tr.cancel}</button>
+    <div style="background:var(--white);border-radius:26px;padding:30px 26px 24px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.35);max-width:340px;width:100%;animation:celebBounce 0.45s cubic-bezier(0.34,1.56,0.64,1) both;">
+      <span style="font-size:3.2rem;line-height:1;display:block;margin-bottom:8px;">🔀</span>
+      <div style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:4px;">${tr.title}</div>
+      <div style="font-size:0.9rem;font-weight:800;color:var(--blue-500);margin-bottom:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h && h.emoji ? h.emoji + ' ' : ''}${escAttr(hname)}</div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <button style="${btnBase}${isFirst ? disabledStyle : ''}background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 6px 18px rgba(59,130,246,0.35);" data-act="up">${tr.up}</button>
+        <button style="${btnBase}${isLast ? disabledStyle : ''}background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 6px 18px rgba(59,130,246,0.35);" data-act="down">${tr.down}</button>
+        <button style="${btnBase}${isFirst ? disabledStyle : ''}background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 6px 18px rgba(139,92,246,0.35);" data-act="first">${tr.first}</button>
+        <button style="${btnBase}${isLast ? disabledStyle : ''}background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 6px 18px rgba(139,92,246,0.35);" data-act="last">${tr.last}</button>
+        <button style="${btnBase}background:var(--bg-2,#f1f5f9);color:var(--text-2);margin-top:4px;" data-act="cancel">${tr.cancel}</button>
+      </div>
     </div>
   `;
   overlay.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('mouseenter', () => { if (!btn.style.pointerEvents.includes('none')) btn.style.transform = 'translateY(-2px)'; });
+    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const act = btn.getAttribute('data-act');
@@ -13279,6 +13348,7 @@ const _orig_renderTable = renderTable;
 renderTable = function() {
   _orig_renderTable();
   requestAnimationFrame(() => setupHabitDragDrop());
+  if (settings.stickyTableHeader) requestAnimationFrame(_measureStickyHeaderOffset);
 };
 
 // Patch renderWeekly to add data attributes and drag handles
