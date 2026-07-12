@@ -1618,55 +1618,19 @@ body.auth-active {
 }
 .lvlup-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.35); }
 
-/* ===== BADGE UNLOCK POPUP (centered, celebratory) ===== */
-.badge-toast-overlay {
-  position: fixed; inset: 0; z-index: 99999;
-  background: rgba(15,23,42,0.55);
-  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s ease;
+/* ===== BADGE UNLOCK TOAST ===== */
+.badge-toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--white); border: 1.5px solid var(--blue-300);
+  border-radius: 16px; box-shadow: var(--shadow-lg);
+  padding: 12px 18px; display: flex; align-items: center; gap: 12px;
+  z-index: 2300; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(.2,.9,.3,1.2);
+  max-width: 90vw;
 }
-.badge-toast-overlay.show { opacity: 1; pointer-events: auto; }
-.badge-toast-card {
-  background: linear-gradient(160deg, var(--white, #fff), #fff7e6);
-  border-radius: 24px;
-  max-width: 340px; width: 100%;
-  padding: 32px 26px 26px;
-  text-align: center;
-  box-shadow: 0 24px 70px rgba(234,179,8,0.35), 0 0 0 1.5px rgba(250,204,21,0.5);
-  border: 1.5px solid #fde68a;
-  transform: translateY(16px) scale(0.9);
-  opacity: 0;
-  transition: transform 0.45s cubic-bezier(.2,.9,.3,1.35), opacity 0.3s ease;
-}
-[data-theme="dark"] .badge-toast-card { background: linear-gradient(160deg, #1e2433, #2a2412); border-color: #4a3d0f; }
-.badge-toast-overlay.show .badge-toast-card { transform: translateY(0) scale(1); opacity: 1; }
-.badge-toast-icon {
-  width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 16px;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2.6rem; box-shadow: 0 10px 28px rgba(234,179,8,0.4);
-  animation: badgePopBounce 0.6s cubic-bezier(.34,1.56,.64,1) 0.1s both;
-}
-@keyframes badgePopBounce {
-  0% { transform: scale(0) rotate(-20deg); }
-  60% { transform: scale(1.15) rotate(8deg); }
-  100% { transform: scale(1) rotate(0); }
-}
-.badge-toast-title { font-size: 0.82rem; font-weight: 800; color: #b45309; letter-spacing: 0.3px; margin-bottom: 6px; text-transform: uppercase; }
-[data-theme="dark"] .badge-toast-title { color: #fbbf24; }
-.badge-toast-name { font-size: 1.2rem; font-weight: 900; color: var(--text, #0f172a); margin-bottom: 22px; line-height: 1.4; }
-.badge-toast-btn {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  font-family: 'Tajawal', sans-serif; font-size: 0.95rem; font-weight: 800;
-  cursor: pointer; color: #78350f;
-  background: linear-gradient(135deg, #fde68a, #fbbf24);
-  box-shadow: 0 4px 16px rgba(234,179,8,0.45);
-  transition: all 0.2s;
-}
-.badge-toast-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(234,179,8,0.6); }
+.badge-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.badge-toast-icon { font-size: 1.8rem; }
+.badge-toast-title { font-size: 0.68rem; color: var(--text-3); font-weight: 700; }
+.badge-toast-name { font-size: 0.86rem; color: var(--text); font-weight: 800; }
 
 /* Language Switcher */
 .lang-btn {
@@ -1831,6 +1795,7 @@ body.auth-active {
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   overflow-x: auto;
+  touch-action: pan-x;
   transition: var(--transition);
 }
 table { border-collapse: collapse; min-width: 100%; }
@@ -2586,17 +2551,19 @@ table { border-collapse: collapse; min-width: 100%; }
   padding: 4px 3px; flex-shrink: 0; user-select: none;
   opacity: 0; transition: opacity 0.18s, color 0.18s;
   display: flex; align-items: center; line-height: 1;
-  letter-spacing: -1px;
+  letter-spacing: -1px; touch-action: none; position: relative; z-index: 2;
 }
-.drag-handle:active { cursor: grabbing; color: #8b5cf6; }
-.drag-handle:hover { color: #8b5cf6; }
-.qt-item:hover .drag-handle,
-.task-item:hover .drag-handle { opacity: 0.7; }
-/* مسكة السحب في جدول العادات تظهر دائماً */
-.habit-row .drag-handle.habit-drag-handle {
-  opacity: 0.35;
+/* زر تغيير الترتيب في جدول العادات — زر عادي بضغطة واحدة، ما يعتمد على سحب أو ضغط مطول */
+.habit-reorder-btn {
+  color: var(--text-3); cursor: pointer; font-size: 1rem;
+  padding: 4px 3px; flex-shrink: 0; user-select: none;
+  opacity: 0.35; transition: opacity 0.18s, color 0.18s, background 0.18s;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  letter-spacing: -1px; background: none; border: none; border-radius: 6px;
+  font-family: inherit;
 }
-.habit-row:hover .drag-handle.habit-drag-handle { opacity: 0.7; }
+.habit-row:hover .habit-reorder-btn { opacity: 0.7; }
+.habit-reorder-btn:hover, .habit-reorder-btn:active { color: #8b5cf6; opacity: 1; }
 .qt-item.drag-over { border: 2px dashed #8b5cf6; background: rgba(139,92,246,0.06); border-radius: 16px; }
 .task-item.drag-over { border: 2px dashed var(--blue-400); background: var(--blue-50); border-radius: 6px; }
 .qt-item.dragging { opacity: 0.4; }
@@ -2604,6 +2571,8 @@ table { border-collapse: collapse; min-width: 100%; }
 .habit-row.dragging { opacity: 0.4; }
 .habit-row.drag-over-touch td { background: var(--blue-50) !important; }
 [data-theme="dark"] .habit-row.drag-over-touch td { background: rgba(139,92,246,0.15) !important; }
+.habit-row.drag-over td { background: var(--blue-50) !important; box-shadow: inset 0 2px 0 #8b5cf6; }
+[data-theme="dark"] .habit-row.drag-over td { background: rgba(139,92,246,0.15) !important; }
 
 /* ===== EMOJI PICKER ===== */
 .emoji-popup {
@@ -3811,7 +3780,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* مسكة السحب: تظهر دائماً وتعمل باللمس */
   .drag-handle { opacity: 1 !important; font-size: 1.05rem; padding: 6px 5px; color: var(--text-3); touch-action: none; cursor: grab; flex-shrink: 0; }
   .qt-item .drag-handle, .task-item .drag-handle { opacity: 1 !important; }
-  .habit-drag-handle { opacity: 1 !important; display: flex !important; }
+  .habit-reorder-btn { opacity: 1 !important; display: flex !important; min-width: 32px; min-height: 32px; padding: 6px 6px; justify-content: center; align-items: center; background: var(--blue-50); border-radius: 8px; font-size: 1.2rem !important; }
+  .habit-reorder-btn:active { background: #8b5cf6 !important; color: #fff !important; transform: scale(1.1); }
   /* مقبض تحكم بعرض عمود اسم العادة */
   .habit-col-resizer {
     position: absolute; top: 0; bottom: 0; left: 0; width: 14px;
@@ -3938,6 +3908,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
   /* ══════════ TOAST ══════════ */
   .toast { bottom: 72px; font-size: 0.82rem; padding: 10px 18px; }
+  .badge-toast { bottom: 72px; }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -4593,7 +4564,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
 <!-- PAGE: TRACKER -->
 <div class="page active" id="page-tracker">
-  <div class="quote-banner fade-up">
+  <div class="quote-banner fade-up" id="trackerQuoteBanner">
     <div class="quote-icon">💡</div>
     <div class="quote-text" id="quoteText">"لا يتعلق الأمر بالكمال، بل بالمثابرة."</div>
     <button class="quote-btn" onclick="newQuote()">اقتباس آخر ✨</button>
@@ -4713,7 +4684,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
 <!-- PAGE: WEEKLY -->
 <div class="page" id="page-weekly">
-  <div class="quote-banner fade-up" style="margin-bottom:20px">
+  <div class="quote-banner fade-up" id="weeklyQuoteBanner" style="margin-bottom:20px">
     <div class="quote-icon">📅</div>
     <div class="quote-text">خطط لأسبوعك، نفّذ يوماً بيوم — كل مهمة صغيرة تقودك إلى هدف كبير.</div>
     <button class="quote-btn" onclick="newQuoteHabitsTable()">💡 اقتباس جديد</button>
@@ -7570,6 +7541,10 @@ window._revealApp = (function() {
   return function() {
     if (_revealed) return;
     _revealed = true;
+    // Re-apply tab visibility right before the user actually sees the UI —
+    // guards against any earlier timing issue (e.g. init() running before
+    // some nav elements existed) leaving a hidden tab visible on first paint.
+    if (typeof applyTabVisibility === 'function') applyTabVisibility();
     const sk = document.getElementById('skeletonScreen');
     if (sk) {
       sk.classList.add('hiding');
@@ -7682,12 +7657,11 @@ settings = Object.assign({
   showJournalTab: true,
 }, settings);
 
-// ترحيل لمرة واحدة: تبويب الاقتباسات أصبح مطفأً افتراضياً. المستخدمون الحاليون
-// الذين لم يغيّروا هذا الإعداد يدوياً من قبل (علامة migQuotesOff غير موجودة)
-// يُطفأ لهم تلقائياً مرة واحدة فقط، دون المساس بمن اختار تشغيله بنفسه لاحقاً.
-if (!settings.migQuotesOff) {
+// ترحيل: تبويب الاقتباسات مطفأ افتراضياً لكل الأجهزة (نُعيد التطبيق حتى
+// لو كان قد طُبّق قبل هذا التحديث، عبر مفتاح ترحيل جديد).
+if (!settings.migQuotesOff2) {
   settings.showQuotesTab = false;
-  settings.migQuotesOff = true;
+  settings.migQuotesOff2 = true;
 }
 
 // =========== SAVE (Firebase Cloud) ===========
@@ -8793,7 +8767,12 @@ function toggleCheck(hid, d) {
     const scheduledHabits = habits.filter(h => isHabitActiveOn(h, d));
     const allDone = scheduledHabits.every(h => checks[chkKey(h.id, d)]);
     if (allDone && scheduledHabits.length > 0) {
-      showToast(t('toastAllDone'));
+      // The full-screen celebration overlay (see showCelebration) may also
+      // open right after this for the same "all done" moment — skip the
+      // small toast in that case so it doesn't sit hidden underneath it.
+      if (!(document.getElementById('celebrationOverlay') && document.getElementById('celebrationOverlay').classList.contains('show'))) {
+        showToast(t('toastAllDone'));
+      }
       if (settings.confetti) { launchConfetti(); setTimeout(() => launchConfetti(), 350); }
       playHabitAllDoneSound();
     } else {
@@ -9078,14 +9057,11 @@ function closeLevelUp() {
 
 let _badgeToastTimer = null;
 function showBadgeUnlockToast(badgeId, bulkCount) {
-  const overlay = document.getElementById('badgeToastOverlay');
-  if (!overlay) return;
+  const el = document.getElementById('badgeToast');
+  if (!el) return;
   const iconEl = document.getElementById('badgeToastIcon');
   const titleEl = document.getElementById('badgeToastTitle');
   const nameEl = document.getElementById('badgeToastName');
-  const btnEl = document.getElementById('badgeToastBtn');
-  const isAr = currentLang === 'ar', isFr = currentLang === 'fr';
-  btnEl.textContent = isAr ? '🎉 رائع!' : isFr ? '🎉 Génial !' : '🎉 Awesome!';
   if (bulkCount && bulkCount > 1) {
     iconEl.textContent = '🎉';
     titleEl.textContent = t('badgeToastTitleBulk');
@@ -9098,10 +9074,9 @@ function showBadgeUnlockToast(badgeId, bulkCount) {
     nameEl.textContent = t(a.nameKey);
   }
   playBadgeSound();
-  overlay.classList.add('show');
-  if (settings.confetti) { launchConfetti(); setTimeout(() => launchConfetti(), 300); }
+  el.classList.add('show');
   clearTimeout(_badgeToastTimer);
-  _badgeToastTimer = setTimeout(() => overlay.classList.remove('show'), 4000);
+  _badgeToastTimer = setTimeout(() => el.classList.remove('show'), 4000);
 }
 
 // Central entry point: recompute stats, refresh the level card, and — unless
@@ -9495,10 +9470,10 @@ function renderTable() {
     for (let d = sd; d >= 1; d--) { if (isFuture(d)) continue; if (!isHabitActiveOn(h, d)) continue; if (checks[chkKey(h.id, d)]) streak++;
       else break; }
     const nameHtml = `<span class="habit-text" title="${escAttr(h.name)}" ondblclick="startEditHabit(${h.id})">${escAttr(h.name)}</span>`;
-    html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}"><td class="habit-name-cell"><div class="habit-name-inner">
+    html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}" data-hname="${escAttr(h.name)}"><td class="habit-name-cell"><div class="habit-name-inner">
       <button class="del-btn" onclick="deleteHabit(${h.id})" title="${currentLang === 'ar' ? 'حذف' : currentLang === 'fr' ? 'Supprimer' : 'Delete'}">✕</button>
       <button class="edit-btn" onclick="startEditHabit(${h.id})" title="${currentLang === 'ar' ? 'تعديل الاسم' : currentLang === 'fr' ? 'Modifier' : 'Edit name'}">✎</button>
-      <div class="drag-handle habit-drag-handle" title="${currentLang === 'ar' ? 'اسحب لإعادة الترتيب' : currentLang === 'fr' ? 'Glisser pour réorganiser' : 'Drag to reorder'}">⠿</div>
+      <button type="button" class="habit-reorder-btn" onclick="event.stopPropagation();openHabitReorderMenu(${h.id})" title="${currentLang === 'ar' ? 'تغيير الترتيب' : currentLang === 'fr' ? 'Réorganiser' : 'Reorder'}">⠿</button>
       ${streak > 1 ? `<span class="streak-mini">🔥${streak}</span>` : ''}${nameHtml}<span class="habit-emoji">${h.emoji}</span></div></td>`;
     weekGroups.forEach((wg, wi) => {
       const isLastWk = wi === weekGroups.length - 1;
@@ -11327,11 +11302,24 @@ let toastTimer;
 
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  toastTimer = setTimeout(() => { t.classList.remove('show'); }, 2400);
 }
+// Safety net: if a toast is left visible for any reason (tab was
+// backgrounded, timer got clobbered, etc.), force-hide it once the tab
+// becomes active again so it can never get stuck on screen.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const t = document.getElementById('toast');
+    if (t && t.classList.contains('show')) {
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1200);
+    }
+  }
+});
 
 // =========== CONFETTI ===========
 function launchConfetti() {
@@ -11616,6 +11604,7 @@ function init() {
   setTimeout(() => {
     const sk = document.getElementById('skeletonScreen');
     if (sk && !sk.classList.contains('hidden') && !sk.classList.contains('hiding')) {
+      if (typeof applyTabVisibility === 'function') applyTabVisibility();
       sk.classList.add('hiding');
       setTimeout(() => sk.classList.add('hidden'), 380);
       const ap = document.querySelector('.page.active');
@@ -12063,12 +12052,11 @@ init();
 </div>
 
 <!-- ===== BADGE UNLOCK TOAST ===== -->
-<div id="badgeToastOverlay" class="badge-toast-overlay" onclick="if(event.target===this){this.classList.remove('show');clearTimeout(_badgeToastTimer);}">
-  <div class="badge-toast-card" onclick="event.stopPropagation()">
-    <div class="badge-toast-icon" id="badgeToastIcon">🏅</div>
+<div id="badgeToast" class="badge-toast">
+  <div class="badge-toast-icon" id="badgeToastIcon">🏅</div>
+  <div>
     <div class="badge-toast-title" id="badgeToastTitle">شارة جديدة!</div>
     <div class="badge-toast-name" id="badgeToastName"></div>
-    <button class="badge-toast-btn" id="badgeToastBtn" onclick="document.getElementById('badgeToastOverlay').classList.remove('show');clearTimeout(_badgeToastTimer);"></button>
   </div>
 </div>
 
@@ -12552,64 +12540,68 @@ function _addTouchDrag(handle, rowSelector, getId, onDrop) {
   let _sourceId = null;
   let _sourceRow = null;
   let _allRows = [];
-  let _startY = 0;
   let _moved = false;
+  let _active = false;
+  let _activeTouchId = null;
 
-  handle.addEventListener('touchstart', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    _sourceRow = handle.closest(rowSelector);
-    if (!_sourceRow) return;
-    _sourceId = getId(_sourceRow);
-    _moved = false;
-    _startY = e.touches[0].clientY;
-    _sourceRow.classList.add('dragging');
-
-    // كل الصفوف من نفس النوع (لإيجاد أقرب واحد أثناء السحب)
-    const container = _sourceRow.parentElement;
-    _allRows = container ? Array.from(container.querySelectorAll(rowSelector)) : [];
-
-    // عنصر شبح بسيط وآمن (مش استنساخ tr يتيم خارج الجدول)
-    const rect = _sourceRow.getBoundingClientRect();
-    _ghost = document.createElement('div');
-    _ghost.textContent = (_sourceRow.querySelector('.habit-text, .qt-item-text, .task-text') || _sourceRow).textContent.trim().slice(0, 30);
-    _ghost.style.cssText = `
-      position:fixed; z-index:99999; opacity:0.9; pointer-events:none;
+  function buildGhost(sourceRow, touch) {
+    const nameEl = sourceRow.querySelector('.habit-text, .qt-item-text, .task-text');
+    const nameText = (nameEl || sourceRow).textContent.trim().slice(0, 30);
+    const emojiEl = sourceRow.querySelector('.habit-emoji');
+    const emojiText = emojiEl ? emojiEl.textContent.trim() : '';
+    const g = document.createElement('div');
+    g.innerHTML = `${emojiText ? `<span style="font-size:1.1rem">${emojiText}</span>` : ''}<span>${nameText || '⠿'}</span>`;
+    g.style.cssText = `
+      position:fixed; z-index:99999; opacity:0.95; pointer-events:none;
+      display:flex; align-items:center; gap:8px;
       background:var(--white); border:2px solid #8b5cf6;
-      border-radius:10px; padding:8px 14px; font-size:0.82rem; font-weight:700;
-      box-shadow:0 8px 24px rgba(0,0,0,0.25); max-width:200px;
+      border-radius:14px; padding:10px 16px; font-size:0.85rem; font-weight:700;
+      box-shadow:0 10px 28px -8px rgba(124,58,237,0.5), 0 4px 12px rgba(0,0,0,0.15);
+      max-width:220px; min-width:80px; min-height:22px;
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
       font-family:'Tajawal',sans-serif; color:var(--text);
-      left:${rect.left}px; top:${rect.top}px;
+      transform: rotate(-2deg) scale(1.03);
+      left:${touch.clientX - 20}px; top:${touch.clientY - 16}px;
     `;
-    document.body.appendChild(_ghost);
-  }, { passive: false });
+    document.body.appendChild(g);
+    return g;
+  }
 
-  handle.addEventListener('touchmove', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!_ghost || !_sourceRow) return;
-    _moved = true;
-    const t = e.touches[0];
-    _ghost.style.left = (t.clientX - 20) + 'px';
-    _ghost.style.top  = (t.clientY - 16) + 'px';
-
-    // أقرب صف عمودياً لموضع الإصبع (بدل الاعتماد على العنصر الدقيق تحت الإصبع)
-    document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+  function findClosestRow(clientY) {
     let closest = null, closestDist = Infinity;
     _allRows.forEach(row => {
       if (row === _sourceRow) return;
-      const r = row.getBoundingClientRect();
+      const measureEl = row.querySelector ? (row.querySelector('.habit-name-cell') || row) : row;
+      const r = measureEl.getBoundingClientRect();
       const cy = r.top + r.height / 2;
-      const d = Math.abs(cy - t.clientY);
-      if (d < closestDist && t.clientY >= r.top - 4 && t.clientY <= r.bottom + 4) {
+      const d = Math.abs(cy - clientY);
+      if (d < closestDist && clientY >= r.top - 4 && clientY <= r.bottom + 4) {
         closestDist = d; closest = row;
       }
     });
-    if (closest) closest.classList.add('drag-over-touch');
-  }, { passive: false });
+    return closest;
+  }
 
-  handle.addEventListener('touchend', e => {
+  function onDocMove(e) {
+    if (!_active) return;
+    let touch = null;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === _activeTouchId) { touch = e.touches[i]; break; }
+    }
+    if (!touch) return;
+    e.preventDefault();
+    _moved = true;
+    if (_ghost) {
+      _ghost.style.left = (touch.clientX - 20) + 'px';
+      _ghost.style.top  = (touch.clientY - 16) + 'px';
+    }
+    document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+    const closest = findClosestRow(touch.clientY);
+    if (closest) closest.classList.add('drag-over-touch');
+  }
+
+  function finishDrag() {
+    if (handle) handle.classList.remove('dragging-active');
     if (_ghost) { _ghost.remove(); _ghost = null; }
     if (_sourceRow) _sourceRow.classList.remove('dragging');
 
@@ -12622,8 +12614,49 @@ function _addTouchDrag(handle, rowSelector, getId, onDrop) {
         onDrop(_sourceId, targetId);
       }
     }
+    document.removeEventListener('touchmove', onDocMove, { passive: false });
+    document.removeEventListener('touchend', onDocEnd);
+    document.removeEventListener('touchcancel', onDocEnd);
     _sourceId = null; _sourceRow = null; _allRows = []; _moved = false;
-  });
+    _active = false; _activeTouchId = null;
+  }
+
+  function onDocEnd(e) {
+    // تأكد إن هذا اللمس المنتهي هو نفسه الذي بدأ السحب
+    let stillDown = false;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === _activeTouchId) { stillDown = true; break; }
+    }
+    if (stillDown) return;
+    finishDrag();
+  }
+
+  // نستمع على document لـ touchmove/touchend بدل المقبض نفسه — هذا يتجنب
+  // أي تعارض بخصوص توجيه أحداث اللمس داخل عناصر الجدول (<tr>/<td>) على
+  // بعض متصفحات الهاتف، ويمنع فقدان السحب لو تحرك الإصبع خارج المقبض
+  // الصغير أثناء السحب.
+  handle.addEventListener('touchstart', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    handle.classList.add('dragging-active');
+    _sourceRow = handle.closest(rowSelector);
+    if (!_sourceRow) { handle.classList.remove('dragging-active'); return; }
+    _sourceId = getId(_sourceRow);
+    _moved = false;
+    _active = true;
+    const touch = e.touches[0];
+    _activeTouchId = touch.identifier;
+    _sourceRow.classList.add('dragging');
+
+    const container = _sourceRow.parentElement;
+    _allRows = container ? Array.from(container.querySelectorAll(rowSelector)) : [];
+
+    _ghost = buildGhost(_sourceRow, touch);
+
+    document.addEventListener('touchmove', onDocMove, { passive: false });
+    document.addEventListener('touchend', onDocEnd);
+    document.addEventListener('touchcancel', onDocEnd);
+  }, { passive: false });
 }
 
 // =========== HABIT NAME COLUMN — USER-RESIZABLE WIDTH ===========
@@ -12677,25 +12710,87 @@ function setupHabitColResizer() {
   document.addEventListener('mouseup', end);
 }
 
-function setupTouchDragDrop() {
-  // جدول العادات
-  document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
-    const fresh = handle.cloneNode(true);
-    handle.parentNode.replaceChild(fresh, handle);
-    _addTouchDrag(
-      fresh,
-      'tr[data-hid]',
-      row => parseInt(row.getAttribute('data-hid')),
-      (fromHid, toHid) => {
-        const fromIdx = habits.findIndex(h => h.id === fromHid);
-        const toIdx   = habits.findIndex(h => h.id === toHid);
-        if (fromIdx === -1 || toIdx === -1) return;
-        const [moved] = habits.splice(fromIdx, 1);
-        habits.splice(toIdx, 0, moved);
-        save(); renderAll();
-      }
-    );
+// =========== HABIT REORDER — MOBILE LONG-PRESS MENU ===========
+// السحب المباشر ما اشتغل بثبات على الهواتف داخل الجدول. بدلاً منه: اضغطي
+// مطولاً على رمز ⠿ فتطلع قائمة اختيار سريعة (أعلى، أسفل، الأول، الأخير).
+// الكمبيوتر يبقى يستخدم السحب المباشر العادي (setupHabitDragDrop) لأنه
+// يعمل تمام بالماوس.
+let _hrmTimer = null;
+let _hrmActive = false;
+
+function _hrmMoveHabit(hid, action) {
+  const idx = habits.findIndex(h => h.id === hid);
+  if (idx === -1) return;
+  let newIdx = idx;
+  if (action === 'up')     newIdx = Math.max(0, idx - 1);
+  if (action === 'down')   newIdx = Math.min(habits.length - 1, idx + 1);
+  if (action === 'first')  newIdx = 0;
+  if (action === 'last')   newIdx = habits.length - 1;
+  if (newIdx === idx) return;
+  const [moved] = habits.splice(idx, 1);
+  habits.splice(newIdx, 0, moved);
+  save();
+  renderAll();
+}
+
+function _hrmOpenMenu(hid, hname) {
+  _hrmCloseMenu();
+  const idx = habits.findIndex(h => h.id === hid);
+  const isFirst = idx <= 0;
+  const isLast = idx >= habits.length - 1;
+  const tr = {
+    ar: { title: 'ترتيب', up: '⬆️ لفوق', down: '⬇️ لتحت', first: '⏫ الأول', last: '⏬ الأخير', cancel: 'إلغاء' },
+    fr: { title: 'Réorganiser', up: '⬆️ Monter', down: '⬇️ Descendre', first: '⏫ Premier', last: '⏬ Dernier', cancel: 'Annuler' },
+    en: { title: 'Reorder', up: '⬆️ Move up', down: '⬇️ Move down', first: '⏫ Move to top', last: '⏬ Move to bottom', cancel: 'Cancel' }
+  }[currentLang] || { title: 'ترتيب', up: '⬆️ لفوق', down: '⬇️ لتحت', first: '⏫ الأول', last: '⏬ الأخير', cancel: 'إلغاء' };
+
+  const overlay = document.createElement('div');
+  overlay.id = 'hrmOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99995;background:rgba(15,23,42,0.55);display:flex;align-items:flex-end;justify-content:center;';
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) _hrmCloseMenu();
   });
+
+  const btnStyle = 'width:100%;padding:14px;border:none;border-bottom:1px solid var(--border);background:var(--white);color:var(--text);font-family:\'Tajawal\',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:center;';
+  const disabledStyle = 'opacity:0.35;pointer-events:none;';
+
+  overlay.innerHTML = `
+    <div style="width:100%;max-width:480px;background:var(--white);border-radius:16px 16px 0 0;overflow:hidden;box-shadow:0 -8px 30px rgba(0,0,0,0.3);">
+      <div style="padding:14px;text-align:center;font-weight:800;color:var(--text-3);font-size:0.8rem;border-bottom:1px solid var(--border);">${tr.title}: ${escAttr(hname)}</div>
+      <button style="${btnStyle}${isFirst ? disabledStyle : ''}" data-act="up">${tr.up}</button>
+      <button style="${btnStyle}${isLast ? disabledStyle : ''}" data-act="down">${tr.down}</button>
+      <button style="${btnStyle}${isFirst ? disabledStyle : ''}" data-act="first">${tr.first}</button>
+      <button style="${btnStyle}${isLast ? disabledStyle : ''}" data-act="last">${tr.last}</button>
+      <button style="${btnStyle}color:var(--text-3);font-weight:600;" data-act="cancel">${tr.cancel}</button>
+    </div>
+  `;
+  overlay.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const act = btn.getAttribute('data-act');
+      _hrmCloseMenu();
+      if (act !== 'cancel') _hrmMoveHabit(hid, act);
+    });
+  });
+  document.body.appendChild(overlay);
+}
+
+function _hrmCloseMenu() {
+  const el = document.getElementById('hrmOverlay');
+  if (el) el.remove();
+}
+
+// زر تغيير الترتيب — ضغطة واحدة عادية (onclick)، ما تعتمد على سحب أو
+// ضغط مطول أو أي كشف إيماءة معقد. تشتغل بنفس الطريقة على الكمبيوتر والهاتف.
+function openHabitReorderMenu(hid) {
+  const h = habits.find(x => x.id === hid);
+  _hrmOpenMenu(hid, h ? h.name : '');
+}
+
+function setupTouchDragDrop() {
+  // جدول العادات: زر ⠿ ثابت بضغطة واحدة (onclick="openHabitReorderMenu(...)"
+  // في الـ HTML مباشرة) — ما يحتاج أي إعداد هنا، يشتغل بنفس الطريقة على
+  // كل الأجهزة والمتصفحات بدون كشف إيماءات لمس.
 
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
@@ -13128,29 +13223,33 @@ setInterval(_checkMidnightRollover, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) _checkMidnightRollover(); });
 window.addEventListener('focus', _checkMidnightRollover);
 
-// =========== DRAG & DROP for Habits (desktop mouse, via handle only) ===========
+// =========== DRAG & DROP for Habits ===========
 let _habitDragId = null;
+let _habitDragOverIdx = null;
 
 function setupHabitDragDrop() {
-  document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
-    const row = handle.closest('.habit-row');
-    if (!row || handle._mouseDragWired) return;
-    handle._mouseDragWired = true;
+  // على أجهزة اللمس، draggable="true" على الصف كامل يخطف لمسة الإصبع قبل
+  // ما توصل لمقبض السحب (.habit-drag-handle) ويمنع نظام اللمس المخصص من
+  // الاشتغال. نفعّل هذا النظام (سحب HTML5 بالماوس) بس على الأجهزة اللي
+  // ما تدعم اللمس، ونسيب الهاتف يعتمد كلياً على مقبض اللمس أسفل.
+  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (isTouchDevice) return;
+  document.querySelectorAll('.habit-row[data-hid]').forEach(row => {
     const hid = parseInt(row.getAttribute('data-hid'));
+    const hidx = parseInt(row.getAttribute('data-hidx'));
+    row.setAttribute('draggable', 'true');
 
-    // نجعل المسكة فقط قابلة للسحب بالفأرة (وليس الصف كاملاً) حتى لا نعطّل اللمس على الموبايل
-    handle.setAttribute('draggable', 'true');
-
-    handle.addEventListener('dragstart', e => {
+    row.addEventListener('dragstart', e => {
       _habitDragId = hid;
       row.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
 
-    handle.addEventListener('dragend', () => {
+    row.addEventListener('dragend', () => {
       row.classList.remove('dragging');
       document.querySelectorAll('.habit-row').forEach(r => r.classList.remove('drag-over'));
       _habitDragId = null;
+      _habitDragOverIdx = null;
     });
 
     row.addEventListener('dragover', e => {
