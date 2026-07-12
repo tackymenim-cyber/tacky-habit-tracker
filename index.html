@@ -3652,13 +3652,15 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     gap: 2px;
     background: transparent;
     border: none;
+    border-radius: 12px;
     cursor: pointer;
     color: var(--text-3);
     font-family: 'Tajawal', sans-serif;
     font-size: 0.58rem;
     font-weight: 700;
     padding: 6px 2px 4px;
-    transition: color 0.2s;
+    margin: 4px 3px;
+    transition: color 0.2s, background 0.2s;
     -webkit-tap-highlight-color: transparent;
   }
   .bottom-nav-btn .bnav-icon {
@@ -3667,8 +3669,10 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     transition: transform 0.2s;
   }
   .bottom-nav-btn.active {
-    color: var(--blue-500);
+    color: white;
+    background: var(--blue-500);
   }
+  [data-theme="dark"] .bottom-nav-btn.active { color: #0f172a; }
   .bottom-nav-btn.active .bnav-icon {
     transform: scale(1.15);
   }
