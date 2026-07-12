@@ -1795,6 +1795,7 @@ body.auth-active {
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   overflow-x: auto;
+  touch-action: pan-x;
   transition: var(--transition);
 }
 table { border-collapse: collapse; min-width: 100%; }
@@ -2550,7 +2551,7 @@ table { border-collapse: collapse; min-width: 100%; }
   padding: 4px 3px; flex-shrink: 0; user-select: none;
   opacity: 0; transition: opacity 0.18s, color 0.18s;
   display: flex; align-items: center; line-height: 1;
-  letter-spacing: -1px;
+  letter-spacing: -1px; touch-action: none; position: relative; z-index: 2;
 }
 .drag-handle:active { cursor: grabbing; color: #8b5cf6; }
 .drag-handle:hover { color: #8b5cf6; }
@@ -3775,7 +3776,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* مسكة السحب: تظهر دائماً وتعمل باللمس */
   .drag-handle { opacity: 1 !important; font-size: 1.05rem; padding: 6px 5px; color: var(--text-3); touch-action: none; cursor: grab; flex-shrink: 0; }
   .qt-item .drag-handle, .task-item .drag-handle { opacity: 1 !important; }
-  .habit-drag-handle { opacity: 1 !important; display: flex !important; }
+  .habit-drag-handle { opacity: 1 !important; display: flex !important; min-width: 26px; min-height: 26px; padding: 6px 6px; justify-content: center; }
   /* مقبض تحكم بعرض عمود اسم العادة */
   .habit-col-resizer {
     position: absolute; top: 0; bottom: 0; left: 0; width: 14px;
@@ -7647,12 +7648,11 @@ settings = Object.assign({
   showJournalTab: true,
 }, settings);
 
-// ترحيل لمرة واحدة: تبويب الاقتباسات أصبح مطفأً افتراضياً. المستخدمون الحاليون
-// الذين لم يغيّروا هذا الإعداد يدوياً من قبل (علامة migQuotesOff غير موجودة)
-// يُطفأ لهم تلقائياً مرة واحدة فقط، دون المساس بمن اختار تشغيله بنفسه لاحقاً.
-if (!settings.migQuotesOff) {
+// ترحيل: تبويب الاقتباسات مطفأ افتراضياً لكل الأجهزة (نُعيد التطبيق حتى
+// لو كان قد طُبّق قبل هذا التحديث، عبر مفتاح ترحيل جديد).
+if (!settings.migQuotesOff2) {
   settings.showQuotesTab = false;
-  settings.migQuotesOff = true;
+  settings.migQuotesOff2 = true;
 }
 
 // =========== SAVE (Firebase Cloud) ===========
@@ -10122,10 +10122,6 @@ function setTabVisible(tab, visible) {
     const btn2 = document.getElementById('navTabQuotes');
     if (btn1) btn1.style.display = visible ? '' : 'none';
     if (btn2) btn2.style.display = visible ? '' : 'none';
-    const banner1 = document.getElementById('trackerQuoteBanner');
-    const banner2 = document.getElementById('weeklyQuoteBanner');
-    if (banner1) banner1.style.display = visible ? '' : 'none';
-    if (banner2) banner2.style.display = visible ? '' : 'none';
     if (!visible && currentPage === 'quotes') showPage('tracker');
   } else if (tab === 'journal') {
     settings.showJournalTab = visible;
