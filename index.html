@@ -3749,15 +3749,20 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   .daynum-row th { min-width: 26px; font-size: 0.5rem; padding: 4px 0 5px; }
   .daynum-row .dayname { font-size: 0.45rem; }
   .habit-row td { height: 36px; padding: 1px 2px; }
-  .habit-row td.habit-name-cell { padding: 0 5px 0 8px; min-width: 110px; max-width: 120px; }
-  .habit-text { font-size: 0.72rem; max-width: 88px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .habit-row td.habit-name-cell { padding: 0 4px 0 6px; min-width: 148px; max-width: 168px; }
+  .habit-name-inner { gap: 4px; }
+  .habit-text { font-size: 0.72rem; max-width: 82px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .habit-emoji { font-size: 0.8rem; }
   .streak-mini { font-size: 0.5rem; }
   .chk { width: 22px; height: 22px; font-size: 0.62rem; border-radius: 5px; }
-  /* إخفاء أزرار الحذف/تعديل — تظهر بضغط طويل */
-  .del-btn, .edit-btn, .move-btn-group { opacity: 0 !important; pointer-events: none !important; }
-  /* مسكة السحب: تظهر دائماً */
-  .drag-handle { opacity: 1 !important; font-size: 1rem; padding: 5px 4px; color: var(--text-3); touch-action: none; cursor: grab; }
+  /* أزرار الحذف/التعديل: تظهر دائماً على الموبايل بدل الاعتماد على hover (غير متاح باللمس) */
+  .del-btn, .edit-btn {
+    opacity: 1 !important; pointer-events: auto !important;
+    width: 24px; height: 24px; font-size: 0.7rem; flex-shrink: 0;
+  }
+  .move-btn-group { display: none !important; } /* تستبدلها مسكة السحب على الموبايل */
+  /* مسكة السحب: تظهر دائماً وتعمل باللمس */
+  .drag-handle { opacity: 1 !important; font-size: 1.05rem; padding: 6px 5px; color: var(--text-3); touch-action: none; cursor: grab; flex-shrink: 0; }
   .qt-item .drag-handle, .task-item .drag-handle { opacity: 1 !important; }
   .habit-drag-handle { opacity: 1 !important; display: flex !important; }
 
@@ -10084,7 +10089,7 @@ function renderAll(forcePage) {
   if (monthLabelEl) monthLabelEl.textContent = `${tr.monthNames[curM]} ${curY}`;
   const safeRender = (name, fn) => { try { fn(); } catch (e) { console.error('render error in ' + name + ':' , e); } };
   const pg = forcePage || currentPage;
-  if (pg === 'tracker') safeRender('renderTracker', renderTracker);
+  if (pg === 'tracker') { safeRender('renderTracker', renderTracker); safeRender('setupTouchDragDrop', setupTouchDragDrop); }
   if (pg === 'mood') safeRender('renderMood', renderMood);
   if (pg === 'weekly') safeRender('renderWeekly', renderWeekly);
   if (pg === 'quotes') safeRender('renderQuotes', renderQuotes);
@@ -12227,6 +12232,7 @@ renderQuickTasks = function() {
     }
   });
   setupQtDragDrop();
+  if (typeof setupTouchDragDrop === 'function') setupTouchDragDrop();
 };
 
 // =========== DRAG & DROP for Weekly Tasks ===========
@@ -12869,6 +12875,7 @@ renderWeekly = function() {
     });
   }
   setupWeeklyDragDrop();
+  if (typeof setupTouchDragDrop === 'function') setupTouchDragDrop();
 };
 
 // =========== PARALLAX SCROLL for Theme Background ===========
