@@ -12708,27 +12708,114 @@ function setupHabitColResizer() {
   document.addEventListener('mouseup', end);
 }
 
-function setupTouchDragDrop() {
-  // جدول العادات — نفس أسلوب مهام الأسبوع بالضبط: مقبض ⠿ مع _addTouchDrag.
-  // هذا هو النظام اللي فعلياً يشتغل باللمس على الهاتف (سحب HTML5 الأصلي
-  // ما يشتغل باللمس على المتصفحات، فقط بالماوس — لذلك كان لازم نرجّعه).
+// =========== HABIT DRAG — POINTER EVENTS (مستقل تماماً) ===========
+function setupHabitPointerDrag() {
+  // الكمبيوتر يستخدم نظام السحب الأصلي (setupHabitDragDrop) اللي يشتغل
+  // تمام بالماوس أصلاً — هذا النظام هنا خاص بأجهزة اللمس فقط لتفادي أي
+  // تعارض بين النظامين على الكمبيوتر.
+  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (!isTouchDevice) return;
   document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
     const fresh = handle.cloneNode(true);
     handle.parentNode.replaceChild(fresh, handle);
-    _addTouchDrag(
-      fresh,
-      'tr[data-hid]',
-      row => parseInt(row.getAttribute('data-hid')),
-      (fromHid, toHid) => {
-        const fromIdx = habits.findIndex(h => h.id === fromHid);
-        const toIdx   = habits.findIndex(h => h.id === toHid);
-        if (fromIdx === -1 || toIdx === -1) return;
-        const [moved] = habits.splice(fromIdx, 1);
-        habits.splice(toIdx, 0, moved);
-        save(); renderAll();
+
+    let sourceRow = null, sourceId = null, allRows = [], ghost = null, moved = false, pid = null;
+
+    fresh.style.touchAction = 'none';
+
+    fresh.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      sourceRow = fresh.closest('tr[data-hid]');
+      if (!sourceRow) return;
+      sourceId = parseInt(sourceRow.getAttribute('data-hid'));
+      moved = false;
+      pid = e.pointerId;
+      try { fresh.setPointerCapture(pid); } catch(err) {}
+      fresh.classList.add('dragging-active');
+      sourceRow.classList.add('dragging');
+
+      const container = sourceRow.parentElement;
+      allRows = container ? Array.from(container.querySelectorAll('tr[data-hid]')) : [];
+
+      const nameEl = sourceRow.querySelector('.habit-text');
+      const emojiEl = sourceRow.querySelector('.habit-emoji');
+      ghost = document.createElement('div');
+      ghost.innerHTML = `${emojiEl ? `<span style="font-size:1.1rem">${emojiEl.textContent.trim()}</span>` : ''}<span>${nameEl ? nameEl.textContent.trim().slice(0,30) : '⠿'}</span>`;
+      ghost.style.cssText = `
+        position:fixed; z-index:99999; opacity:0.95; pointer-events:none;
+        display:flex; align-items:center; gap:8px;
+        background:var(--white); border:2px solid #8b5cf6;
+        border-radius:14px; padding:10px 16px; font-size:0.85rem; font-weight:700;
+        box-shadow:0 10px 28px -8px rgba(124,58,237,0.5), 0 4px 12px rgba(0,0,0,0.15);
+        max-width:220px; min-width:80px; min-height:22px;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        font-family:'Tajawal',sans-serif; color:var(--text);
+        transform: rotate(-2deg) scale(1.03);
+        left:${e.clientX - 20}px; top:${e.clientY - 16}px;
+      `;
+      document.body.appendChild(ghost);
+    });
+
+    fresh.addEventListener('pointermove', e => {
+      if (e.pointerId !== pid || !sourceRow) return;
+      e.preventDefault();
+      moved = true;
+      if (ghost) {
+        ghost.style.left = (e.clientX - 20) + 'px';
+        ghost.style.top  = (e.clientY - 16) + 'px';
       }
-    );
+      document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+      let closest = null, closestDist = Infinity;
+      allRows.forEach(row => {
+        if (row === sourceRow) return;
+        const measureEl = row.querySelector('.habit-name-cell') || row;
+        const r = measureEl.getBoundingClientRect();
+        const cy = r.top + r.height / 2;
+        const d = Math.abs(cy - e.clientY);
+        if (d < closestDist && e.clientY >= r.top - 4 && e.clientY <= r.bottom + 4) {
+          closestDist = d; closest = row;
+        }
+      });
+      if (closest) closest.classList.add('drag-over-touch');
+    });
+
+    function finish(e) {
+      if (e.pointerId !== pid) return;
+      fresh.classList.remove('dragging-active');
+      if (ghost) { ghost.remove(); ghost = null; }
+      if (sourceRow) sourceRow.classList.remove('dragging');
+      try { fresh.releasePointerCapture(pid); } catch(err) {}
+
+      const target = document.querySelector('.drag-over-touch');
+      document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+
+      if (moved && target && sourceId !== null) {
+        const targetId = parseInt(target.getAttribute('data-hid'));
+        if (!isNaN(targetId) && targetId !== sourceId) {
+          const fromIdx = habits.findIndex(h => h.id === sourceId);
+          const toIdx   = habits.findIndex(h => h.id === targetId);
+          if (fromIdx !== -1 && toIdx !== -1) {
+            const [movedHabit] = habits.splice(fromIdx, 1);
+            habits.splice(toIdx, 0, movedHabit);
+            save();
+            renderAll();
+          }
+        }
+      }
+      sourceRow = null; sourceId = null; allRows = []; moved = false; pid = null;
+    }
+
+    fresh.addEventListener('pointerup', finish);
+    fresh.addEventListener('pointercancel', finish);
   });
+}
+
+function setupTouchDragDrop() {
+  // جدول العادات: نظام مستقل بالكامل يعتمد على Pointer Events (pointerdown/
+  // pointermove/pointerup) بدل touch events الخام. هذا API موحّد يغطي
+  // اللمس والماوس والقلم معاً وأكثر موثوقية داخل عناصر الجدول من touch
+  // events التقليدية على متصفحات الهاتف.
+  setupHabitPointerDrag();
 
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
