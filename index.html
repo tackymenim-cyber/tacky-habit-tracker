@@ -3184,14 +3184,15 @@ table { border-collapse: collapse; min-width: 100%; }
 .toast {
   position: fixed; bottom: 28px; left: 50%;
   transform: translateX(-50%) translateY(80px);
+  opacity: 0; pointer-events: none;
   background: #1e293b; color: white;
   padding: 12px 24px; border-radius: 12px;
   font-size: 0.88rem; font-weight: 600; box-shadow: var(--shadow-lg);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 2000; pointer-events: none; white-space: nowrap;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  z-index: 2000; white-space: nowrap;
 }
 [data-theme="dark"] .toast { background: #f1f5f9; color: #1e293b; }
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 /* CONFETTI */
 .confetti-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1998; }
@@ -4557,7 +4558,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
 <!-- PAGE: TRACKER -->
 <div class="page active" id="page-tracker">
-  <div class="quote-banner fade-up">
+  <div class="quote-banner fade-up" id="trackerQuoteBanner">
     <div class="quote-icon">💡</div>
     <div class="quote-text" id="quoteText">"لا يتعلق الأمر بالكمال، بل بالمثابرة."</div>
     <button class="quote-btn" onclick="newQuote()">اقتباس آخر ✨</button>
@@ -4677,7 +4678,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
 <!-- PAGE: WEEKLY -->
 <div class="page" id="page-weekly">
-  <div class="quote-banner fade-up" style="margin-bottom:20px">
+  <div class="quote-banner fade-up" id="weeklyQuoteBanner" style="margin-bottom:20px">
     <div class="quote-icon">📅</div>
     <div class="quote-text">خطط لأسبوعك، نفّذ يوماً بيوم — كل مهمة صغيرة تقودك إلى هدف كبير.</div>
     <button class="quote-btn" onclick="newQuoteHabitsTable()">💡 اقتباس جديد</button>
@@ -7646,6 +7647,14 @@ settings = Object.assign({
   showJournalTab: true,
 }, settings);
 
+// ترحيل لمرة واحدة: تبويب الاقتباسات أصبح مطفأً افتراضياً. المستخدمون الحاليون
+// الذين لم يغيّروا هذا الإعداد يدوياً من قبل (علامة migQuotesOff غير موجودة)
+// يُطفأ لهم تلقائياً مرة واحدة فقط، دون المساس بمن اختار تشغيله بنفسه لاحقاً.
+if (!settings.migQuotesOff) {
+  settings.showQuotesTab = false;
+  settings.migQuotesOff = true;
+}
+
 // =========== SAVE (Firebase Cloud) ===========
 let _saveDebounceTimer = null;
 // Unique ID for this browser tab/session — lets us tell our own writes
@@ -8749,7 +8758,12 @@ function toggleCheck(hid, d) {
     const scheduledHabits = habits.filter(h => isHabitActiveOn(h, d));
     const allDone = scheduledHabits.every(h => checks[chkKey(h.id, d)]);
     if (allDone && scheduledHabits.length > 0) {
-      showToast(t('toastAllDone'));
+      // The full-screen celebration overlay (see showCelebration) may also
+      // open right after this for the same "all done" moment — skip the
+      // small toast in that case so it doesn't sit hidden underneath it.
+      if (!(document.getElementById('celebrationOverlay') && document.getElementById('celebrationOverlay').classList.contains('show'))) {
+        showToast(t('toastAllDone'));
+      }
       if (settings.confetti) { launchConfetti(); setTimeout(() => launchConfetti(), 350); }
       playHabitAllDoneSound();
     } else {
@@ -10108,6 +10122,10 @@ function setTabVisible(tab, visible) {
     const btn2 = document.getElementById('navTabQuotes');
     if (btn1) btn1.style.display = visible ? '' : 'none';
     if (btn2) btn2.style.display = visible ? '' : 'none';
+    const banner1 = document.getElementById('trackerQuoteBanner');
+    const banner2 = document.getElementById('weeklyQuoteBanner');
+    if (banner1) banner1.style.display = visible ? '' : 'none';
+    if (banner2) banner2.style.display = visible ? '' : 'none';
     if (!visible && currentPage === 'quotes') showPage('tracker');
   } else if (tab === 'journal') {
     settings.showJournalTab = visible;
@@ -11279,11 +11297,24 @@ let toastTimer;
 
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  toastTimer = setTimeout(() => { t.classList.remove('show'); }, 2400);
 }
+// Safety net: if a toast is left visible for any reason (tab was
+// backgrounded, timer got clobbered, etc.), force-hide it once the tab
+// becomes active again so it can never get stuck on screen.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const t = document.getElementById('toast');
+    if (t && t.classList.contains('show')) {
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1200);
+    }
+  }
+});
 
 // =========== CONFETTI ===========
 function launchConfetti() {
@@ -13084,6 +13115,12 @@ let _habitDragId = null;
 let _habitDragOverIdx = null;
 
 function setupHabitDragDrop() {
+  // Native HTML5 drag (via `draggable="true"`) intercepts touch gestures,
+  // which breaks the dedicated touch-drag handle (.habit-drag-handle) used
+  // on phones/tablets. Only enable this native system on devices that don't
+  // support touch, so the two drag systems never fight over the same row.
+  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (isTouchDevice) return;
   document.querySelectorAll('.habit-row[data-hid]').forEach(row => {
     const hid = parseInt(row.getAttribute('data-hid'));
     const hidx = parseInt(row.getAttribute('data-hidx'));
