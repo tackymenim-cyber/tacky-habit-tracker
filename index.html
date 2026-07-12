@@ -13160,8 +13160,14 @@ function _checkMidnightRollover() {
   curM = today.getMonth();
   _lastKnownDateStr = nowStr;
 
+  // The scroll-alignment lock only allows the very first load to auto-center
+  // on today; without resetting it here, the table would keep displaying the
+  // old day's column even though the data above just rolled over to today.
+  _tableScrolledOnce = false;
+
   renderAll();
   if (typeof renderQuickTasks === 'function') renderQuickTasks();
+  _scrollTableToToday(true);
 
   if (missed.length > 0) _showMissedYesterdayPopup(missed);
 }
