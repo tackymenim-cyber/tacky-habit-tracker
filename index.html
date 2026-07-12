@@ -1843,7 +1843,6 @@ table { border-collapse: collapse; min-width: 100%; }
   box-shadow: -2px 0 8px rgba(59,130,246,0.06);
   white-space: nowrap;
   transition: background 0.2s;
-  touch-action: pan-y;
 }
 .habit-row:hover td.habit-name-cell { background: var(--blue-50); }
 .week-header-row th.habit-col,
@@ -2570,6 +2569,8 @@ table { border-collapse: collapse; min-width: 100%; }
 .habit-row.dragging { opacity: 0.4; }
 .habit-row.drag-over-touch td { background: var(--blue-50) !important; }
 [data-theme="dark"] .habit-row.drag-over-touch td { background: rgba(139,92,246,0.15) !important; }
+.habit-row.drag-over td { background: var(--blue-50) !important; box-shadow: inset 0 2px 0 #8b5cf6; }
+[data-theme="dark"] .habit-row.drag-over td { background: rgba(139,92,246,0.15) !important; }
 
 /* ===== EMOJI PICKER ===== */
 .emoji-popup {
@@ -12661,147 +12662,9 @@ function setupHabitColResizer() {
   document.addEventListener('mouseup', end);
 }
 
-// =========== HABIT ROW LONG-PRESS DRAG (robust, whole-row target) ===========
-// Independent from _addTouchDrag: presses anywhere in the habit-name cell
-// (not just the small ⠿ handle) trigger reordering after a short hold,
-// so it can't fail just because the tiny icon wasn't hit precisely.
-let _hlpTimer = null;
-let _hlpActive = false;
-let _hlpSourceRow = null;
-let _hlpSourceId = null;
-let _hlpAllRows = [];
-let _hlpGhost = null;
-let _hlpStartX = 0;
-let _hlpStartY = 0;
-const HLP_HOLD_MS = 320;
-const HLP_MOVE_CANCEL_PX = 10; // finger moved before hold completed -> treat as scroll/tap, cancel
-
-function _hlpCleanup() {
-  if (_hlpGhost) { _hlpGhost.remove(); _hlpGhost = null; }
-  if (_hlpSourceRow) _hlpSourceRow.classList.remove('dragging');
-  document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
-  clearTimeout(_hlpTimer);
-  _hlpTimer = null;
-  _hlpActive = false;
-  _hlpSourceRow = null;
-  _hlpSourceId = null;
-  _hlpAllRows = [];
-}
-
-function _hlpBeginDrag(cell, touch) {
-  _hlpActive = true;
-  _hlpSourceRow = cell.closest('tr[data-hid]');
-  if (!_hlpSourceRow) { _hlpActive = false; return; }
-  _hlpSourceId = parseInt(_hlpSourceRow.getAttribute('data-hid'));
-  _hlpSourceRow.classList.add('dragging');
-  if (navigator.vibrate) { try { navigator.vibrate(15); } catch(e) {} }
-
-  const container = _hlpSourceRow.parentElement;
-  _hlpAllRows = container ? Array.from(container.querySelectorAll('tr[data-hid]')) : [];
-
-  const rect = _hlpSourceRow.getBoundingClientRect();
-  const nameEl = _hlpSourceRow.querySelector('.habit-text');
-  _hlpGhost = document.createElement('div');
-  _hlpGhost.textContent = (nameEl ? nameEl.textContent : _hlpSourceRow.textContent).trim().slice(0, 30);
-  _hlpGhost.style.cssText = `
-    position:fixed; z-index:99999; opacity:0.95; pointer-events:none;
-    background:var(--white); border:2px solid #8b5cf6;
-    border-radius:10px; padding:8px 14px; font-size:0.82rem; font-weight:700;
-    box-shadow:0 8px 24px rgba(0,0,0,0.3); max-width:220px;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    font-family:'Tajawal',sans-serif; color:var(--text);
-    left:${rect.left}px; top:${rect.top}px;
-  `;
-  document.body.appendChild(_hlpGhost);
-  if (touch) {
-    _hlpGhost.style.left = (touch.clientX - 20) + 'px';
-    _hlpGhost.style.top  = (touch.clientY - 16) + 'px';
-  }
-}
-
-function setupHabitLongPressDrag() {
-  document.querySelectorAll('.habit-row .habit-name-cell').forEach(cell => {
-    // Strip any previously-attached listeners by replacing with a fresh clone
-    const fresh = cell.cloneNode(true);
-    cell.parentNode.replaceChild(fresh, cell);
-  });
-
-  document.querySelectorAll('.habit-row .habit-name-cell').forEach(cell => {
-    cell.addEventListener('touchstart', e => {
-      // Ignore presses that start directly on the delete/edit buttons —
-      // those need their normal tap behavior, not a drag.
-      if (e.target.closest('.del-btn, .edit-btn')) return;
-      const touch = e.touches[0];
-      _hlpStartX = touch.clientX;
-      _hlpStartY = touch.clientY;
-      clearTimeout(_hlpTimer);
-      _hlpTimer = setTimeout(() => _hlpBeginDrag(cell, touch), HLP_HOLD_MS);
-    }, { passive: true });
-
-    cell.addEventListener('touchmove', e => {
-      const touch = e.touches[0];
-      if (!_hlpActive) {
-        // Still waiting for the hold to complete — cancel it if the finger
-        // has clearly started scrolling instead of holding still.
-        const dx = Math.abs(touch.clientX - _hlpStartX);
-        const dy = Math.abs(touch.clientY - _hlpStartY);
-        if (dx > HLP_MOVE_CANCEL_PX || dy > HLP_MOVE_CANCEL_PX) {
-          clearTimeout(_hlpTimer);
-          _hlpTimer = null;
-        }
-        return;
-      }
-      // Drag is active: take over the gesture completely.
-      e.preventDefault();
-      if (!_hlpGhost || !_hlpSourceRow) return;
-      _hlpGhost.style.left = (touch.clientX - 20) + 'px';
-      _hlpGhost.style.top  = (touch.clientY - 16) + 'px';
-
-      document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
-      let closest = null, closestDist = Infinity;
-      _hlpAllRows.forEach(row => {
-        if (row === _hlpSourceRow) return;
-        const r = row.getBoundingClientRect();
-        const cy = r.top + r.height / 2;
-        const d = Math.abs(cy - touch.clientY);
-        if (d < closestDist && touch.clientY >= r.top - 4 && touch.clientY <= r.bottom + 4) {
-          closestDist = d; closest = row;
-        }
-      });
-      if (closest) closest.classList.add('drag-over-touch');
-    }, { passive: false });
-
-    cell.addEventListener('touchend', () => {
-      clearTimeout(_hlpTimer);
-      _hlpTimer = null;
-      if (!_hlpActive) return; // was just a normal tap, nothing to finish
-
-      const target = document.querySelector('.drag-over-touch');
-      if (target && _hlpSourceId !== null) {
-        const targetId = parseInt(target.getAttribute('data-hid'));
-        if (!isNaN(targetId) && targetId !== _hlpSourceId) {
-          const fromIdx = habits.findIndex(h => h.id === _hlpSourceId);
-          const toIdx   = habits.findIndex(h => h.id === targetId);
-          if (fromIdx !== -1 && toIdx !== -1) {
-            const [moved] = habits.splice(fromIdx, 1);
-            habits.splice(toIdx, 0, moved);
-            save();
-            renderAll();
-          }
-        }
-      }
-      _hlpCleanup();
-    });
-
-    cell.addEventListener('touchcancel', () => { clearTimeout(_hlpTimer); _hlpTimer = null; _hlpCleanup(); });
-  });
-}
-
 function setupTouchDragDrop() {
-  // جدول العادات: اضغط مطوّلاً في أي مكان بخلية اسم العادة لبدء السحب —
-  // أوثق من الاعتماد على إصابة أيقونة صغيرة، ويعمل حتى لو المقبض نفسه
-  // ما استجاب على بعض الأجهزة (مشكلة معروفة مع صفوف <tr> داخل جدول قابل للتمرير أفقياً).
-  setupHabitLongPressDrag();
+  // ملاحظة: جدول العادات يستخدم نفس أسلوب مهام الأسبوع بالضبط — سحب HTML5
+  // أصلي (draggable="true") عبر setupHabitDragDrop، مو النظام اللمسي هنا.
 
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
@@ -13239,12 +13102,6 @@ let _habitDragId = null;
 let _habitDragOverIdx = null;
 
 function setupHabitDragDrop() {
-  // Native HTML5 drag (via `draggable="true"`) intercepts touch gestures,
-  // which breaks the dedicated touch-drag handle (.habit-drag-handle) used
-  // on phones/tablets. Only enable this native system on devices that don't
-  // support touch, so the two drag systems never fight over the same row.
-  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  if (isTouchDevice) return;
   document.querySelectorAll('.habit-row[data-hid]').forEach(row => {
     const hid = parseInt(row.getAttribute('data-hid'));
     const hidx = parseInt(row.getAttribute('data-hidx'));
