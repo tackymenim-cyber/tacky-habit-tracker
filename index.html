@@ -2558,6 +2558,9 @@ table { border-collapse: collapse; min-width: 100%; }
 .task-item.drag-over { border: 2px dashed var(--blue-400); background: var(--blue-50); border-radius: 6px; }
 .qt-item.dragging { opacity: 0.4; }
 .task-item.dragging { opacity: 0.4; }
+.habit-row.dragging { opacity: 0.4; }
+.habit-row.drag-over-touch td { background: var(--blue-50) !important; }
+[data-theme="dark"] .habit-row.drag-over-touch td { background: rgba(139,92,246,0.15) !important; }
 
 /* ===== EMOJI PICKER ===== */
 .emoji-popup {
@@ -3745,13 +3748,13 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   }
   table { min-width: max-content; }
   .week-header-row th { font-size: 0.52rem; padding: 5px 2px; letter-spacing: 0; }
-  .week-header-row th.habit-col { min-width: 110px; max-width: 120px; padding-right: 6px; }
+  .week-header-row th.habit-col { min-width: var(--habit-col-w, 148px); width: var(--habit-col-w, 148px); max-width: none; padding-right: 6px; }
   .daynum-row th { min-width: 26px; font-size: 0.5rem; padding: 4px 0 5px; }
   .daynum-row .dayname { font-size: 0.45rem; }
   .habit-row td { height: 36px; padding: 1px 2px; }
-  .habit-row td.habit-name-cell { padding: 0 4px 0 6px; min-width: 148px; max-width: 168px; }
+  .habit-row td.habit-name-cell { padding: 0 4px 0 6px; min-width: var(--habit-col-w, 148px); width: var(--habit-col-w, 148px); max-width: none; }
   .habit-name-inner { gap: 4px; }
-  .habit-text { font-size: 0.72rem; max-width: 82px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .habit-text { font-size: 0.72rem; max-width: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
   .habit-emoji { font-size: 0.8rem; }
   .streak-mini { font-size: 0.5rem; }
   .chk { width: 22px; height: 22px; font-size: 0.62rem; border-radius: 5px; }
@@ -3765,6 +3768,18 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   .drag-handle { opacity: 1 !important; font-size: 1.05rem; padding: 6px 5px; color: var(--text-3); touch-action: none; cursor: grab; flex-shrink: 0; }
   .qt-item .drag-handle, .task-item .drag-handle { opacity: 1 !important; }
   .habit-drag-handle { opacity: 1 !important; display: flex !important; }
+  /* مقبض تحكم بعرض عمود اسم العادة */
+  .habit-col-resizer {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 14px;
+    cursor: ew-resize; touch-action: none; z-index: 5;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .habit-col-resizer::after {
+    content: ''; width: 3px; height: 22px; border-radius: 3px;
+    background: var(--border); opacity: 0.8;
+  }
+  .habit-col-resizer:active::after { background: #8b5cf6; opacity: 1; }
+  th.habit-col { position: relative; }
 
   /* ══════════ MOOD PAGE ══════════ */
   .mood-page-grid { grid-template-columns: 1fr; gap: 10px; }
@@ -7508,7 +7523,7 @@ settings = Object.assign({
   sound: true,
   streakAlert: true,
   lang: 'ar',
-  showQuotesTab: true,
+  showQuotesTab: false,
   showJournalTab: true,
 }, settings);
 
@@ -9219,7 +9234,7 @@ function renderTable() {
     const wkLabel = currentLang === 'ar' ? `الأسبوع ${wg.n}` : currentLang === 'fr' ? `Semaine ${wg.n}` : `Week ${wg.n}`;
     html += `<th colspan="${wg.days.length}" class="${WEEK_COLORS[wi]}${isLast ? '' : ' week-sep'}">${wkLabel}</th>`;
   });
-  html += '</tr><tr class="daynum-row"><th class="habit-col">' + (currentLang === 'ar' ? 'العادة / اليوم' : currentLang === 'fr' ? 'Habitude / Jour' : 'Habit / Day') + '</th>';
+  html += '</tr><tr class="daynum-row"><th class="habit-col" id="habitColHeader">' + (currentLang === 'ar' ? 'العادة / اليوم' : currentLang === 'fr' ? 'Habitude / Jour' : 'Habit / Day') + '<div class="habit-col-resizer" id="habitColResizer"></div></th>';
   weekGroups.forEach((wg, wi) => {
     const isLastWk = wi === weekGroups.length - 1;
     wg.days.forEach((d, di) => {
@@ -10089,7 +10104,7 @@ function renderAll(forcePage) {
   if (monthLabelEl) monthLabelEl.textContent = `${tr.monthNames[curM]} ${curY}`;
   const safeRender = (name, fn) => { try { fn(); } catch (e) { console.error('render error in ' + name + ':' , e); } };
   const pg = forcePage || currentPage;
-  if (pg === 'tracker') { safeRender('renderTracker', renderTracker); safeRender('setupTouchDragDrop', setupTouchDragDrop); }
+  if (pg === 'tracker') { safeRender('renderTracker', renderTracker); safeRender('setupTouchDragDrop', setupTouchDragDrop); safeRender('setupHabitColResizer', setupHabitColResizer); }
   if (pg === 'mood') safeRender('renderMood', renderMood);
   if (pg === 'weekly') safeRender('renderWeekly', renderWeekly);
   if (pg === 'quotes') safeRender('renderQuotes', renderQuotes);
@@ -12291,82 +12306,145 @@ function setupWeeklyDragDrop() {
 
 // =========== TOUCH DRAG & DROP (Mobile) ===========
 // يجعل مسكة السحب تعمل باللمس على الموبايل لجدول العادات وقائمة المهام
-function _addTouchDrag(handle, getSourceId, getTargetId, onDrop) {
+function _addTouchDrag(handle, rowSelector, getId, onDrop) {
   let _ghost = null;
   let _sourceId = null;
+  let _sourceRow = null;
+  let _allRows = [];
+  let _startY = 0;
+  let _moved = false;
 
   handle.addEventListener('touchstart', e => {
     e.preventDefault();
-    _sourceId = getSourceId(handle);
-    handle.closest('[data-hid],[data-w]') && handle.closest('[data-hid],[data-w]').classList.add('dragging');
+    e.stopPropagation();
+    _sourceRow = handle.closest(rowSelector);
+    if (!_sourceRow) return;
+    _sourceId = getId(_sourceRow);
+    _moved = false;
+    _startY = e.touches[0].clientY;
+    _sourceRow.classList.add('dragging');
 
-    // Create ghost element
-    const row = handle.closest('tr, .task-item, .qt-item');
-    if (row) {
-      _ghost = row.cloneNode(true);
-      _ghost.style.cssText = `
-        position:fixed; z-index:99999; opacity:0.75; pointer-events:none;
-        background:var(--white); border:2px dashed var(--blue-400);
-        border-radius:10px; padding:8px 12px; font-size:0.82rem;
-        box-shadow:0 8px 24px rgba(0,0,0,0.2); min-width:120px;
-        font-family:'Tajawal',sans-serif; color:var(--text);
-        transform:rotate(-2deg);
-      `;
-      document.body.appendChild(_ghost);
-    }
+    // كل الصفوف من نفس النوع (لإيجاد أقرب واحد أثناء السحب)
+    const container = _sourceRow.parentElement;
+    _allRows = container ? Array.from(container.querySelectorAll(rowSelector)) : [];
+
+    // عنصر شبح بسيط وآمن (مش استنساخ tr يتيم خارج الجدول)
+    const rect = _sourceRow.getBoundingClientRect();
+    _ghost = document.createElement('div');
+    _ghost.textContent = (_sourceRow.querySelector('.habit-text, .qt-item-text, .task-text') || _sourceRow).textContent.trim().slice(0, 30);
+    _ghost.style.cssText = `
+      position:fixed; z-index:99999; opacity:0.9; pointer-events:none;
+      background:var(--white); border:2px solid #8b5cf6;
+      border-radius:10px; padding:8px 14px; font-size:0.82rem; font-weight:700;
+      box-shadow:0 8px 24px rgba(0,0,0,0.25); max-width:200px;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-family:'Tajawal',sans-serif; color:var(--text);
+      left:${rect.left}px; top:${rect.top}px;
+    `;
+    document.body.appendChild(_ghost);
   }, { passive: false });
 
   handle.addEventListener('touchmove', e => {
     e.preventDefault();
-    if (!_ghost) return;
+    e.stopPropagation();
+    if (!_ghost || !_sourceRow) return;
+    _moved = true;
     const t = e.touches[0];
-    _ghost.style.left = (t.clientX - 60) + 'px';
-    _ghost.style.top  = (t.clientY - 20) + 'px';
+    _ghost.style.left = (t.clientX - 20) + 'px';
+    _ghost.style.top  = (t.clientY - 16) + 'px';
 
-    // Highlight target
-    _ghost.style.display = 'none';
-    const el = document.elementFromPoint(t.clientX, t.clientY);
-    _ghost.style.display = '';
-    if (el) {
-      const target = el.closest('[data-hid],[data-w]');
-      document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
-      if (target && getTargetId(target) !== _sourceId) {
-        target.classList.add('drag-over-touch');
+    // أقرب صف عمودياً لموضع الإصبع (بدل الاعتماد على العنصر الدقيق تحت الإصبع)
+    document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+    let closest = null, closestDist = Infinity;
+    _allRows.forEach(row => {
+      if (row === _sourceRow) return;
+      const r = row.getBoundingClientRect();
+      const cy = r.top + r.height / 2;
+      const d = Math.abs(cy - t.clientY);
+      if (d < closestDist && t.clientY >= r.top - 4 && t.clientY <= r.bottom + 4) {
+        closestDist = d; closest = row;
       }
-    }
+    });
+    if (closest) closest.classList.add('drag-over-touch');
   }, { passive: false });
 
   handle.addEventListener('touchend', e => {
     if (_ghost) { _ghost.remove(); _ghost = null; }
-    document.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging'));
+    if (_sourceRow) _sourceRow.classList.remove('dragging');
 
-    const t = e.changedTouches[0];
-    const el = document.elementFromPoint(t.clientX, t.clientY);
+    const target = document.querySelector('.drag-over-touch');
     document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
 
-    if (el && _sourceId !== null) {
-      const target = el.closest('[data-hid],[data-w]');
-      if (target) {
-        const targetId = getTargetId(target);
-        if (targetId !== null && targetId !== _sourceId) {
-          onDrop(_sourceId, targetId);
-        }
+    if (_moved && target && _sourceId !== null && _sourceId !== undefined) {
+      const targetId = getId(target);
+      if (targetId !== null && targetId !== undefined && targetId !== _sourceId) {
+        onDrop(_sourceId, targetId);
       }
     }
-    _sourceId = null;
+    _sourceId = null; _sourceRow = null; _allRows = []; _moved = false;
   });
+}
+
+// =========== HABIT NAME COLUMN — USER-RESIZABLE WIDTH ===========
+function _applyHabitColWidth(px) {
+  document.documentElement.style.setProperty('--habit-col-w', px + 'px');
+}
+(function _restoreHabitColWidth() {
+  try {
+    const saved = localStorage.getItem('habitColWidth');
+    if (saved) _applyHabitColWidth(parseInt(saved));
+  } catch (e) {}
+})();
+function setupHabitColResizer() {
+  const resizer = document.getElementById('habitColResizer');
+  if (!resizer || resizer._wired) return;
+  resizer._wired = true;
+
+  let startX = 0, startW = 0, dragging = false;
+
+  function getCurrentW() {
+    const th = document.getElementById('habitColHeader');
+    return th ? th.getBoundingClientRect().width : 148;
+  }
+  function clamp(w) { return Math.max(90, Math.min(320, w)); }
+
+  function start(x) {
+    dragging = true;
+    startX = x;
+    startW = getCurrentW();
+  }
+  function move(x) {
+    if (!dragging) return;
+    // RTL: السحب لليسار يوسّع العمود (لأن العمود على يمين الشاشة)
+    const delta = document.documentElement.dir === 'rtl' ? (startX - x) : (x - startX);
+    const w = clamp(startW + delta);
+    _applyHabitColWidth(w);
+  }
+  function end() {
+    if (!dragging) return;
+    dragging = false;
+    const w = clamp(getCurrentW());
+    try { localStorage.setItem('habitColWidth', String(Math.round(w))); } catch (e) {}
+  }
+
+  resizer.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); start(e.touches[0].clientX); }, { passive: false });
+  resizer.addEventListener('touchmove', e => { e.preventDefault(); e.stopPropagation(); move(e.touches[0].clientX); }, { passive: false });
+  resizer.addEventListener('touchend', end);
+
+  resizer.addEventListener('mousedown', e => { e.preventDefault(); start(e.clientX); });
+  document.addEventListener('mousemove', e => { if (dragging) move(e.clientX); });
+  document.addEventListener('mouseup', end);
 }
 
 function setupTouchDragDrop() {
   // جدول العادات
   document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
-    // Remove old listeners by cloning
     const fresh = handle.cloneNode(true);
     handle.parentNode.replaceChild(fresh, handle);
     _addTouchDrag(
       fresh,
-      h => parseInt(h.closest('[data-hid]').getAttribute('data-hid')),
-      t => parseInt(t.getAttribute('data-hid')),
+      'tr[data-hid]',
+      row => parseInt(row.getAttribute('data-hid')),
       (fromHid, toHid) => {
         const fromIdx = habits.findIndex(h => h.id === fromHid);
         const toIdx   = habits.findIndex(h => h.id === toHid);
@@ -12384,14 +12462,8 @@ function setupTouchDragDrop() {
     handle.parentNode.replaceChild(fresh, handle);
     _addTouchDrag(
       fresh,
-      h => {
-        const item = h.closest('[data-w][data-i]');
-        return item ? `${item.getAttribute('data-w')}-${item.getAttribute('data-i')}` : null;
-      },
-      t => {
-        const item = t.closest ? t.closest('[data-w][data-i]') : null;
-        return item ? `${item.getAttribute('data-w')}-${item.getAttribute('data-i')}` : null;
-      },
+      '.task-item[data-w][data-i]',
+      row => `${row.getAttribute('data-w')}-${row.getAttribute('data-i')}`,
       (fromKey, toKey) => {
         if (!fromKey || !toKey) return;
         const [fw, fi] = fromKey.split('-').map(Number);
@@ -12416,8 +12488,8 @@ function setupTouchDragDrop() {
     handle.parentNode.replaceChild(fresh, handle);
     _addTouchDrag(
       fresh,
-      h => parseInt(h.closest('[data-qtid]')?.getAttribute('data-qtid') || -1),
-      t => parseInt(t.closest ? t.closest('[data-qtid]')?.getAttribute('data-qtid') : -1),
+      '.qt-item[data-id]',
+      row => parseInt(row.getAttribute('data-id')),
       (fromId, toId) => {
         const fi = quickTasks.findIndex(t => t.id === fromId);
         const ti = quickTasks.findIndex(t => t.id === toId);
