@@ -12811,11 +12811,8 @@ function setupHabitPointerDrag() {
 }
 
 function setupTouchDragDrop() {
-    // ===== HABIT DRAG - نظام جديد يعمل على الهاتف =====
+    // ===== HABIT DRAG =====
     document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
-    // تأكد من أن المقبض موجود ويعمل
-    const newHandle = handle.cloneNode(true);
-    handle.parentNode.replaceChild(newHandle, handle);
         const newHandle = handle.cloneNode(true);
         handle.parentNode.replaceChild(newHandle, handle);
         
@@ -12839,7 +12836,8 @@ function setupTouchDragDrop() {
                 const rect = row.getBoundingClientRect();
                 const dist = Math.abs((rect.top + rect.height/2) - clientY);
                 if (clientY >= rect.top - 4 && clientY <= rect.bottom + 4 && dist < closestDist) {
-                    closestDist = dist; closest = row;
+                    closestDist = dist;
+                    closest = row;
                 }
             });
             return closest;
@@ -12849,12 +12847,18 @@ function setupTouchDragDrop() {
             if (!active) return;
             let touch = null;
             for (let i = 0; i < e.touches.length; i++) {
-                if (e.touches[i].identifier === activeTouchId) { touch = e.touches[i]; break; }
+                if (e.touches[i].identifier === activeTouchId) {
+                    touch = e.touches[i];
+                    break;
+                }
             }
             if (!touch) return;
             e.preventDefault();
             moved = true;
-            if (ghost) { ghost.style.left = (touch.clientX - 20) + 'px'; ghost.style.top = (touch.clientY - 16) + 'px'; }
+            if (ghost) {
+                ghost.style.left = (touch.clientX - 20) + 'px';
+                ghost.style.top = (touch.clientY - 16) + 'px';
+            }
             document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
             const closest = findClosestRow(touch.clientY);
             if (closest) closest.classList.add('drag-over-touch');
@@ -12866,6 +12870,7 @@ function setupTouchDragDrop() {
             if (sourceRow) sourceRow.classList.remove('dragging');
             const target = document.querySelector('.drag-over-touch');
             document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+            
             if (moved && target && sourceId !== null) {
                 const targetId = parseInt(target.getAttribute('data-hid'));
                 if (!isNaN(targetId) && targetId !== sourceId) {
@@ -12874,23 +12879,36 @@ function setupTouchDragDrop() {
                     if (fromIdx !== -1 && toIdx !== -1) {
                         const [movedHabit] = habits.splice(fromIdx, 1);
                         habits.splice(toIdx, 0, movedHabit);
-                        save(); renderAll();
+                        save();
+                        renderAll();
                     }
                 }
             }
+            
             document.removeEventListener('touchmove', onTouchMove, { passive: false });
             document.removeEventListener('touchend', finishDrag);
             document.removeEventListener('touchcancel', finishDrag);
-            sourceId = null; sourceRow = null; allRows = []; moved = false; active = false; activeTouchId = null;
+            
+            sourceId = null;
+            sourceRow = null;
+            allRows = [];
+            moved = false;
+            active = false;
+            activeTouchId = null;
         }
         
         newHandle.addEventListener('touchstart', (e) => {
-            e.preventDefault(); e.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
             newHandle.classList.add('dragging-active');
             sourceRow = newHandle.closest('tr[data-hid]');
-            if (!sourceRow) { newHandle.classList.remove('dragging-active'); return; }
+            if (!sourceRow) {
+                newHandle.classList.remove('dragging-active');
+                return;
+            }
             sourceId = parseInt(sourceRow.getAttribute('data-hid'));
-            moved = false; active = true;
+            moved = false;
+            active = true;
             const touch = e.touches[0];
             activeTouchId = touch.identifier;
             sourceRow.classList.add('dragging');
@@ -12901,8 +12919,8 @@ function setupTouchDragDrop() {
             document.addEventListener('touchend', finishDrag);
             document.addEventListener('touchcancel', finishDrag);
         }, { passive: false });
-    });;
-
+    });
+  
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
     const fresh = handle.cloneNode(true);
