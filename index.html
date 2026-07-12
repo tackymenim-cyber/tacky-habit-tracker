@@ -1854,15 +1854,15 @@ table { border-collapse: collapse; min-width: 100%; }
 .habit-row td.habit-name-cell {
   text-align: right; padding: 0 8px 0 20px;
   position: sticky; right: 0;
-  background: var(--white); z-index: 2;
+  background-color: var(--white); opacity: 1; isolation: isolate;
+  z-index: 5;
   box-shadow: -2px 0 8px rgba(59,130,246,0.06);
   white-space: nowrap;
-  transition: background 0.2s;
 }
 .habit-row:hover td.habit-name-cell { background: var(--blue-50); }
 .week-header-row th.habit-col,
 .daynum-row th.habit-col {
-  position: sticky; right: 0; background: var(--white); z-index: 3;
+  position: sticky; right: 0; background-color: var(--white); z-index: 5;
   box-shadow: -2px 0 8px rgba(59,130,246,0.06);
 }
 .prog-row td.label {
