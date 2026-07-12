@@ -1402,11 +1402,17 @@ body.auth-active {
   align-items: center;
   justify-content: space-between;
   height: var(--nav-h);
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 200;
   box-shadow: var(--shadow-sm);
   transition: background 0.3s, border-color 0.3s;
+}
+/* تثبيت الشريط العلوي أثناء التمرير — إعداد اختياري، كمبيوتر فقط */
+body[data-sticky-topnav="true"] .topnav {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 500 !important;
+  width: 100%;
 }
 
 .nav-logo { display: flex; align-items: center; gap: 10px; }
@@ -3697,6 +3703,11 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     height: var(--nav-h); gap: 6px;
     overflow: visible;
   }
+  /* إعداد تثبيت الشريط العلوي خاص بالكمبيوتر فقط — لا يؤثر على الهاتف إطلاقاً */
+  body[data-sticky-topnav="true"] .topnav {
+    position: relative !important;
+    top: auto !important;
+  }
   .nav-logo { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; }
   .nav-logo-icon { width: 28px; height: 28px; font-size: 0.88rem; border-radius: 8px; }
   .nav-logo-text { font-size: 0.82rem; white-space: nowrap; }
@@ -5439,6 +5450,21 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         </label>
       </div>
 
+      <!-- STICKY TOP NAV BAR (Desktop only) -->
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-item-icon sicon-blue">📌</div>
+          <div>
+            <div class="settings-item-label" id="stickyTopnavLabel">تثبيت الشريط العلوي</div>
+            <div class="settings-item-desc" id="stickyTopnavDesc">إبقاء الشريط العلوي ثابتاً أثناء التمرير (كمبيوتر فقط)</div>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="stickyTopnavToggle" onchange="setStickyTopnav(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
       <div class="settings-item">
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-blue">📖</div>
@@ -6143,6 +6169,7 @@ const T = {
     themePickLabel: 'ثيم التطبيق', themePickDesc: 'اختر لوحة ألوان كاملة للواجهة', themePopupTitle: '🖼️ اختر ثيم التطبيق',
     quotesTabLabel: 'خانة الاقتباسات', quotesTabDesc: 'إظهار أو إخفاء تبويب الاقتباسات',
     stickyHeaderLabel: 'تثبيت رأس الجدول', stickyHeaderDesc: 'إبقاء صف الأيام ثابتاً أعلى الشاشة أثناء التمرير',
+    stickyTopnavLabel: 'تثبيت الشريط العلوي', stickyTopnavDesc: 'إبقاء الشريط العلوي ثابتاً أثناء التمرير (كمبيوتر فقط)',
     journalTabLabel: 'خانة اليوميات', journalTabDesc: 'سجّل أفكارك وانعكاساتك اليومية',
     // JOURNAL PAGE
     journalHeaderSub: 'سجّل أفكارك وانعكاساتك اليومية — مكانك الخاص',
@@ -6527,6 +6554,7 @@ const T = {
     themePickLabel: "Thème de l'app", themePickDesc: "Choisis une palette de couleurs complète", themePopupTitle: "🖼️ Choisir un thème",
     quotesTabLabel: 'Onglet citations', quotesTabDesc: "Afficher ou masquer l'onglet citations",
     stickyHeaderLabel: "Fixer l'en-tête du tableau", stickyHeaderDesc: 'Garder la ligne des jours fixe en haut pendant le défilement',
+    stickyTopnavLabel: "Fixer la barre du haut", stickyTopnavDesc: 'Garder la barre de navigation fixe pendant le défilement (ordinateur uniquement)',
     journalTabLabel: 'Onglet journal', journalTabDesc: 'Note tes pensées et réflexions quotidiennes',
     // JOURNAL PAGE
     journalHeaderSub: 'Note tes pensées et réflexions quotidiennes — ton espace personnel',
@@ -6911,6 +6939,7 @@ const T = {
     themePickLabel: 'App Theme', themePickDesc: 'Choose a full color palette for the interface', themePopupTitle: '🖼️ Choose App Theme',
     quotesTabLabel: 'Quotes Tab', quotesTabDesc: 'Show or hide the quotes tab',
     stickyHeaderLabel: 'Sticky Table Header', stickyHeaderDesc: 'Keep the days row fixed at the top while scrolling',
+    stickyTopnavLabel: 'Sticky Top Bar', stickyTopnavDesc: 'Keep the top navigation bar fixed while scrolling (desktop only)',
     journalTabLabel: 'Journal Tab', journalTabDesc: 'Record your daily thoughts and reflections',
     // JOURNAL PAGE
     journalHeaderSub: 'Record your thoughts and daily reflections — your personal space',
@@ -7509,6 +7538,7 @@ function updateSettingsText() {
     themePickLabel: 'themePickLabel', themePickDesc: 'themePickDesc', themePopupTitle: 'themePopupTitle',
     quotesTabLabel: 'quotesTabLabel', quotesTabDesc: 'quotesTabDesc',
     stickyHeaderLabel: 'stickyHeaderLabel', stickyHeaderDesc: 'stickyHeaderDesc',
+    stickyTopnavLabel: 'stickyTopnavLabel', stickyTopnavDesc: 'stickyTopnavDesc',
     journalTabLabel: 'journalTabLabel', journalTabDesc: 'journalTabDesc',
     dailyGoalLabel: 'dailyGoal', dailyGoalDesc: 'dailyGoalDesc',
     waterGoalLabel: 'waterGoal', waterGoalDesc: 'waterGoalDesc',
@@ -7601,6 +7631,7 @@ window._revealApp = (function() {
     // some nav elements existed) leaving a hidden tab visible on first paint.
     if (typeof applyTabVisibility === 'function') applyTabVisibility();
     if (typeof applyStickyTableHeaderSetting === 'function') applyStickyTableHeaderSetting();
+    if (typeof applyStickyTopnavSetting === 'function') applyStickyTopnavSetting();
     const sk = document.getElementById('skeletonScreen');
     if (sk) {
       sk.classList.add('hiding');
@@ -7712,6 +7743,7 @@ settings = Object.assign({
   showQuotesTab: false,
   showJournalTab: true,
   stickyTableHeader: false,
+  stickyTopnav: false,
 }, settings);
 
 // ترحيل: تبويب الاقتباسات مطفأ افتراضياً لكل الأجهزة (نُعيد التطبيق حتى
@@ -10235,6 +10267,22 @@ function applyStickyTableHeaderSetting() {
   if (on) requestAnimationFrame(_measureStickyHeaderOffset);
 }
 
+// =========== STICKY TOP NAV BAR (تثبيت الشريط العلوي — كمبيوتر فقط) ===========
+function setStickyTopnav(on) {
+  settings.stickyTopnav = !!on;
+  save();
+  document.body.setAttribute('data-sticky-topnav', on ? 'true' : 'false');
+  const toggle = document.getElementById('stickyTopnavToggle');
+  if (toggle) toggle.checked = !!on;
+}
+
+function applyStickyTopnavSetting() {
+  const on = settings.stickyTopnav === true;
+  document.body.setAttribute('data-sticky-topnav', on ? 'true' : 'false');
+  const toggle = document.getElementById('stickyTopnavToggle');
+  if (toggle) toggle.checked = on;
+}
+
 // =========== JOURNAL ===========
 let _journalMood = '😊 ممتاز'; // fallback default; actual value set per-language on first mood button select
 let _journalTags = [];
@@ -11674,6 +11722,7 @@ function init() {
   if (settings.appTheme) applyAppTheme(settings.appTheme);
   applyTabVisibility();
   applyStickyTableHeaderSetting();
+  applyStickyTopnavSetting();
   const savedLang = settings.lang || 'ar';
   setLang(savedLang);
   // Data will be loaded after auth
@@ -11689,6 +11738,7 @@ function init() {
     if (sk && !sk.classList.contains('hidden') && !sk.classList.contains('hiding')) {
       if (typeof applyTabVisibility === 'function') applyTabVisibility();
     if (typeof applyStickyTableHeaderSetting === 'function') applyStickyTableHeaderSetting();
+    if (typeof applyStickyTopnavSetting === 'function') applyStickyTopnavSetting();
       sk.classList.add('hiding');
       setTimeout(() => sk.classList.add('hidden'), 380);
       const ap = document.querySelector('.page.active');
