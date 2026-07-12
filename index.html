@@ -12745,7 +12745,15 @@ function _hrmOpenMenu(hid, hname) {
   const overlay = document.createElement('div');
   overlay.id = 'hrmOverlay';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99995;background:rgba(15,23,42,0.55);display:flex;align-items:flex-end;justify-content:center;';
-  overlay.onclick = (e) => { if (e.target === overlay) _hrmCloseMenu(); };
+
+  // نتجاهل أول لمسة/نقرة تجي فوراً بعد فتح القائمة — لأن إصبعك لسا واقف
+  // بنفس المكان (فوق الخلفية) لحظة الفتح، ولو ما تجاهلناها بتقفل القائمة
+  // نفسها فوراً وكأنها ما ظهرت أصلاً.
+  const openedAt = Date.now();
+  overlay.addEventListener('click', (e) => {
+    if (Date.now() - openedAt < 400) return;
+    if (e.target === overlay) _hrmCloseMenu();
+  });
 
   const btnStyle = 'width:100%;padding:14px;border:none;border-bottom:1px solid var(--border);background:var(--white);color:var(--text);font-family:\'Tajawal\',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:center;';
   const disabledStyle = 'opacity:0.35;pointer-events:none;';
@@ -12785,6 +12793,7 @@ function setupHabitReorderMenu() {
 
     let pressTimer = null;
     let startX = 0, startY = 0;
+    let longPressFired = false;
     const HOLD_MS = 380;
     const MOVE_CANCEL_PX = 12;
 
@@ -12793,9 +12802,11 @@ function setupHabitReorderMenu() {
       if (!row) return;
       const t = e.touches[0];
       startX = t.clientX; startY = t.clientY;
+      longPressFired = false;
       clearTimeout(pressTimer);
       fresh.classList.add('dragging-active');
       pressTimer = setTimeout(() => {
+        longPressFired = true;
         if (navigator.vibrate) { try { navigator.vibrate(20); } catch(err) {} }
         const hid = parseInt(row.getAttribute('data-hid'));
         const hname = row.getAttribute('data-hname') || '';
@@ -12812,22 +12823,16 @@ function setupHabitReorderMenu() {
       }
     }, { passive: true });
 
-    fresh.addEventListener('touchend', () => {
+    fresh.addEventListener('touchend', e => {
       clearTimeout(pressTimer);
       fresh.classList.remove('dragging-active');
-    });
+      // امنعي الحدث المُصنَّع click اللي يجي بعد رفع الإصبع مباشرة — لأنه
+      // يقع فوق القائمة المفتوحة حديثاً ويقفلها فوراً وكأنها ما ظهرت.
+      if (longPressFired) { e.preventDefault(); }
+    }, { passive: false });
     fresh.addEventListener('touchcancel', () => {
       clearTimeout(pressTimer);
       fresh.classList.remove('dragging-active');
-    });
-
-    // نقرة عادية بالكمبيوتر (إن جاءت من جهاز يدعم اللمس والماوس معاً) تفتح القائمة أيضاً
-    fresh.addEventListener('click', () => {
-      const row = fresh.closest('tr[data-hid]');
-      if (!row) return;
-      const hid = parseInt(row.getAttribute('data-hid'));
-      const hname = row.getAttribute('data-hname') || '';
-      _hrmOpenMenu(hid, hname);
     });
   });
 }
