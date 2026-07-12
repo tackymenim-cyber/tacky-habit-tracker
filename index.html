@@ -2553,15 +2553,17 @@ table { border-collapse: collapse; min-width: 100%; }
   display: flex; align-items: center; line-height: 1;
   letter-spacing: -1px; touch-action: none; position: relative; z-index: 2;
 }
-.drag-handle:active { cursor: grabbing; color: #8b5cf6; }
-.drag-handle:hover { color: #8b5cf6; }
-.qt-item:hover .drag-handle,
-.task-item:hover .drag-handle { opacity: 0.7; }
-/* مسكة السحب في جدول العادات تظهر دائماً */
-.habit-row .drag-handle.habit-drag-handle {
-  opacity: 0.35;
+/* زر تغيير الترتيب في جدول العادات — زر عادي بضغطة واحدة، ما يعتمد على سحب أو ضغط مطول */
+.habit-reorder-btn {
+  color: var(--text-3); cursor: pointer; font-size: 1rem;
+  padding: 4px 3px; flex-shrink: 0; user-select: none;
+  opacity: 0.35; transition: opacity 0.18s, color 0.18s, background 0.18s;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  letter-spacing: -1px; background: none; border: none; border-radius: 6px;
+  font-family: inherit;
 }
-.habit-row:hover .drag-handle.habit-drag-handle { opacity: 0.7; }
+.habit-row:hover .habit-reorder-btn { opacity: 0.7; }
+.habit-reorder-btn:hover, .habit-reorder-btn:active { color: #8b5cf6; opacity: 1; }
 .qt-item.drag-over { border: 2px dashed #8b5cf6; background: rgba(139,92,246,0.06); border-radius: 16px; }
 .task-item.drag-over { border: 2px dashed var(--blue-400); background: var(--blue-50); border-radius: 6px; }
 .qt-item.dragging { opacity: 0.4; }
@@ -3778,8 +3780,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* مسكة السحب: تظهر دائماً وتعمل باللمس */
   .drag-handle { opacity: 1 !important; font-size: 1.05rem; padding: 6px 5px; color: var(--text-3); touch-action: none; cursor: grab; flex-shrink: 0; }
   .qt-item .drag-handle, .task-item .drag-handle { opacity: 1 !important; }
-  .habit-drag-handle { opacity: 1 !important; display: flex !important; min-width: 32px; min-height: 32px; padding: 6px 6px; justify-content: center; align-items: center; background: var(--blue-50); border-radius: 8px; font-size: 1.2rem !important; }
-  .habit-drag-handle:active, .habit-drag-handle.dragging-active { background: #8b5cf6 !important; color: #fff !important; transform: scale(1.15); }
+  .habit-reorder-btn { opacity: 1 !important; display: flex !important; min-width: 32px; min-height: 32px; padding: 6px 6px; justify-content: center; align-items: center; background: var(--blue-50); border-radius: 8px; font-size: 1.2rem !important; }
+  .habit-reorder-btn:active { background: #8b5cf6 !important; color: #fff !important; transform: scale(1.1); }
   /* مقبض تحكم بعرض عمود اسم العادة */
   .habit-col-resizer {
     position: absolute; top: 0; bottom: 0; left: 0; width: 14px;
@@ -9471,7 +9473,7 @@ function renderTable() {
     html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}" data-hname="${escAttr(h.name)}"><td class="habit-name-cell"><div class="habit-name-inner">
       <button class="del-btn" onclick="deleteHabit(${h.id})" title="${currentLang === 'ar' ? 'حذف' : currentLang === 'fr' ? 'Supprimer' : 'Delete'}">✕</button>
       <button class="edit-btn" onclick="startEditHabit(${h.id})" title="${currentLang === 'ar' ? 'تعديل الاسم' : currentLang === 'fr' ? 'Modifier' : 'Edit name'}">✎</button>
-      <div class="drag-handle habit-drag-handle" title="${currentLang === 'ar' ? 'اسحب لإعادة الترتيب' : currentLang === 'fr' ? 'Glisser pour réorganiser' : 'Drag to reorder'}">⠿</div>
+      <button type="button" class="habit-reorder-btn" onclick="event.stopPropagation();openHabitReorderMenu(${h.id})" title="${currentLang === 'ar' ? 'تغيير الترتيب' : currentLang === 'fr' ? 'Réorganiser' : 'Reorder'}">⠿</button>
       ${streak > 1 ? `<span class="streak-mini">🔥${streak}</span>` : ''}${nameHtml}<span class="habit-emoji">${h.emoji}</span></div></td>`;
     weekGroups.forEach((wg, wi) => {
       const isLastWk = wi === weekGroups.length - 1;
@@ -12745,13 +12747,7 @@ function _hrmOpenMenu(hid, hname) {
   const overlay = document.createElement('div');
   overlay.id = 'hrmOverlay';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99995;background:rgba(15,23,42,0.55);display:flex;align-items:flex-end;justify-content:center;';
-
-  // نتجاهل أول لمسة/نقرة تجي فوراً بعد فتح القائمة — لأن إصبعك لسا واقف
-  // بنفس المكان (فوق الخلفية) لحظة الفتح، ولو ما تجاهلناها بتقفل القائمة
-  // نفسها فوراً وكأنها ما ظهرت أصلاً.
-  const openedAt = Date.now();
   overlay.addEventListener('click', (e) => {
-    if (Date.now() - openedAt < 400) return;
     if (e.target === overlay) _hrmCloseMenu();
   });
 
@@ -12769,7 +12765,8 @@ function _hrmOpenMenu(hid, hname) {
     </div>
   `;
   overlay.querySelectorAll('button[data-act]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const act = btn.getAttribute('data-act');
       _hrmCloseMenu();
       if (act !== 'cancel') _hrmMoveHabit(hid, act);
@@ -12783,64 +12780,17 @@ function _hrmCloseMenu() {
   if (el) el.remove();
 }
 
-function setupHabitReorderMenu() {
-  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  if (!isTouchDevice) return; // الكمبيوتر يبقى على السحب المباشر
-  document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
-    const fresh = handle.cloneNode(true);
-    handle.parentNode.replaceChild(fresh, handle);
-    fresh.style.touchAction = 'manipulation';
-
-    let pressTimer = null;
-    let startX = 0, startY = 0;
-    let longPressFired = false;
-    const HOLD_MS = 380;
-    const MOVE_CANCEL_PX = 12;
-
-    fresh.addEventListener('touchstart', e => {
-      const row = fresh.closest('tr[data-hid]');
-      if (!row) return;
-      const t = e.touches[0];
-      startX = t.clientX; startY = t.clientY;
-      longPressFired = false;
-      clearTimeout(pressTimer);
-      fresh.classList.add('dragging-active');
-      pressTimer = setTimeout(() => {
-        longPressFired = true;
-        if (navigator.vibrate) { try { navigator.vibrate(20); } catch(err) {} }
-        const hid = parseInt(row.getAttribute('data-hid'));
-        const hname = row.getAttribute('data-hname') || '';
-        _hrmOpenMenu(hid, hname);
-        fresh.classList.remove('dragging-active');
-      }, HOLD_MS);
-    }, { passive: true });
-
-    fresh.addEventListener('touchmove', e => {
-      const t = e.touches[0];
-      if (Math.abs(t.clientX - startX) > MOVE_CANCEL_PX || Math.abs(t.clientY - startY) > MOVE_CANCEL_PX) {
-        clearTimeout(pressTimer);
-        fresh.classList.remove('dragging-active');
-      }
-    }, { passive: true });
-
-    fresh.addEventListener('touchend', e => {
-      clearTimeout(pressTimer);
-      fresh.classList.remove('dragging-active');
-      // امنعي الحدث المُصنَّع click اللي يجي بعد رفع الإصبع مباشرة — لأنه
-      // يقع فوق القائمة المفتوحة حديثاً ويقفلها فوراً وكأنها ما ظهرت.
-      if (longPressFired) { e.preventDefault(); }
-    }, { passive: false });
-    fresh.addEventListener('touchcancel', () => {
-      clearTimeout(pressTimer);
-      fresh.classList.remove('dragging-active');
-    });
-  });
+// زر تغيير الترتيب — ضغطة واحدة عادية (onclick)، ما تعتمد على سحب أو
+// ضغط مطول أو أي كشف إيماءة معقد. تشتغل بنفس الطريقة على الكمبيوتر والهاتف.
+function openHabitReorderMenu(hid) {
+  const h = habits.find(x => x.id === hid);
+  _hrmOpenMenu(hid, h ? h.name : '');
 }
 
 function setupTouchDragDrop() {
-  // جدول العادات: على الهاتف تفتح قائمة اختيار الترتيب بالضغط المطول على ⠿،
-  // وعلى الكمبيوتر يبقى السحب المباشر العادي (setupHabitDragDrop) شغال.
-  setupHabitReorderMenu();
+  // جدول العادات: زر ⠿ ثابت بضغطة واحدة (onclick="openHabitReorderMenu(...)"
+  // في الـ HTML مباشرة) — ما يحتاج أي إعداد هنا، يشتغل بنفس الطريقة على
+  // كل الأجهزة والمتصفحات بدون كشف إيماءات لمس.
 
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
