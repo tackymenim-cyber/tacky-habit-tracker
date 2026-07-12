@@ -12813,6 +12813,9 @@ function setupHabitPointerDrag() {
 function setupTouchDragDrop() {
     // ===== HABIT DRAG - نظام جديد يعمل على الهاتف =====
     document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
+    // تأكد من أن المقبض موجود ويعمل
+    const newHandle = handle.cloneNode(true);
+    handle.parentNode.replaceChild(newHandle, handle);
         const newHandle = handle.cloneNode(true);
         handle.parentNode.replaceChild(newHandle, handle);
         
