@@ -9633,14 +9633,21 @@ function _scrollTableToToday(force) {
   const headerCell = document.querySelector('.table-wrap th.today-th');
   if (!wrap || !headerCell) return;
 
+  const isFirstScroll = !_tableScrolledOnce;
   _tableScrolledOnce = true;
 
+  // Wait two frames so the table has fully laid out (widths/scrollWidth settled)
+  // before measuring — a single rAF right after innerHTML can still read stale sizes.
   requestAnimationFrame(() => {
-    const wrapRect = wrap.getBoundingClientRect();
-    const cellRect = headerCell.getBoundingClientRect();
-    // Center today's column within the visible scroll area
-    const offset = (cellRect.left - wrapRect.left) - (wrapRect.width / 2) + (cellRect.width / 2);
-    wrap.scrollBy({ left: offset, behavior: 'smooth' });
+    requestAnimationFrame(() => {
+      const wrapRect = wrap.getBoundingClientRect();
+      const cellRect = headerCell.getBoundingClientRect();
+      // Center today's column within the visible scroll area
+      const offset = (cellRect.left - wrapRect.left) - (wrapRect.width / 2) + (cellRect.width / 2);
+      // On first load, jump instantly (no visible scrolling animation on open).
+      // On manual re-trigger (force), animate smoothly.
+      wrap.scrollBy({ left: offset, behavior: isFirstScroll && !force ? 'auto' : 'smooth' });
+    });
   });
 }
 
