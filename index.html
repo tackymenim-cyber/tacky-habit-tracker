@@ -9649,8 +9649,11 @@ function _scrollTableToToday(force) {
       const stickyW = stickyCol ? stickyCol.getBoundingClientRect().width : 0;
       const visibleLeft = wrapRect.left;
       const visibleWidth = wrapRect.width - stickyW;
-      // Center today's column within the visible (non-sticky) scroll area
-      const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
+      // Place today's column right next to the sticky habit-name column
+      // (hugging its edge) instead of centering it in the middle of the screen —
+      // this is the default position the user should see when opening the app.
+      const edgeGap = 4; // small breathing room between today's cell and the name column
+      const offset = (cellRect.left - visibleLeft) - (visibleWidth - cellRect.width - edgeGap);
       // On first load, jump instantly (no visible scrolling animation on open).
       // On manual re-trigger (force), animate smoothly.
       wrap.scrollBy({ left: offset, behavior: isFirstScroll && !force ? 'auto' : 'smooth' });
