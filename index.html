@@ -1838,7 +1838,6 @@ table { border-collapse: collapse; min-width: 100%; }
 [data-theme="dark"] .habit-row td { border-bottom-color: rgba(42,51,82,0.7); }
 .habit-row td.habit-name-cell {
   text-align: right; padding: 0 8px 0 20px;
-  position: sticky; right: 0;
   background: var(--white); z-index: 2;
   box-shadow: -2px 0 8px rgba(59,130,246,0.06);
   white-space: nowrap;
@@ -12811,116 +12810,12 @@ function setupHabitPointerDrag() {
 }
 
 function setupTouchDragDrop() {
-    // ===== HABIT DRAG =====
-    document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
-        const newHandle = handle.cloneNode(true);
-        handle.parentNode.replaceChild(newHandle, handle);
-        
-        let ghost = null, sourceRow = null, sourceId = null;
-        let allRows = [], moved = false, active = false, activeTouchId = null;
-        
-        function buildGhost(row, touch) {
-            const nameEl = row.querySelector('.habit-text');
-            const emojiEl = row.querySelector('.habit-emoji');
-            const g = document.createElement('div');
-            g.innerHTML = `<span style="font-size:1.2rem;">${emojiEl ? emojiEl.textContent.trim() : '📌'}</span><span style="font-weight:700;">${nameEl ? nameEl.textContent.trim().slice(0,30) : 'عادة'}</span>`;
-            g.style.cssText = `position:fixed;z-index:999999;opacity:0.95;pointer-events:none;display:flex;align-items:center;gap:8px;background:var(--white,#fff);border:2px solid #8b5cf6;border-radius:14px;padding:10px 16px;font-size:0.85rem;font-weight:700;box-shadow:0 10px 28px -8px rgba(124,58,237,0.5);max-width:220px;min-width:80px;min-height:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Tajawal',sans-serif;color:var(--text,#1e293b);transform:rotate(-2deg) scale(1.03);left:${touch.clientX - 20}px;top:${touch.clientY - 16}px;`;
-            document.body.appendChild(g);
-            return g;
-        }
-        
-        function findClosestRow(clientY) {
-            let closest = null, closestDist = Infinity;
-            allRows.forEach(row => {
-                if (row === sourceRow) return;
-                const rect = row.getBoundingClientRect();
-                const dist = Math.abs((rect.top + rect.height/2) - clientY);
-                if (clientY >= rect.top - 4 && clientY <= rect.bottom + 4 && dist < closestDist) {
-                    closestDist = dist;
-                    closest = row;
-                }
-            });
-            return closest;
-        }
-        
-        function onTouchMove(e) {
-            if (!active) return;
-            let touch = null;
-            for (let i = 0; i < e.touches.length; i++) {
-                if (e.touches[i].identifier === activeTouchId) {
-                    touch = e.touches[i];
-                    break;
-                }
-            }
-            if (!touch) return;
-            e.preventDefault();
-            moved = true;
-            if (ghost) {
-                ghost.style.left = (touch.clientX - 20) + 'px';
-                ghost.style.top = (touch.clientY - 16) + 'px';
-            }
-            document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
-            const closest = findClosestRow(touch.clientY);
-            if (closest) closest.classList.add('drag-over-touch');
-        }
-        
-        function finishDrag() {
-            if (newHandle) newHandle.classList.remove('dragging-active');
-            if (ghost) { ghost.remove(); ghost = null; }
-            if (sourceRow) sourceRow.classList.remove('dragging');
-            const target = document.querySelector('.drag-over-touch');
-            document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
-            
-            if (moved && target && sourceId !== null) {
-                const targetId = parseInt(target.getAttribute('data-hid'));
-                if (!isNaN(targetId) && targetId !== sourceId) {
-                    const fromIdx = habits.findIndex(h => h.id === sourceId);
-                    const toIdx = habits.findIndex(h => h.id === targetId);
-                    if (fromIdx !== -1 && toIdx !== -1) {
-                        const [movedHabit] = habits.splice(fromIdx, 1);
-                        habits.splice(toIdx, 0, movedHabit);
-                        save();
-                        renderAll();
-                    }
-                }
-            }
-            
-            document.removeEventListener('touchmove', onTouchMove, { passive: false });
-            document.removeEventListener('touchend', finishDrag);
-            document.removeEventListener('touchcancel', finishDrag);
-            
-            sourceId = null;
-            sourceRow = null;
-            allRows = [];
-            moved = false;
-            active = false;
-            activeTouchId = null;
-        }
-        
-        newHandle.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            newHandle.classList.add('dragging-active');
-            sourceRow = newHandle.closest('tr[data-hid]');
-            if (!sourceRow) {
-                newHandle.classList.remove('dragging-active');
-                return;
-            }
-            sourceId = parseInt(sourceRow.getAttribute('data-hid'));
-            moved = false;
-            active = true;
-            const touch = e.touches[0];
-            activeTouchId = touch.identifier;
-            sourceRow.classList.add('dragging');
-            const container = sourceRow.parentElement;
-            allRows = container ? Array.from(container.querySelectorAll('tr[data-hid]')) : [];
-            ghost = buildGhost(sourceRow, touch);
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
-            document.addEventListener('touchend', finishDrag);
-            document.addEventListener('touchcancel', finishDrag);
-        }, { passive: false });
-    });
-  
+  // جدول العادات: نظام مستقل بالكامل يعتمد على Pointer Events (pointerdown/
+  // pointermove/pointerup) بدل touch events الخام. هذا API موحّد يغطي
+  // اللمس والماوس والقلم معاً وأكثر موثوقية داخل عناصر الجدول من touch
+  // events التقليدية على متصفحات الهاتف.
+  setupHabitPointerDrag();
+
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
     const fresh = handle.cloneNode(true);
