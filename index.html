@@ -1856,18 +1856,33 @@ table { border-collapse: collapse; min-width: 100%; }
   position: sticky; right: 0;
   background-color: var(--white); opacity: 1; isolation: isolate;
   z-index: 5;
-  box-shadow: -2px 0 8px rgba(59,130,246,0.06);
+  border-left: 1px solid var(--border);
   white-space: nowrap;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .habit-row:hover td.habit-name-cell { background: var(--blue-50); }
 .week-header-row th.habit-col,
 .daynum-row th.habit-col {
   position: sticky; right: 0; background-color: var(--white); z-index: 5;
-  box-shadow: -2px 0 8px rgba(59,130,246,0.06);
+  border-left: 1px solid var(--border);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .prog-row td.label {
   position: sticky; right: 0; background: var(--bg); z-index: 2;
-  box-shadow: -2px 0 8px rgba(59,130,246,0.06);
+  border-left: 1px solid var(--border);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .habit-name-inner { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
 .habit-emoji { font-size: 1rem; }
@@ -9655,6 +9670,13 @@ function _scrollTableToToday(force) {
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(realign).catch(() => {});
       if (document.readyState !== 'complete') window.addEventListener('load', realign, { once: true });
       else setTimeout(realign, 150);
+
+      // Things like the achievement/badge toast can pop in a moment after
+      // load and shift layout again. Keep correcting for a short window so
+      // the table can't end up drifted away from today's column by then.
+      if (isFirstScroll) {
+        [400, 900, 1500, 2500].forEach(t => setTimeout(realign, t));
+      }
     });
   });
 }
