@@ -12538,70 +12538,68 @@ function _addTouchDrag(handle, rowSelector, getId, onDrop) {
   let _sourceId = null;
   let _sourceRow = null;
   let _allRows = [];
-  let _startY = 0;
   let _moved = false;
+  let _active = false;
+  let _activeTouchId = null;
 
-  handle.addEventListener('touchstart', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    handle.classList.add('dragging-active');
-    _sourceRow = handle.closest(rowSelector);
-    if (!_sourceRow) return;
-    _sourceId = getId(_sourceRow);
-    _moved = false;
-    _startY = e.touches[0].clientY;
-    _sourceRow.classList.add('dragging');
-
-    // كل الصفوف من نفس النوع (لإيجاد أقرب واحد أثناء السحب)
-    const container = _sourceRow.parentElement;
-    _allRows = container ? Array.from(container.querySelectorAll(rowSelector)) : [];
-
-    // عنصر شبح بسيط وآمن (مش استنساخ tr يتيم خارج الجدول)
-    const rect = _sourceRow.getBoundingClientRect();
-    _ghost = document.createElement('div');
-    _ghost.textContent = (_sourceRow.querySelector('.habit-text, .qt-item-text, .task-text') || _sourceRow).textContent.trim().slice(0, 30);
-    _ghost.style.cssText = `
-      position:fixed; z-index:99999; opacity:0.9; pointer-events:none;
+  function buildGhost(sourceRow, touch) {
+    const nameEl = sourceRow.querySelector('.habit-text, .qt-item-text, .task-text');
+    const nameText = (nameEl || sourceRow).textContent.trim().slice(0, 30);
+    const emojiEl = sourceRow.querySelector('.habit-emoji');
+    const emojiText = emojiEl ? emojiEl.textContent.trim() : '';
+    const g = document.createElement('div');
+    g.innerHTML = `${emojiText ? `<span style="font-size:1.1rem">${emojiText}</span>` : ''}<span>${nameText || '⠿'}</span>`;
+    g.style.cssText = `
+      position:fixed; z-index:99999; opacity:0.95; pointer-events:none;
+      display:flex; align-items:center; gap:8px;
       background:var(--white); border:2px solid #8b5cf6;
-      border-radius:10px; padding:8px 14px; font-size:0.82rem; font-weight:700;
-      box-shadow:0 8px 24px rgba(0,0,0,0.25); max-width:200px;
+      border-radius:14px; padding:10px 16px; font-size:0.85rem; font-weight:700;
+      box-shadow:0 10px 28px -8px rgba(124,58,237,0.5), 0 4px 12px rgba(0,0,0,0.15);
+      max-width:220px; min-width:80px; min-height:22px;
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
       font-family:'Tajawal',sans-serif; color:var(--text);
-      left:${rect.left}px; top:${rect.top}px;
+      transform: rotate(-2deg) scale(1.03);
+      left:${touch.clientX - 20}px; top:${touch.clientY - 16}px;
     `;
-    document.body.appendChild(_ghost);
-  }, { passive: false });
+    document.body.appendChild(g);
+    return g;
+  }
 
-  handle.addEventListener('touchmove', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!_ghost || !_sourceRow) return;
-    _moved = true;
-    const t = e.touches[0];
-    _ghost.style.left = (t.clientX - 20) + 'px';
-    _ghost.style.top  = (t.clientY - 16) + 'px';
-
-    // أقرب صف عمودياً لموضع الإصبع (بدل الاعتماد على العنصر الدقيق تحت الإصبع)
-    document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+  function findClosestRow(clientY) {
     let closest = null, closestDist = Infinity;
     _allRows.forEach(row => {
       if (row === _sourceRow) return;
-      // لصفوف الجدول (<tr>) نقيس على خلية اسم العادة الثابتة (sticky) بدل
-      // الصف كامل — بعض المتصفحات تُرجع أبعاداً غير دقيقة لـ getBoundingClientRect
-      // على <tr> داخل جدول قابل للتمرير أفقياً.
       const measureEl = row.querySelector ? (row.querySelector('.habit-name-cell') || row) : row;
       const r = measureEl.getBoundingClientRect();
       const cy = r.top + r.height / 2;
-      const d = Math.abs(cy - t.clientY);
-      if (d < closestDist && t.clientY >= r.top - 4 && t.clientY <= r.bottom + 4) {
+      const d = Math.abs(cy - clientY);
+      if (d < closestDist && clientY >= r.top - 4 && clientY <= r.bottom + 4) {
         closestDist = d; closest = row;
       }
     });
-    if (closest) closest.classList.add('drag-over-touch');
-  }, { passive: false });
+    return closest;
+  }
 
-  handle.addEventListener('touchend', e => {
-    handle.classList.remove('dragging-active');
+  function onDocMove(e) {
+    if (!_active) return;
+    let touch = null;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === _activeTouchId) { touch = e.touches[i]; break; }
+    }
+    if (!touch) return;
+    e.preventDefault();
+    _moved = true;
+    if (_ghost) {
+      _ghost.style.left = (touch.clientX - 20) + 'px';
+      _ghost.style.top  = (touch.clientY - 16) + 'px';
+    }
+    document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
+    const closest = findClosestRow(touch.clientY);
+    if (closest) closest.classList.add('drag-over-touch');
+  }
+
+  function finishDrag() {
+    if (handle) handle.classList.remove('dragging-active');
     if (_ghost) { _ghost.remove(); _ghost = null; }
     if (_sourceRow) _sourceRow.classList.remove('dragging');
 
@@ -12614,8 +12612,49 @@ function _addTouchDrag(handle, rowSelector, getId, onDrop) {
         onDrop(_sourceId, targetId);
       }
     }
+    document.removeEventListener('touchmove', onDocMove, { passive: false });
+    document.removeEventListener('touchend', onDocEnd);
+    document.removeEventListener('touchcancel', onDocEnd);
     _sourceId = null; _sourceRow = null; _allRows = []; _moved = false;
-  });
+    _active = false; _activeTouchId = null;
+  }
+
+  function onDocEnd(e) {
+    // تأكد إن هذا اللمس المنتهي هو نفسه الذي بدأ السحب
+    let stillDown = false;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === _activeTouchId) { stillDown = true; break; }
+    }
+    if (stillDown) return;
+    finishDrag();
+  }
+
+  // نستمع على document لـ touchmove/touchend بدل المقبض نفسه — هذا يتجنب
+  // أي تعارض بخصوص توجيه أحداث اللمس داخل عناصر الجدول (<tr>/<td>) على
+  // بعض متصفحات الهاتف، ويمنع فقدان السحب لو تحرك الإصبع خارج المقبض
+  // الصغير أثناء السحب.
+  handle.addEventListener('touchstart', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    handle.classList.add('dragging-active');
+    _sourceRow = handle.closest(rowSelector);
+    if (!_sourceRow) { handle.classList.remove('dragging-active'); return; }
+    _sourceId = getId(_sourceRow);
+    _moved = false;
+    _active = true;
+    const touch = e.touches[0];
+    _activeTouchId = touch.identifier;
+    _sourceRow.classList.add('dragging');
+
+    const container = _sourceRow.parentElement;
+    _allRows = container ? Array.from(container.querySelectorAll(rowSelector)) : [];
+
+    _ghost = buildGhost(_sourceRow, touch);
+
+    document.addEventListener('touchmove', onDocMove, { passive: false });
+    document.addEventListener('touchend', onDocEnd);
+    document.addEventListener('touchcancel', onDocEnd);
+  }, { passive: false });
 }
 
 // =========== HABIT NAME COLUMN — USER-RESIZABLE WIDTH ===========
