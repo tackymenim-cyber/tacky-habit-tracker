@@ -9468,7 +9468,7 @@ function renderTable() {
     for (let d = sd; d >= 1; d--) { if (isFuture(d)) continue; if (!isHabitActiveOn(h, d)) continue; if (checks[chkKey(h.id, d)]) streak++;
       else break; }
     const nameHtml = `<span class="habit-text" title="${escAttr(h.name)}" ondblclick="startEditHabit(${h.id})">${escAttr(h.name)}</span>`;
-    html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}"><td class="habit-name-cell"><div class="habit-name-inner">
+    html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}" data-hname="${escAttr(h.name)}"><td class="habit-name-cell"><div class="habit-name-inner">
       <button class="del-btn" onclick="deleteHabit(${h.id})" title="${currentLang === 'ar' ? 'حذف' : currentLang === 'fr' ? 'Supprimer' : 'Delete'}">✕</button>
       <button class="edit-btn" onclick="startEditHabit(${h.id})" title="${currentLang === 'ar' ? 'تعديل الاسم' : currentLang === 'fr' ? 'Modifier' : 'Edit name'}">✎</button>
       <div class="drag-handle habit-drag-handle" title="${currentLang === 'ar' ? 'اسحب لإعادة الترتيب' : currentLang === 'fr' ? 'Glisser pour réorganiser' : 'Drag to reorder'}">⠿</div>
@@ -12708,114 +12708,134 @@ function setupHabitColResizer() {
   document.addEventListener('mouseup', end);
 }
 
-// =========== HABIT DRAG — POINTER EVENTS (مستقل تماماً) ===========
-function setupHabitPointerDrag() {
-  // الكمبيوتر يستخدم نظام السحب الأصلي (setupHabitDragDrop) اللي يشتغل
-  // تمام بالماوس أصلاً — هذا النظام هنا خاص بأجهزة اللمس فقط لتفادي أي
-  // تعارض بين النظامين على الكمبيوتر.
+// =========== HABIT REORDER — MOBILE LONG-PRESS MENU ===========
+// السحب المباشر ما اشتغل بثبات على الهواتف داخل الجدول. بدلاً منه: اضغطي
+// مطولاً على رمز ⠿ فتطلع قائمة اختيار سريعة (أعلى، أسفل، الأول، الأخير).
+// الكمبيوتر يبقى يستخدم السحب المباشر العادي (setupHabitDragDrop) لأنه
+// يعمل تمام بالماوس.
+let _hrmTimer = null;
+let _hrmActive = false;
+
+function _hrmMoveHabit(hid, action) {
+  const idx = habits.findIndex(h => h.id === hid);
+  if (idx === -1) return;
+  let newIdx = idx;
+  if (action === 'up')     newIdx = Math.max(0, idx - 1);
+  if (action === 'down')   newIdx = Math.min(habits.length - 1, idx + 1);
+  if (action === 'first')  newIdx = 0;
+  if (action === 'last')   newIdx = habits.length - 1;
+  if (newIdx === idx) return;
+  const [moved] = habits.splice(idx, 1);
+  habits.splice(newIdx, 0, moved);
+  save();
+  renderAll();
+}
+
+function _hrmOpenMenu(hid, hname) {
+  _hrmCloseMenu();
+  const idx = habits.findIndex(h => h.id === hid);
+  const isFirst = idx <= 0;
+  const isLast = idx >= habits.length - 1;
+  const tr = {
+    ar: { title: 'ترتيب', up: '⬆️ لفوق', down: '⬇️ لتحت', first: '⏫ الأول', last: '⏬ الأخير', cancel: 'إلغاء' },
+    fr: { title: 'Réorganiser', up: '⬆️ Monter', down: '⬇️ Descendre', first: '⏫ Premier', last: '⏬ Dernier', cancel: 'Annuler' },
+    en: { title: 'Reorder', up: '⬆️ Move up', down: '⬇️ Move down', first: '⏫ Move to top', last: '⏬ Move to bottom', cancel: 'Cancel' }
+  }[currentLang] || { title: 'ترتيب', up: '⬆️ لفوق', down: '⬇️ لتحت', first: '⏫ الأول', last: '⏬ الأخير', cancel: 'إلغاء' };
+
+  const overlay = document.createElement('div');
+  overlay.id = 'hrmOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99995;background:rgba(15,23,42,0.55);display:flex;align-items:flex-end;justify-content:center;';
+  overlay.onclick = (e) => { if (e.target === overlay) _hrmCloseMenu(); };
+
+  const btnStyle = 'width:100%;padding:14px;border:none;border-bottom:1px solid var(--border);background:var(--white);color:var(--text);font-family:\'Tajawal\',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:center;';
+  const disabledStyle = 'opacity:0.35;pointer-events:none;';
+
+  overlay.innerHTML = `
+    <div style="width:100%;max-width:480px;background:var(--white);border-radius:16px 16px 0 0;overflow:hidden;box-shadow:0 -8px 30px rgba(0,0,0,0.3);">
+      <div style="padding:14px;text-align:center;font-weight:800;color:var(--text-3);font-size:0.8rem;border-bottom:1px solid var(--border);">${tr.title}: ${escAttr(hname)}</div>
+      <button style="${btnStyle}${isFirst ? disabledStyle : ''}" data-act="up">${tr.up}</button>
+      <button style="${btnStyle}${isLast ? disabledStyle : ''}" data-act="down">${tr.down}</button>
+      <button style="${btnStyle}${isFirst ? disabledStyle : ''}" data-act="first">${tr.first}</button>
+      <button style="${btnStyle}${isLast ? disabledStyle : ''}" data-act="last">${tr.last}</button>
+      <button style="${btnStyle}color:var(--text-3);font-weight:600;" data-act="cancel">${tr.cancel}</button>
+    </div>
+  `;
+  overlay.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const act = btn.getAttribute('data-act');
+      _hrmCloseMenu();
+      if (act !== 'cancel') _hrmMoveHabit(hid, act);
+    });
+  });
+  document.body.appendChild(overlay);
+}
+
+function _hrmCloseMenu() {
+  const el = document.getElementById('hrmOverlay');
+  if (el) el.remove();
+}
+
+function setupHabitReorderMenu() {
   const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  if (!isTouchDevice) return;
+  if (!isTouchDevice) return; // الكمبيوتر يبقى على السحب المباشر
   document.querySelectorAll('.habit-row .habit-drag-handle').forEach(handle => {
     const fresh = handle.cloneNode(true);
     handle.parentNode.replaceChild(fresh, handle);
+    fresh.style.touchAction = 'manipulation';
 
-    let sourceRow = null, sourceId = null, allRows = [], ghost = null, moved = false, pid = null;
+    let pressTimer = null;
+    let startX = 0, startY = 0;
+    const HOLD_MS = 380;
+    const MOVE_CANCEL_PX = 12;
 
-    fresh.style.touchAction = 'none';
-
-    fresh.addEventListener('pointerdown', e => {
-      e.preventDefault();
-      sourceRow = fresh.closest('tr[data-hid]');
-      if (!sourceRow) return;
-      sourceId = parseInt(sourceRow.getAttribute('data-hid'));
-      moved = false;
-      pid = e.pointerId;
-      try { fresh.setPointerCapture(pid); } catch(err) {}
+    fresh.addEventListener('touchstart', e => {
+      const row = fresh.closest('tr[data-hid]');
+      if (!row) return;
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY;
+      clearTimeout(pressTimer);
       fresh.classList.add('dragging-active');
-      sourceRow.classList.add('dragging');
+      pressTimer = setTimeout(() => {
+        if (navigator.vibrate) { try { navigator.vibrate(20); } catch(err) {} }
+        const hid = parseInt(row.getAttribute('data-hid'));
+        const hname = row.getAttribute('data-hname') || '';
+        _hrmOpenMenu(hid, hname);
+        fresh.classList.remove('dragging-active');
+      }, HOLD_MS);
+    }, { passive: true });
 
-      const container = sourceRow.parentElement;
-      allRows = container ? Array.from(container.querySelectorAll('tr[data-hid]')) : [];
-
-      const nameEl = sourceRow.querySelector('.habit-text');
-      const emojiEl = sourceRow.querySelector('.habit-emoji');
-      ghost = document.createElement('div');
-      ghost.innerHTML = `${emojiEl ? `<span style="font-size:1.1rem">${emojiEl.textContent.trim()}</span>` : ''}<span>${nameEl ? nameEl.textContent.trim().slice(0,30) : '⠿'}</span>`;
-      ghost.style.cssText = `
-        position:fixed; z-index:99999; opacity:0.95; pointer-events:none;
-        display:flex; align-items:center; gap:8px;
-        background:var(--white); border:2px solid #8b5cf6;
-        border-radius:14px; padding:10px 16px; font-size:0.85rem; font-weight:700;
-        box-shadow:0 10px 28px -8px rgba(124,58,237,0.5), 0 4px 12px rgba(0,0,0,0.15);
-        max-width:220px; min-width:80px; min-height:22px;
-        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-        font-family:'Tajawal',sans-serif; color:var(--text);
-        transform: rotate(-2deg) scale(1.03);
-        left:${e.clientX - 20}px; top:${e.clientY - 16}px;
-      `;
-      document.body.appendChild(ghost);
-    });
-
-    fresh.addEventListener('pointermove', e => {
-      if (e.pointerId !== pid || !sourceRow) return;
-      e.preventDefault();
-      moved = true;
-      if (ghost) {
-        ghost.style.left = (e.clientX - 20) + 'px';
-        ghost.style.top  = (e.clientY - 16) + 'px';
+    fresh.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      if (Math.abs(t.clientX - startX) > MOVE_CANCEL_PX || Math.abs(t.clientY - startY) > MOVE_CANCEL_PX) {
+        clearTimeout(pressTimer);
+        fresh.classList.remove('dragging-active');
       }
-      document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
-      let closest = null, closestDist = Infinity;
-      allRows.forEach(row => {
-        if (row === sourceRow) return;
-        const measureEl = row.querySelector('.habit-name-cell') || row;
-        const r = measureEl.getBoundingClientRect();
-        const cy = r.top + r.height / 2;
-        const d = Math.abs(cy - e.clientY);
-        if (d < closestDist && e.clientY >= r.top - 4 && e.clientY <= r.bottom + 4) {
-          closestDist = d; closest = row;
-        }
-      });
-      if (closest) closest.classList.add('drag-over-touch');
-    });
+    }, { passive: true });
 
-    function finish(e) {
-      if (e.pointerId !== pid) return;
+    fresh.addEventListener('touchend', () => {
+      clearTimeout(pressTimer);
       fresh.classList.remove('dragging-active');
-      if (ghost) { ghost.remove(); ghost = null; }
-      if (sourceRow) sourceRow.classList.remove('dragging');
-      try { fresh.releasePointerCapture(pid); } catch(err) {}
+    });
+    fresh.addEventListener('touchcancel', () => {
+      clearTimeout(pressTimer);
+      fresh.classList.remove('dragging-active');
+    });
 
-      const target = document.querySelector('.drag-over-touch');
-      document.querySelectorAll('.drag-over-touch').forEach(x => x.classList.remove('drag-over-touch'));
-
-      if (moved && target && sourceId !== null) {
-        const targetId = parseInt(target.getAttribute('data-hid'));
-        if (!isNaN(targetId) && targetId !== sourceId) {
-          const fromIdx = habits.findIndex(h => h.id === sourceId);
-          const toIdx   = habits.findIndex(h => h.id === targetId);
-          if (fromIdx !== -1 && toIdx !== -1) {
-            const [movedHabit] = habits.splice(fromIdx, 1);
-            habits.splice(toIdx, 0, movedHabit);
-            save();
-            renderAll();
-          }
-        }
-      }
-      sourceRow = null; sourceId = null; allRows = []; moved = false; pid = null;
-    }
-
-    fresh.addEventListener('pointerup', finish);
-    fresh.addEventListener('pointercancel', finish);
+    // نقرة عادية بالكمبيوتر (إن جاءت من جهاز يدعم اللمس والماوس معاً) تفتح القائمة أيضاً
+    fresh.addEventListener('click', () => {
+      const row = fresh.closest('tr[data-hid]');
+      if (!row) return;
+      const hid = parseInt(row.getAttribute('data-hid'));
+      const hname = row.getAttribute('data-hname') || '';
+      _hrmOpenMenu(hid, hname);
+    });
   });
 }
 
 function setupTouchDragDrop() {
-  // جدول العادات: نظام مستقل بالكامل يعتمد على Pointer Events (pointerdown/
-  // pointermove/pointerup) بدل touch events الخام. هذا API موحّد يغطي
-  // اللمس والماوس والقلم معاً وأكثر موثوقية داخل عناصر الجدول من touch
-  // events التقليدية على متصفحات الهاتف.
-  setupHabitPointerDrag();
+  // جدول العادات: على الهاتف تفتح قائمة اختيار الترتيب بالضغط المطول على ⠿،
+  // وعلى الكمبيوتر يبقى السحب المباشر العادي (setupHabitDragDrop) شغال.
+  setupHabitReorderMenu();
 
   // مهام الأسبوع
   document.querySelectorAll('.task-item .drag-handle').forEach(handle => {
