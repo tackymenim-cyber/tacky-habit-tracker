@@ -1120,7 +1120,6 @@ body {
   font-family: 'Tajawal', sans-serif;
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
-  overflow-x: hidden;
   max-width: 100%;
 }
 
@@ -1407,12 +1406,19 @@ body.auth-active {
   box-shadow: var(--shadow-sm);
   transition: background 0.3s, border-color 0.3s;
 }
-/* تثبيت الشريط العلوي أثناء التمرير — إعداد اختياري، كمبيوتر فقط */
-body[data-sticky-topnav="true"] .topnav {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 500 !important;
-  width: 100%;
+/* الوضع الافتراضي على الكمبيوتر: الشريط العلوي ثابت (sticky) */
+@media (min-width: 601px) {
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    width: 100%;
+  }
+  /* عند تفعيل الخاصية من الإعدادات: يصبح الشريط متحركاً مع الصفحة (كمبيوتر فقط) */
+  body[data-sticky-topnav="true"] .topnav {
+    position: relative !important;
+    top: auto !important;
+  }
 }
 
 .nav-logo { display: flex; align-items: center; gap: 10px; }
@@ -5455,8 +5461,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-blue">📌</div>
           <div>
-            <div class="settings-item-label" id="stickyTopnavLabel">تثبيت الشريط العلوي</div>
-            <div class="settings-item-desc" id="stickyTopnavDesc">إبقاء الشريط العلوي ثابتاً أثناء التمرير (كمبيوتر فقط)</div>
+            <div class="settings-item-label" id="stickyTopnavLabel">تحريك الشريط العلوي</div>
+            <div class="settings-item-desc" id="stickyTopnavDesc">جعل الشريط العلوي يتحرك مع الصفحة بدل أن يبقى ثابتاً (كمبيوتر فقط)</div>
           </div>
         </div>
         <label class="toggle">
@@ -6169,7 +6175,7 @@ const T = {
     themePickLabel: 'ثيم التطبيق', themePickDesc: 'اختر لوحة ألوان كاملة للواجهة', themePopupTitle: '🖼️ اختر ثيم التطبيق',
     quotesTabLabel: 'خانة الاقتباسات', quotesTabDesc: 'إظهار أو إخفاء تبويب الاقتباسات',
     stickyHeaderLabel: 'تثبيت رأس الجدول', stickyHeaderDesc: 'إبقاء صف الأيام ثابتاً أعلى الشاشة أثناء التمرير',
-    stickyTopnavLabel: 'تثبيت الشريط العلوي', stickyTopnavDesc: 'إبقاء الشريط العلوي ثابتاً أثناء التمرير (كمبيوتر فقط)',
+    stickyTopnavLabel: 'تحريك الشريط العلوي', stickyTopnavDesc: 'جعل الشريط العلوي يتحرك مع الصفحة بدل أن يبقى ثابتاً (كمبيوتر فقط)',
     journalTabLabel: 'خانة اليوميات', journalTabDesc: 'سجّل أفكارك وانعكاساتك اليومية',
     // JOURNAL PAGE
     journalHeaderSub: 'سجّل أفكارك وانعكاساتك اليومية — مكانك الخاص',
@@ -6554,7 +6560,7 @@ const T = {
     themePickLabel: "Thème de l'app", themePickDesc: "Choisis une palette de couleurs complète", themePopupTitle: "🖼️ Choisir un thème",
     quotesTabLabel: 'Onglet citations', quotesTabDesc: "Afficher ou masquer l'onglet citations",
     stickyHeaderLabel: "Fixer l'en-tête du tableau", stickyHeaderDesc: 'Garder la ligne des jours fixe en haut pendant le défilement',
-    stickyTopnavLabel: "Fixer la barre du haut", stickyTopnavDesc: 'Garder la barre de navigation fixe pendant le défilement (ordinateur uniquement)',
+    stickyTopnavLabel: "Barre du haut mobile", stickyTopnavDesc: 'Faire défiler la barre du haut avec la page au lieu de la fixer (ordinateur uniquement)',
     journalTabLabel: 'Onglet journal', journalTabDesc: 'Note tes pensées et réflexions quotidiennes',
     // JOURNAL PAGE
     journalHeaderSub: 'Note tes pensées et réflexions quotidiennes — ton espace personnel',
@@ -6939,7 +6945,7 @@ const T = {
     themePickLabel: 'App Theme', themePickDesc: 'Choose a full color palette for the interface', themePopupTitle: '🖼️ Choose App Theme',
     quotesTabLabel: 'Quotes Tab', quotesTabDesc: 'Show or hide the quotes tab',
     stickyHeaderLabel: 'Sticky Table Header', stickyHeaderDesc: 'Keep the days row fixed at the top while scrolling',
-    stickyTopnavLabel: 'Sticky Top Bar', stickyTopnavDesc: 'Keep the top navigation bar fixed while scrolling (desktop only)',
+    stickyTopnavLabel: 'Scrollable Top Bar', stickyTopnavDesc: 'Make the top navigation bar scroll with the page instead of staying fixed (desktop only)',
     journalTabLabel: 'Journal Tab', journalTabDesc: 'Record your daily thoughts and reflections',
     // JOURNAL PAGE
     journalHeaderSub: 'Record your thoughts and daily reflections — your personal space',
