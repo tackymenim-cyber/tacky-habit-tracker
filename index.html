@@ -1819,15 +1819,7 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 .week-header-row th.habit-col { text-align: right; padding-right: 20px; min-width: 185px; color: var(--text-3); }
 /* تثبيت رأس الجدول أثناء التمرير — يُفعّل من الإعدادات */
-body[data-sticky-header="true"] .week-header-row th,
-body[data-sticky-header="true"] .daynum-row th {
-  position: sticky;
-  background: var(--white);
-}
-body[data-sticky-header="true"] .week-header-row th { top: 0; z-index: 4; }
-body[data-sticky-header="true"] .daynum-row th { top: var(--week-header-h, 30px); z-index: 4; }
-[data-theme="dark"] body[data-sticky-header="true"] .week-header-row th,
-[data-theme="dark"] body[data-sticky-header="true"] .daynum-row th { background: var(--white); }
+/* تم إلغاء ميزة "تثبيت رأس الجدول" لأنها كانت تجعل صف الأيام يتموضع فوق خانة العادة/اليوم أثناء التمرير */
 .w1-header { background: #eff6ff; color: #1d4ed8; }
 .w2-header { background: #f0fdf4; color: #15803d; }
 .w3-header { background: #fef9c3; color: #a16207; }
@@ -5441,22 +5433,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
         </label>
       </div>
 
-      <!-- STICKY TABLE HEADER -->
-      <div class="settings-item">
-        <div class="settings-item-left">
-          <div class="settings-item-icon sicon-blue">📌</div>
-          <div>
-            <div class="settings-item-label" id="stickyHeaderLabel">تثبيت رأس الجدول</div>
-            <div class="settings-item-desc" id="stickyHeaderDesc">إبقاء صف الأيام ثابتاً أعلى الشاشة أثناء التمرير</div>
-          </div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="stickyHeaderToggle" onchange="setStickyTableHeader(this.checked)">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
 
-      <!-- STICKY TOP NAV BAR (Desktop only) -->
       <div class="settings-item">
         <div class="settings-item-left">
           <div class="settings-item-icon sicon-blue">📌</div>
@@ -9624,6 +9601,14 @@ function renderTable() {
 
 // =========== AUTO-SCROLL TABLE TO TODAY'S COLUMN ===========
 let _tableScrolledOnce = false;
+// Keeps scrollLeft inside the real scrollable range so a stale/early
+// measurement can never push the table past its edges.
+function _clampTableScroll(wrap) {
+  const max = wrap.scrollWidth - wrap.clientWidth;
+  if (max <= 0) return;
+  if (wrap.scrollLeft > 0) wrap.scrollLeft = Math.min(wrap.scrollLeft, max);
+  else if (wrap.scrollLeft < 0) wrap.scrollLeft = Math.max(wrap.scrollLeft, -max);
+}
 function _scrollTableToToday(force) {
   // Only the current month/year has a "today" column to scroll to
   if (curY !== today.getFullYear() || curM !== today.getMonth()) return;
@@ -9636,27 +9621,40 @@ function _scrollTableToToday(force) {
   const isFirstScroll = !_tableScrolledOnce;
   _tableScrolledOnce = true;
 
+  const doAlign = (behavior) => {
+    const wrapRect = wrap.getBoundingClientRect();
+    const cellRect = headerCell.getBoundingClientRect();
+    // The habit-name column is sticky (pinned to the right edge) and always
+    // visible — it isn't part of the scrollable day columns, so exclude its
+    // width from the visible area used to align today's column.
+    const stickyCol = document.querySelector('.table-wrap th.habit-col');
+    const stickyW = stickyCol ? stickyCol.getBoundingClientRect().width : 0;
+    const visibleLeft = wrapRect.left;
+    const visibleWidth = wrapRect.width - stickyW;
+    // Place today's column right next to the sticky habit-name column
+    // (hugging its edge) instead of centering it in the middle of the screen —
+    // this is the default position the user should see when opening the app.
+    const edgeGap = 4; // small breathing room between today's cell and the name column
+    const offset = (cellRect.left - visibleLeft) - (visibleWidth - cellRect.width - edgeGap);
+    wrap.scrollBy({ left: offset, behavior });
+    _clampTableScroll(wrap);
+  };
+
   // Wait two frames so the table has fully laid out (widths/scrollWidth settled)
   // before measuring — a single rAF right after innerHTML can still read stale sizes.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      const wrapRect = wrap.getBoundingClientRect();
-      const cellRect = headerCell.getBoundingClientRect();
-      // The habit-name column is sticky (pinned to the right edge) and always
-      // visible — it isn't part of the scrollable day columns, so exclude its
-      // width from the visible area used to center today's column.
-      const stickyCol = document.querySelector('.table-wrap th.habit-col');
-      const stickyW = stickyCol ? stickyCol.getBoundingClientRect().width : 0;
-      const visibleLeft = wrapRect.left;
-      const visibleWidth = wrapRect.width - stickyW;
-      // Place today's column right next to the sticky habit-name column
-      // (hugging its edge) instead of centering it in the middle of the screen —
-      // this is the default position the user should see when opening the app.
-      const edgeGap = 4; // small breathing room between today's cell and the name column
-      const offset = (cellRect.left - visibleLeft) - (visibleWidth - cellRect.width - edgeGap);
-      // On first load, jump instantly (no visible scrolling animation on open).
-      // On manual re-trigger (force), animate smoothly.
-      wrap.scrollBy({ left: offset, behavior: isFirstScroll && !force ? 'auto' : 'smooth' });
+      doAlign('auto');
+
+      // On a cold page refresh, fonts/images can still shift column widths
+      // after this point, which is what makes the alignment "drift" past the
+      // edge once everything finishes settling. Re-align once more, instantly,
+      // after the page is fully loaded (and after web fonts are ready) to
+      // correct for that late layout shift.
+      const realign = () => requestAnimationFrame(() => requestAnimationFrame(() => doAlign('auto')));
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(realign).catch(() => {});
+      if (document.readyState !== 'complete') window.addEventListener('load', realign, { once: true });
+      else setTimeout(realign, 150);
     });
   });
 }
