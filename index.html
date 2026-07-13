@@ -1858,11 +1858,6 @@ table { border-collapse: collapse; min-width: 100%; }
   z-index: 5;
   border-inline-end: 1px solid var(--border);
   white-space: nowrap;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 [dir="ltr"] .habit-row td.habit-name-cell { right: auto; left: 0; }
 .habit-row:hover td.habit-name-cell { background: var(--blue-50); }
@@ -1870,22 +1865,12 @@ table { border-collapse: collapse; min-width: 100%; }
 .daynum-row th.habit-col {
   position: sticky; right: 0; background-color: var(--white); z-index: 5;
   border-inline-end: 1px solid var(--border);
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 [dir="ltr"] .week-header-row th.habit-col,
 [dir="ltr"] .daynum-row th.habit-col { right: auto; left: 0; }
 .prog-row td.label {
   position: sticky; right: 0; background: var(--bg); z-index: 2;
   border-inline-end: 1px solid var(--border);
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 [dir="ltr"] .prog-row td.label { right: auto; left: 0; }
 .habit-name-inner { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
@@ -3860,11 +3845,6 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     position: sticky; right: 0; z-index: 5;
     background-color: var(--white) !important;
     border-inline-end: 1px solid var(--border);
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
   }
   [dir="ltr"] #moodGridWrap th.mood-time-col,
   [dir="ltr"] #moodGridWrap td.mood-time-col { right: auto; left: 0; }
