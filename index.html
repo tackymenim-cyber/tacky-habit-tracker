@@ -13996,15 +13996,17 @@ const pomoCss = `
   border: 1.5px solid var(--border);
   border-radius: 10px;
   color: var(--text);
-  padding: 9px 12px;
+  padding: 9px 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 1.1rem;
   font-weight: 600;
   outline: none;
   transition: border-color 0.2s;
   text-align: center;
-  width: 70px;
-  min-width: 0;
+  width: 100%;
+  max-width: 90px;
+  min-width: 56px;
+  box-sizing: border-box;
 }
 .pomo-custom-input:focus { border-color: var(--blue-500); }
 .pomo-custom-sep {
@@ -14277,6 +14279,24 @@ const pomoCss = `
 }
 .pomo-finish-btn-secondary:hover { background: var(--bg3); }
 
+/* ---------- SMALL ALERT / CONFIRM POPUP ---------- */
+.pomo-alert-card {
+  max-width: 340px;
+  padding: 28px 24px;
+}
+.pomo-alert-icon {
+  font-size: 2.6rem;
+  display: block;
+  margin-bottom: 10px;
+  animation: pomoBounce 0.5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.pomo-alert-msg {
+  font-size: 0.92rem;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
 /* ---------- OVERTIME BANNER ---------- */
 .pomo-overtime-banner {
   width: 100%;
@@ -14306,14 +14326,6 @@ const pomoCss = `
 }
 
 /* ---------- ANIMATIONS ---------- */
-.pomo-anim-in {
-  animation: pomoFadeUp 0.5s cubic-bezier(.22,1,.36,1) both;
-  animation-delay: calc(var(--pomo-d, 0) * 0.06s);
-}
-@keyframes pomoFadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: none; }
-}
 .pomo-anim-pop {
   animation: pomoBannerIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
 }
@@ -14325,43 +14337,8 @@ const pomoCss = `
 .pomo-mode-btn:active, .pomo-dir-opt:active, .pomo-preset-btn:active, .pomo-btn-sec:active, .pomo-custom-apply:active {
   transform: scale(0.94);
 }
-.pomo-mode-btn.active {
-  animation: pomoPillPop 0.35s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes pomoPillPop {
-  0% { transform: scale(0.9); }
-  60% { transform: scale(1.06); }
-  100% { transform: scale(1); }
-}
 
-/* Clock ring pulse while running */
-.pomo-running .pomo-clock-wrap {
-  animation: pomoClockPulse 2.4s ease-in-out infinite;
-}
-@keyframes pomoClockPulse {
-  0%, 100% { filter: drop-shadow(0 0 0 rgba(var(--pomo-accent-rgb,59,130,246), 0)); }
-  50% { filter: drop-shadow(0 0 18px rgba(var(--pomo-accent-rgb,59,130,246), 0.35)); }
-}
-
-/* Time display tick */
-.pomo-time-display {
-  animation: pomoTimeTick 1s ease-in-out;
-}
-@keyframes pomoTimeTick {
-  0% { opacity: 0.7; transform: scale(0.97); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-/* Warning shake */
-.pomo-warning .pomo-clock-face .pomo-time-display {
-  animation: pomoWarnPulse 1s ease-in-out infinite;
-}
-@keyframes pomoWarnPulse {
-  0%, 100% { color: var(--text); }
-  50% { color: #ef4444; }
-}
-
-/* Log items slide in */
+/* Log items hover */
 .pomo-log-item {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -14715,13 +14692,55 @@ window.pomoSetDirection = function pomoSetDirection(dir) {
   pomoRender();
 }
 
+window.pomoClampInput = function pomoClampInput(el, max) {
+  const val = parseInt(el.value, 10);
+  if (isNaN(val)) return;
+  if (val > max) {
+    el.value = max;
+    if (max === 120 && !pomoClampWarnShown) {
+      pomoClampWarnShown = true;
+      const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+      const msg = lang === 'ar' ? 'الحد الأقصى للوقت هو 120 دقيقة'
+        : lang === 'fr' ? 'La durée maximale est de 120 minutes'
+        : 'The maximum time is 120 minutes';
+      pomoAlert(msg, '⏱️');
+      setTimeout(() => { pomoClampWarnShown = false; }, 800);
+    }
+  } else if (val < 0) {
+    el.value = 0;
+  }
+};
+let pomoClampWarnShown = false;
+
 window.pomoApplyCustom = function pomoApplyCustom() {
   const mEl = document.getElementById('pomoCustMin');
   const sEl = document.getElementById('pomoCustSec');
-  const m = parseInt(mEl ? mEl.value : 0) || 0;
-  const s = parseInt(sEl ? sEl.value : 0) || 0;
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  let m = parseInt(mEl ? mEl.value : 0) || 0;
+  let s = parseInt(sEl ? sEl.value : 0) || 0;
+
+  if (m > 120) {
+    m = 120;
+    if (mEl) mEl.value = 120;
+    const msg = lang === 'ar' ? 'الحد الأقصى للوقت هو 120 دقيقة'
+      : lang === 'fr' ? 'La durée maximale est de 120 minutes'
+      : 'The maximum time is 120 minutes';
+    pomoAlert(msg, '⏱️');
+    return;
+  }
+  if (s > 59) {
+    s = 59;
+    if (sEl) sEl.value = 59;
+  }
+
   const total = m * 60 + s;
-  if (total < 5 || total > 7200) { alert('الوقت يجب أن يكون بين 5 ثوانٍ و120 دقيقة'); return; }
+  if (total < 5) {
+    const msg = lang === 'ar' ? 'الوقت يجب أن يكون 5 ثوانٍ على الأقل'
+      : lang === 'fr' ? 'La durée doit être d\'au moins 5 secondes'
+      : 'The time must be at least 5 seconds';
+    pomoAlert(msg, '⏱️');
+    return;
+  }
   pomoState.totalSecs = total;
   pomoState.elapsed = 0;
   pomoState.running = false;
@@ -14777,13 +14796,13 @@ window.pomoSaveNote = function pomoSaveNote() {
 }
 
 window.pomoClearLog = function pomoClearLog() {
-  const t = pomoT();
   const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
   const confirmMsg = lang === 'ar' ? 'هل تريد مسح سجل الجلسات؟' : lang === 'fr' ? "Voulez-vous effacer l'historique des sessions ?" : 'Do you want to clear the session log?';
-  if (!confirm(confirmMsg)) return;
-  pomoLog = [];
-  pomoSave();
-  pomoRender();
+  pomoConfirm(confirmMsg, () => {
+    pomoLog = [];
+    pomoSave();
+    pomoRender();
+  }, '🗑️');
 }
 
 /* ---------- NOTIFICATIONS ---------- */
@@ -14923,6 +14942,50 @@ window.pomoCloseModal = function(btn, startNew) {
   if (overlay && overlay._closeCallback) overlay._closeCallback(startNew);
 };
 
+/* ---------- SMALL ALERT / CONFIRM POPUP ---------- */
+window.pomoAlert = function pomoAlert(msg, icon) {
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  const okLabel = lang === 'ar' ? 'حسناً ✓' : lang === 'fr' ? "D'accord ✓" : 'OK ✓';
+  const overlay = document.createElement('div');
+  overlay.className = 'pomo-finish-overlay';
+  overlay.innerHTML = `
+    <div class="pomo-finish-card pomo-alert-card">
+      <span class="pomo-alert-icon">${icon || '⚠️'}</span>
+      <div class="pomo-alert-msg">${msg}</div>
+      <div class="pomo-finish-btns">
+        <button class="pomo-finish-btn pomo-finish-btn-primary pomo-alert-ok">${okLabel}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = () => { if (overlay.parentNode) document.body.removeChild(overlay); };
+  overlay.querySelector('.pomo-alert-ok').onclick = close;
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+};
+
+window.pomoConfirm = function pomoConfirm(msg, onYes, icon) {
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  const yesLabel = lang === 'ar' ? 'نعم ✓' : lang === 'fr' ? 'Oui ✓' : 'Yes ✓';
+  const noLabel = lang === 'ar' ? 'إلغاء ×' : lang === 'fr' ? 'Annuler ×' : 'Cancel ×';
+  const overlay = document.createElement('div');
+  overlay.className = 'pomo-finish-overlay';
+  overlay.innerHTML = `
+    <div class="pomo-finish-card pomo-alert-card">
+      <span class="pomo-alert-icon">${icon || '🗑️'}</span>
+      <div class="pomo-alert-msg">${msg}</div>
+      <div class="pomo-finish-btns">
+        <button class="pomo-finish-btn pomo-finish-btn-primary pomo-confirm-yes">${yesLabel}</button>
+        <button class="pomo-finish-btn pomo-finish-btn-secondary pomo-confirm-no">${noLabel}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = () => { if (overlay.parentNode) document.body.removeChild(overlay); };
+  overlay.querySelector('.pomo-confirm-yes').onclick = () => { close(); if (onYes) onYes(); };
+  overlay.querySelector('.pomo-confirm-no').onclick = close;
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+};
+
 /* ---------- STATS ---------- */
 function pomoSaveTodayFocus(mins) {
   try {
@@ -15011,20 +15074,20 @@ window.pomoRender = function pomoRender() {
   document.documentElement.style.setProperty('--pomo-accent-rgb', meta.rgb);
 
   root.innerHTML = `
-    <div class="pomo-header pomo-anim-in" style="--pomo-d:0">
+    <div class="pomo-header">
       <h2>${t.title}</h2>
       <p>${t.subtitle}</p>
     </div>
 
     <!-- Mode pills -->
-    <div class="pomo-modes pomo-anim-in" style="--pomo-d:1">
+    <div class="pomo-modes">
       <button class="pomo-mode-btn ${pomoState.mode === 'work' ? 'active' : ''}" onclick="pomoSetMode('work')">${t.modeWork}</button>
       <button class="pomo-mode-btn ${pomoState.mode === 'short' ? 'active' : ''}" onclick="pomoSetMode('short')">${t.modeShort}</button>
       <button class="pomo-mode-btn ${pomoState.mode === 'long' ? 'active' : ''}" onclick="pomoSetMode('long')">${t.modeLong}</button>
     </div>
 
     <!-- Clock -->
-    <div class="pomo-clock-wrap pomo-anim-in" style="--pomo-d:2">
+    <div class="pomo-clock-wrap">
       <svg class="pomo-ring-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
         <circle class="pomo-ring-bg" cx="140" cy="140" r="${R}"/>
         <circle class="pomo-ring-glow" cx="140" cy="140" r="${R}" stroke="${meta.color}" stroke-dasharray="${C}" stroke-dashoffset="${dashOffset}"/>
@@ -15042,7 +15105,7 @@ window.pomoRender = function pomoRender() {
     </div>
 
     ${isOvertime && pomoState.running ? `
-    <div class="pomo-overtime-banner pomo-anim-pop">
+    <div class="pomo-overtime-banner">
       <div class="ot-icon">⏰</div>
       <div class="ot-text">
         <div class="ot-title">${t.overtimeTitle}${otStr}</div>
@@ -15052,7 +15115,7 @@ window.pomoRender = function pomoRender() {
     ` : ''}
 
     <!-- Controls -->
-    <div class="pomo-controls pomo-anim-in" style="--pomo-d:3">
+    <div class="pomo-controls">
       <button class="pomo-btn-sec" onclick="pomoReset()" title="${t.resetTitle}">↺</button>
       <button class="pomo-btn-main" onclick="${pomoState.running ? 'pomoStop(true)' : 'pomoStart()'}" title="${pomoState.running ? t.stopTitle : t.startTitle}">
         ${pomoState.running ? '⏹' : '▶'}
@@ -15061,7 +15124,7 @@ window.pomoRender = function pomoRender() {
     </div>
 
     <!-- Direction -->
-    <div class="pomo-direction-wrap pomo-anim-in" style="--pomo-d:4">
+    <div class="pomo-direction-wrap">
       <div class="pomo-direction-icon">${isDown ? '⬇️' : '⬆️'}</div>
       <div class="pomo-direction-info">
         <div class="pomo-direction-title">${t.directionTitle}</div>
@@ -15074,7 +15137,7 @@ window.pomoRender = function pomoRender() {
     </div>
 
     <!-- Presets -->
-    <div class="pomo-presets-wrap pomo-anim-in" style="--pomo-d:5">
+    <div class="pomo-presets-wrap">
       <div class="pomo-presets-title">${t.presetsTitle}</div>
       <div class="pomo-presets">
         ${PRESETS.map((p, i) => `
@@ -15088,18 +15151,18 @@ window.pomoRender = function pomoRender() {
     </div>
 
     <!-- Custom time -->
-    <div class="pomo-custom-wrap pomo-anim-in" style="--pomo-d:6">
+    <div class="pomo-custom-wrap">
       <div class="pomo-custom-title">${t.customTitle}</div>
       <div class="pomo-custom-row">
-        <input type="number" class="pomo-custom-input" id="pomoCustMin" placeholder="25" min="0" max="120" value="${Math.floor(totalSecs/60)}">
+        <input type="number" class="pomo-custom-input" id="pomoCustMin" placeholder="25" value="${Math.floor(totalSecs/60)}" oninput="pomoClampInput(this,120)">
         <div class="pomo-custom-sep">:</div>
-        <input type="number" class="pomo-custom-input" id="pomoCustSec" placeholder="00" min="0" max="59" value="${totalSecs%60}">
+        <input type="number" class="pomo-custom-input" id="pomoCustSec" placeholder="00" value="${totalSecs%60}" oninput="pomoClampInput(this,59)">
         <button class="pomo-custom-apply" onclick="pomoApplyCustom()">${t.applyBtn}</button>
       </div>
     </div>
 
     <!-- Stats -->
-    <div class="pomo-status-bar pomo-anim-in" style="--pomo-d:7">
+    <div class="pomo-status-bar">
       <div class="pomo-stat-card">
         <div class="pomo-stat-val">${pomoState.sessionCount}</div>
         <div class="pomo-stat-lbl">${t.statSessions}</div>
@@ -15114,17 +15177,8 @@ window.pomoRender = function pomoRender() {
       </div>
     </div>
 
-    <!-- Note -->
-    <div class="pomo-note-wrap pomo-anim-in" style="--pomo-d:8">
-      <div class="pomo-note-title">${t.noteTitle}</div>
-      <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="${t.notePlaceholder}">${pomoState.currentNote || ''}</textarea>
-      <div class="pomo-note-save-row">
-        <button class="pomo-note-save-btn" id="pomoNoteSaveBtn" onclick="pomoSaveNote()">${t.noteSave}</button>
-      </div>
-    </div>
-
     <!-- Session log -->
-    <div class="pomo-log-wrap pomo-anim-in" style="--pomo-d:9">
+    <div class="pomo-log-wrap">
       <div class="pomo-log-title">
         ${t.logTitle}
         <span onclick="pomoClearLog()">${t.logClear}</span>
@@ -15138,7 +15192,7 @@ window.pomoRender = function pomoRender() {
               const durMins = Math.floor(e.durationSec / 60);
               const durSecs = e.durationSec % 60;
               return `
-                <div class="pomo-log-item pomo-anim-in" style="--pomo-d:${10 + idx}">
+                <div class="pomo-log-item">
                   <div class="pomo-log-emoji">${e.done ? modeMeta.emoji : '❌'}</div>
                   <div class="pomo-log-info">
                     <div class="pomo-log-type ${e.done ? 'pomo-log-done' : 'pomo-log-missed'}">
@@ -15155,6 +15209,15 @@ window.pomoRender = function pomoRender() {
               `;
             }).join('')
         }
+      </div>
+    </div>
+
+    <!-- Note -->
+    <div class="pomo-note-wrap">
+      <div class="pomo-note-title">${t.noteTitle}</div>
+      <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="${t.notePlaceholder}">${pomoState.currentNote || ''}</textarea>
+      <div class="pomo-note-save-row">
+        <button class="pomo-note-save-btn" id="pomoNoteSaveBtn" onclick="pomoSaveNote()">${t.noteSave}</button>
       </div>
     </div>
   `;
