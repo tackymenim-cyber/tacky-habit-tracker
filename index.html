@@ -1853,7 +1853,7 @@ table { border-collapse: collapse; min-width: 100%; }
 [data-theme="dark"] .habit-row td { border-bottom-color: rgba(42,51,82,0.7); }
 .habit-row td.habit-name-cell {
   text-align: end; padding-inline: 20px 8px;
-  position: sticky; inset-inline-start: 0;
+  position: sticky; inset-inline-start: 0; right: 0;
   background-color: var(--white); opacity: 1; isolation: isolate;
   z-index: 5;
   border-inline-end: 1px solid var(--border);
@@ -1864,10 +1864,11 @@ table { border-collapse: collapse; min-width: 100%; }
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+[dir="ltr"] .habit-row td.habit-name-cell { right: auto; left: 0; }
 .habit-row:hover td.habit-name-cell { background: var(--blue-50); }
 .week-header-row th.habit-col,
 .daynum-row th.habit-col {
-  position: sticky; inset-inline-start: 0; background-color: var(--white); z-index: 5;
+  position: sticky; inset-inline-start: 0; right: 0; background-color: var(--white); z-index: 5;
   border-inline-end: 1px solid var(--border);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -1875,8 +1876,10 @@ table { border-collapse: collapse; min-width: 100%; }
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+[dir="ltr"] .week-header-row th.habit-col,
+[dir="ltr"] .daynum-row th.habit-col { right: auto; left: 0; }
 .prog-row td.label {
-  position: sticky; inset-inline-start: 0; background: var(--bg); z-index: 2;
+  position: sticky; inset-inline-start: 0; right: 0; background: var(--bg); z-index: 2;
   border-inline-end: 1px solid var(--border);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -1884,6 +1887,7 @@ table { border-collapse: collapse; min-width: 100%; }
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+[dir="ltr"] .prog-row td.label { right: auto; left: 0; }
 .habit-name-inner { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
 .habit-emoji { font-size: 1rem; }
 .habit-text {
@@ -3842,8 +3846,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* ══════════ MOOD PAGE ══════════ */
   .mood-page-grid { grid-template-columns: 1fr; gap: 10px; }
   .mood-card { padding: 14px; }
-  .mood-levels { display: flex; gap: 5px; flex-wrap: wrap; }
-  .mood-level-btn { padding: 6px 10px; font-size: 0.74rem; flex: 1 1 auto; text-align: center; }
+  .mood-levels { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .mood-level-btn { padding: 8px 10px; font-size: 0.74rem; text-align: center; justify-content: center; width: 100%; }
   .mood-hint { font-size: 0.72rem; }
   /* Mood grid — scrollable */
   .mood-hourly-wrap { padding: 14px; margin-bottom: 12px; overflow: hidden; }
@@ -3853,7 +3857,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 @media (max-width: 768px) {
   #moodGridWrap th.mood-time-col,
   #moodGridWrap td.mood-time-col {
-    position: sticky; inset-inline-start: 0; z-index: 5;
+    position: sticky; inset-inline-start: 0; right: 0; z-index: 5;
     background-color: var(--white) !important;
     border-inline-end: 1px solid var(--border);
     transform: translateZ(0);
@@ -3862,6 +3866,8 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
+  [dir="ltr"] #moodGridWrap th.mood-time-col,
+  [dir="ltr"] #moodGridWrap td.mood-time-col { right: auto; left: 0; }
 }
   .mood-cell { width: 26px; height: 26px; font-size: 0.68rem; border-radius: 6px; }
   /* Sleep & water */
@@ -5569,7 +5575,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
           </div>
         </div>
         <label class="toggle">
-          <input type="checkbox" id="morningNotif" checked onchange="toggleNotif('morning',this.checked)">
+          <input type="checkbox" id="morningNotif" onchange="toggleNotif('morning',this.checked)">
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -8749,6 +8755,7 @@ function changeMonth(d) {
   if (curM < 0) { curM = 11;
     curY--; }
   _tableScrolledOnce = false; // re-center on today whenever the visible month changes
+  _moodGridScrolledOnce = false;
   renderAll();
 }
 
@@ -9764,7 +9771,18 @@ function _scrollTableToToday(force) {
   const isFirstScroll = !_tableScrolledOnce;
   _tableScrolledOnce = true;
 
+  // If the user manually scrolls the table before the delayed realign
+  // passes below have finished, cancel them — otherwise the table can
+  // suddenly jump back to today's column while someone is trying to look
+  // at a different week (most noticeable on iOS, where layout/font
+  // settling can take longer and collide with the user's own scroll).
+  let userScrolled = false;
+  const onUserScroll = () => { userScrolled = true; };
+  wrap.addEventListener('touchstart', onUserScroll, { passive: true, once: true });
+  wrap.addEventListener('wheel', onUserScroll, { passive: true, once: true });
+
   const doAlign = (behavior) => {
+    if (userScrolled) return;
     // Re-query fresh every time this runs — if the table re-rendered in
     // between calls (e.g. an achievement popup triggering a re-render), an
     // old cached reference would be a detached node with a zero-size rect,
@@ -9826,16 +9844,33 @@ function _clampMoodScroll(wrap) {
   if (wrap.scrollLeft > 0) wrap.scrollLeft = Math.min(wrap.scrollLeft, max);
   else if (wrap.scrollLeft < 0) wrap.scrollLeft = Math.max(wrap.scrollLeft, -max);
 }
-function _scrollMoodGridToToday() {
+let _moodGridScrolledOnce = false;
+function _scrollMoodGridToToday(force) {
   // Desktop layout is untouched on purpose — this only applies on mobile,
   // where the time-label column is sticky (see the mobile-only CSS above).
   if (!window.matchMedia('(max-width: 768px)').matches) return;
   if (curY !== today.getFullYear() || curM !== today.getMonth()) return;
+  // Only auto-center once per page visit — otherwise every mood tap
+  // re-renders the grid and yanks the user's scroll position back to
+  // today, which is especially jarring on iOS where the realign passes
+  // can land mid-scroll.
+  if (_moodGridScrolledOnce && !force) return;
 
   const wrap = document.getElementById('moodGridWrap');
   if (!wrap) return;
 
+  const isFirstScroll = !_moodGridScrolledOnce;
+  _moodGridScrolledOnce = true;
+
+  // Cancel pending delayed realign passes the moment the user touches/
+  // scrolls the grid themselves.
+  let userScrolled = false;
+  const onUserScroll = () => { userScrolled = true; };
+  wrap.addEventListener('touchstart', onUserScroll, { passive: true, once: true });
+  wrap.addEventListener('wheel', onUserScroll, { passive: true, once: true });
+
   const doAlign = (behavior) => {
+    if (userScrolled) return;
     const headerCell = wrap.querySelector('th.mood-today-th');
     const stickyCol = wrap.querySelector('th.mood-time-col');
     if (!headerCell || !stickyCol) return;
@@ -9864,6 +9899,10 @@ function _scrollMoodGridToToday() {
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(realign).catch(() => {});
       if (document.readyState !== 'complete') window.addEventListener('load', realign, { once: true });
       else setTimeout(realign, 150);
+
+      if (isFirstScroll) {
+        [400, 900, 1500, 2500].forEach(t => setTimeout(realign, t));
+      }
     });
   });
 }
@@ -13618,11 +13657,10 @@ window.addEventListener('focus', _checkMidnightRollover);
 /* ---------- CSS ---------- */
 const pomoCss = `
 #page-pomodoro {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 16px 120px;
+  padding: 24px 16px 80px;
   background: transparent;
   position: relative;
   overflow: hidden;
@@ -15437,7 +15475,6 @@ function pomoInit() {
   pomoLoad();
   pomoCreateParticles();
   pomoRender();
-  pomoRequestNotifPermission();
 
   // Intercept showPage to track if pomo page is open
   const _origShow = window.showPage;
