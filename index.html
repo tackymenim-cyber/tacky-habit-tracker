@@ -9762,6 +9762,25 @@ function _clampTableScroll(wrap) {
   if (wrap.scrollLeft > 0) wrap.scrollLeft = Math.min(wrap.scrollLeft, max);
   else if (wrap.scrollLeft < 0) wrap.scrollLeft = Math.max(wrap.scrollLeft, -max);
 }
+// Bumped every time the user touches/scrolls/wheels the table. Any
+// in-flight realign chain — even one scheduled by an earlier, unrelated
+// call (language switch, month change, midnight rollover) — captures the
+// generation it was started with and checks it before every pass, so a
+// stray leftover timer from a previous call can never yank the table back
+// out from under an active user scroll. A single persistent listener
+// (not "once") means this protection never goes stale after the first
+// touch either.
+let _tableScrollGen = 0;
+let _tableUserScrollWired = false;
+function _wireTableUserScrollCancel(wrap) {
+  if (_tableUserScrollWired) return;
+  _tableUserScrollWired = true;
+  const bump = () => { _tableScrollGen++; };
+  wrap.addEventListener('touchstart', bump, { passive: true });
+  wrap.addEventListener('touchmove', bump, { passive: true });
+  wrap.addEventListener('wheel', bump, { passive: true });
+  wrap.addEventListener('scroll', bump, { passive: true });
+}
 function _scrollTableToToday(force) {
   // Only the current month/year has a "today" column to scroll to
   if (curY !== today.getFullYear() || curM !== today.getMonth()) return;
@@ -9772,19 +9791,12 @@ function _scrollTableToToday(force) {
 
   const isFirstScroll = !_tableScrolledOnce;
   _tableScrolledOnce = true;
+  _wireTableUserScrollCancel(wrap);
 
-  // If the user manually scrolls the table before the delayed realign
-  // passes below have finished, cancel them — otherwise the table can
-  // suddenly jump back to today's column while someone is trying to look
-  // at a different week (most noticeable on iOS, where layout/font
-  // settling can take longer and collide with the user's own scroll).
-  let userScrolled = false;
-  const onUserScroll = () => { userScrolled = true; };
-  wrap.addEventListener('touchstart', onUserScroll, { passive: true, once: true });
-  wrap.addEventListener('wheel', onUserScroll, { passive: true, once: true });
+  const myGen = ++_tableScrollGen;
 
   const doAlign = (behavior) => {
-    if (userScrolled) return;
+    if (_tableScrollGen !== myGen) return; // user scrolled since this pass was scheduled — abandon it
     // Re-query fresh every time this runs — if the table re-rendered in
     // between calls (e.g. an achievement popup triggering a re-render), an
     // old cached reference would be a detached node with a zero-size rect,
@@ -9809,6 +9821,9 @@ function _scrollTableToToday(force) {
     const visibleWidth = wrapRect.width - stickyW;
     // Center today's column within the visible (non-sticky) scroll area.
     const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
+    // Programmatic scroll — bump the generation ourselves too so this
+    // doesn't look like a "user scroll" and cancel the next queued pass.
+    _tableScrollGen = myGen;
     wrap.scrollBy({ left: offset, behavior });
     _clampTableScroll(wrap);
   };
@@ -9847,6 +9862,17 @@ function _clampMoodScroll(wrap) {
   else if (wrap.scrollLeft < 0) wrap.scrollLeft = Math.max(wrap.scrollLeft, -max);
 }
 let _moodGridScrolledOnce = false;
+let _moodScrollGen = 0;
+let _moodUserScrollWired = false;
+function _wireMoodUserScrollCancel(wrap) {
+  if (_moodUserScrollWired) return;
+  _moodUserScrollWired = true;
+  const bump = () => { _moodScrollGen++; };
+  wrap.addEventListener('touchstart', bump, { passive: true });
+  wrap.addEventListener('touchmove', bump, { passive: true });
+  wrap.addEventListener('wheel', bump, { passive: true });
+  wrap.addEventListener('scroll', bump, { passive: true });
+}
 function _scrollMoodGridToToday(force) {
   // Desktop layout is untouched on purpose — this only applies on mobile,
   // where the time-label column is sticky (see the mobile-only CSS above).
@@ -9863,16 +9889,12 @@ function _scrollMoodGridToToday(force) {
 
   const isFirstScroll = !_moodGridScrolledOnce;
   _moodGridScrolledOnce = true;
+  _wireMoodUserScrollCancel(wrap);
 
-  // Cancel pending delayed realign passes the moment the user touches/
-  // scrolls the grid themselves.
-  let userScrolled = false;
-  const onUserScroll = () => { userScrolled = true; };
-  wrap.addEventListener('touchstart', onUserScroll, { passive: true, once: true });
-  wrap.addEventListener('wheel', onUserScroll, { passive: true, once: true });
+  const myGen = ++_moodScrollGen;
 
   const doAlign = (behavior) => {
-    if (userScrolled) return;
+    if (_moodScrollGen !== myGen) return; // user scrolled since this pass was scheduled — abandon it
     const headerCell = wrap.querySelector('th.mood-today-th');
     const stickyCol = wrap.querySelector('th.mood-time-col');
     if (!headerCell || !stickyCol) return;
@@ -9890,6 +9912,7 @@ function _scrollMoodGridToToday(force) {
     const visibleLeft = isRtl ? wrapRect.left : wrapRect.left + stickyW;
     const visibleWidth = wrapRect.width - stickyW;
     const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
+    _moodScrollGen = myGen;
     wrap.scrollBy({ left: offset, behavior });
     _clampMoodScroll(wrap);
   };
