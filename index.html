@@ -4573,6 +4573,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <button class="nav-tab" id="navTabQuotes" onclick="showPage('quotes')">💬 اقتباسات</button>
     <button class="nav-tab" id="navTabJournal" onclick="showPage('journal')"><span id="navJournalTxt">📖 يوميات</span></button>
     <button class="nav-tab" id="navTabAchievements" onclick="showPage('achievements')"><span id="navAchievementsTxt">🏆 إنجازاتي</span></button>
+    <button class="nav-tab" id="navTabPomodoro" onclick="showPage('pomodoro')">🍅 بومودورو</button>
   </div>
   <div class="nav-right">
     <div class="month-nav">
@@ -4626,6 +4627,9 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   </button>
   <button class="bottom-nav-btn" id="bnavAchievements" data-page="achievements" onclick="showPage('achievements');_syncBottomNav(this)">
     <span class="bnav-icon">🏆</span><span id="bnavAchievementsTxt">إنجازاتي</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnavPomodoro" data-page="pomodoro" onclick="showPage('pomodoro');_syncBottomNav(this)">
+    <span class="bnav-icon">🍅</span><span>بومودورو</span>
   </button>
 </nav>
 
@@ -4897,38 +4901,6 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
 <!-- PAGE: ACHIEVEMENTS -->
 <div class="page" id="page-achievements">
-
-  <!-- Heatmap Section -->
-  <div class="ach-section fade-up">
-    <div class="ach-section-header">
-      <div class="ach-section-icon">🌡️</div>
-      <div>
-        <div class="ach-section-title" id="achHeatmapTitle">الخريطة الحرارية — آخر 365 يوم</div>
-        <div class="ach-section-sub" id="achHeatmapSub">كل مربع = يوم. اللون الأغمق = إنجاز أعلى</div>
-      </div>
-    </div>
-    <div class="heatmap-legend-row">
-      <span class="heatmap-legend-label" id="achHeatmapLess">أقل</span>
-      <div class="heatmap-legend-cells">
-        <div class="hmc hmc-0"></div>
-        <div class="hmc hmc-1"></div>
-        <div class="hmc hmc-2"></div>
-        <div class="hmc hmc-3"></div>
-        <div class="hmc hmc-4"></div>
-      </div>
-      <span class="heatmap-legend-label" id="achHeatmapMore">أكثر</span>
-    </div>
-    <div class="heatmap-scroll-wrap">
-      <div class="heatmap-month-labels" id="hmMonthLabels"></div>
-      <div class="heatmap-grid-wrap">
-        <div class="heatmap-day-labels" id="achHeatmapDayLabels">
-          <span>أحد</span><span>إثنين</span><span>ثلاثاء</span><span>أربعاء</span><span>خميس</span><span>جمعة</span><span>سبت</span>
-        </div>
-        <div class="heatmap-grid" id="heatmapGrid"></div>
-      </div>
-    </div>
-    <div class="heatmap-stats-row" id="heatmapStatsRow"></div>
-  </div>
 
   <!-- Level & XP Section -->
   <div class="ach-section fade-up" id="achLevelSection">
@@ -5329,6 +5301,11 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     </div>
 
   </div>
+</div>
+
+<!-- PAGE: POMODORO -->
+<div class="page" id="page-pomodoro">
+  <div id="pomo-root"></div>
 </div>
 
 </div><!-- /main -->
@@ -7037,7 +7014,31 @@ const T = {
   },
 };
 
-let currentLang = 'ar';
+// ── EARLY LANG BOOTSTRAP ──────────────────────────────────────────────────
+// قراءة اللغة المحفوظة قبل أي شيء آخر حتى تظهر واجهة تسجيل الدخول
+// باللغة الصحيحة فور الرفراش، بدون انتظار تحميل الإعدادات الكاملة.
+(function _earlyLang() {
+  let lang = 'ar';
+  try {
+    // 1) localStorage (المصدر الرئيسي)
+    const raw = localStorage.getItem('hb2_settings');
+    if (raw) { const s = JSON.parse(raw); if (s && s.lang) lang = s.lang; }
+  } catch(e) {}
+  if (lang === 'ar') {
+    // 2) cookie fallback (hb2_lang أو داخل hb2_settings_bk)
+    try {
+      const m1 = document.cookie.match(/(?:^|; )hb2_lang=([^;]+)/);
+      if (m1) lang = decodeURIComponent(m1[1]);
+    } catch(e) {}
+  }
+  if (!['ar','fr','en'].includes(lang)) lang = 'ar';
+  // تطبيق الاتجاه واللغة على <html> فوراً قبل أي render
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  window._earlyLang = lang;
+})();
+
+let currentLang = window._earlyLang || 'ar';
 
 function t(key) {
   const tr = T[currentLang] || T.ar;
@@ -7045,10 +7046,10 @@ function t(key) {
 }
 window.t = t;
 
-function setLang(lang) {
+function setLang(lang, _skipSave) {
   currentLang = lang;
   settings.lang = lang;
-  save();
+  if (!_skipSave) save();
   try { document.cookie = `hb2_lang=${encodeURIComponent(lang)}; max-age=31536000; path=/`; } catch (e) {}
   const tr = T[lang];
 
@@ -7845,6 +7846,16 @@ settings = Object.assign({
   stickyTableHeader: false,
   stickyTopnav: false,
 }, settings);
+
+// ── تطبيق اللغة المحفوظة فوراً على authOverlay قبل أي شيء آخر ──────────
+// هذا يضمن أن واجهة تسجيل الدخول تظهر باللغة الصحيحة مباشرةً عند الرفراش
+// بدون انتظار onAuthStateChanged أو أي حدث غير متزامن آخر.
+// _skipSave=true لأن Firebase لم يُهيَّأ بعد في هذه المرحلة
+if (settings.lang) {
+  try { setLang(settings.lang, true); } catch(e) {}
+} else if (currentLang) {
+  try { setLang(currentLang, true); } catch(e) {}
+}
 
 // ترحيل: تبويب الاقتباسات مطفأ افتراضياً لكل الأجهزة (نُعيد التطبيق حتى
 // لو كان قد طُبّق قبل هذا التحديث، عبر مفتاح ترحيل جديد).
@@ -13599,6 +13610,1316 @@ const _origShowPage = window.showPage;
 setInterval(_checkMidnightRollover, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) _checkMidnightRollover(); });
 window.addEventListener('focus', _checkMidnightRollover);
+
+// =========== POMODORO ENGINE ===========
+(function() {
+
+/* ---------- CSS ---------- */
+const pomoCss = `
+#page-pomodoro {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 120px;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+/* animated background particles */
+.pomo-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.pomo-particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: pomoParticleFloat linear infinite;
+}
+@keyframes pomoParticleFloat {
+  0%   { opacity: 0; transform: translateY(100vh) scale(0); }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.4; }
+  100% { opacity: 0; transform: translateY(-100px) scale(1); }
+}
+
+#pomo-root {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* ---------- HEADER ---------- */
+.pomo-header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.pomo-header h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--blue-500), var(--purple, #a855f7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 6px;
+  letter-spacing: -1px;
+}
+.pomo-header p {
+  color: var(--text-3);
+  font-size: 0.9rem;
+}
+
+/* ---------- MODE PILLS ---------- */
+.pomo-modes {
+  display: flex;
+  gap: 8px;
+  background: var(--bg2);
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.pomo-mode-btn {
+  padding: 8px 18px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.pomo-mode-btn.active {
+  background: var(--blue-500);
+  color: white;
+  box-shadow: 0 4px 16px rgba(var(--pomo-accent-rgb, 59,130,246), 0.45);
+  transform: scale(1.05);
+}
+.pomo-mode-btn:not(.active):hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+/* ---------- CLOCK RING ---------- */
+.pomo-clock-wrap {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pomo-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.pomo-ring-bg {
+  fill: none;
+  stroke: var(--bg3);
+  stroke-width: 10;
+}
+.pomo-ring-progress {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke: var(--blue-500);
+  transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+  filter: drop-shadow(0 0 8px rgba(var(--pomo-accent-rgb, 59,130,246), 0.7));
+}
+
+/* glow pulse ring when running */
+.pomo-ring-glow {
+  fill: none;
+  stroke-width: 18;
+  stroke: var(--blue-500);
+  opacity: 0;
+  stroke-linecap: round;
+  transition: stroke 0.5s ease;
+}
+.pomo-running .pomo-ring-glow {
+  animation: pomoGlowPulse 2s ease-in-out infinite;
+}
+@keyframes pomoGlowPulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.15; }
+}
+
+/* warning pulse when < 20% left */
+.pomo-warning .pomo-ring-progress {
+  animation: pomoRingWarn 1s ease-in-out infinite;
+}
+@keyframes pomoRingWarn {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(239,68,68,0.7)); }
+  50%       { filter: drop-shadow(0 0 22px rgba(239,68,68,1)); }
+}
+
+/* overtime glow */
+.pomo-overtime .pomo-ring-progress {
+  animation: pomoOvertimeGlow 0.8s ease-in-out infinite;
+}
+@keyframes pomoOvertimeGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(251,191,36,0.8)); }
+  50%       { filter: drop-shadow(0 0 26px rgba(251,191,36,1)); }
+}
+
+.pomo-clock-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+}
+.pomo-time-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 4.2rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -2px;
+  line-height: 1;
+  transition: color 0.4s;
+}
+.pomo-overtime .pomo-time-display {
+  color: var(--yellow, #fbbf24);
+  animation: pomoTimeFlash 1s ease-in-out infinite;
+}
+@keyframes pomoTimeFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.pomo-mode-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  transition: color 0.4s;
+}
+.pomo-session-badge {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text-2);
+  font-weight: 700;
+}
+
+/* ---------- CONTROLS ---------- */
+.pomo-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.pomo-btn-main {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 6px 24px rgba(var(--pomo-accent-rgb, 59,130,246), 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pomo-btn-main:hover {
+  transform: scale(1.12);
+  box-shadow: 0 10px 32px rgba(var(--pomo-accent-rgb, 59,130,246), 0.65);
+}
+.pomo-btn-main:active { transform: scale(0.96); }
+
+.pomo-btn-sec {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg2);
+  color: var(--text-2);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pomo-btn-sec:hover {
+  background: var(--bg3);
+  color: var(--text);
+  transform: scale(1.08);
+}
+
+/* ---------- DIRECTION MODE ---------- */
+.pomo-direction-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 20px;
+  width: 100%;
+}
+.pomo-direction-icon {
+  font-size: 1.5rem;
+}
+.pomo-direction-info {
+  flex: 1;
+}
+.pomo-direction-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.pomo-direction-sub {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.pomo-direction-toggle {
+  display: flex;
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+.pomo-dir-opt {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.pomo-dir-opt.active {
+  background: var(--blue-500);
+  color: white;
+  box-shadow: 0 2px 8px rgba(var(--pomo-accent-rgb, 59,130,246), 0.4);
+}
+
+/* ---------- PRESETS ---------- */
+.pomo-presets-wrap {
+  width: 100%;
+}
+.pomo-presets-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.pomo-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.pomo-preset-btn {
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--bg2);
+  color: var(--text-2);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+  line-height: 1.4;
+}
+.pomo-preset-btn:hover {
+  background: var(--bg3);
+  border-color: var(--blue-300);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+.pomo-preset-btn.active {
+  background: var(--blue-50);
+  border-color: var(--blue-500);
+  color: var(--blue-600);
+}
+.pomo-preset-duration {
+  font-size: 1.1rem;
+  font-weight: 900;
+  display: block;
+  color: var(--blue-500);
+}
+
+/* ---------- CUSTOM TIME ---------- */
+.pomo-custom-wrap {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 18px;
+}
+.pomo-custom-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.pomo-custom-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.pomo-custom-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 9px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: center;
+  width: 70px;
+  min-width: 0;
+}
+.pomo-custom-input:focus { border-color: var(--blue-500); }
+.pomo-custom-sep {
+  color: var(--text-3);
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+.pomo-custom-apply {
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--blue-500);
+  color: white;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pomo-custom-apply:hover {
+  background: var(--blue-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--pomo-accent-rgb,59,130,246),0.4);
+}
+
+/* ---------- NOTE ---------- */
+.pomo-note-wrap {
+  width: 100%;
+}
+.pomo-note-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.pomo-note-area {
+  width: 100%;
+  min-height: 80px;
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  padding: 12px 14px;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+.pomo-note-area:focus { border-color: var(--blue-500); }
+.pomo-note-area::placeholder { color: var(--text-3); }
+
+/* ---------- STATUS + HISTORY ---------- */
+.pomo-status-bar {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+.pomo-stat-card {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  text-align: center;
+}
+.pomo-stat-val {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--blue-500);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.pomo-stat-lbl {
+  font-size: 0.72rem;
+  color: var(--text-3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- SESSION LOG ---------- */
+.pomo-log-wrap {
+  width: 100%;
+}
+.pomo-log-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-2);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pomo-log-title span {
+  margin-right: auto;
+  font-size: 0.72rem;
+  color: var(--text-3);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  transition: all 0.2s;
+}
+.pomo-log-title span:hover { background: var(--red-light); color: var(--red); border-color: var(--red); }
+.pomo-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pomo-log-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: pomoLogIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes pomoLogIn {
+  from { opacity: 0; transform: translateX(-20px) scale(0.95); }
+  to   { opacity: 1; transform: none; }
+}
+.pomo-log-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.pomo-log-info { flex: 1; min-width: 0; }
+.pomo-log-type { font-size: 0.82rem; font-weight: 800; color: var(--text); }
+.pomo-log-detail { font-size: 0.72rem; color: var(--text-3); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pomo-log-time { font-size: 0.72rem; color: var(--text-3); font-family: monospace; flex-shrink: 0; }
+.pomo-log-done { color: var(--green); }
+.pomo-log-missed { color: var(--red); }
+.pomo-log-running { color: var(--yellow, #fbbf24); }
+
+/* ---------- CELEBRATION BURST ---------- */
+.pomo-burst {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.pomo-burst-emoji {
+  position: absolute;
+  font-size: 2rem;
+  animation: pomoBurstFly 1.2s cubic-bezier(.2,.8,.4,1) forwards;
+  opacity: 1;
+}
+@keyframes pomoBurstFly {
+  0%   { transform: translate(0,0) scale(0) rotate(0deg); opacity: 1; }
+  60%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- FINISH MODAL ---------- */
+.pomo-finish-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.3s ease both;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.pomo-finish-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px 28px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+  animation: pomoFinishPop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+  text-align: center;
+}
+@keyframes pomoFinishPop {
+  from { opacity: 0; transform: scale(0.8) translateY(40px); }
+  to   { opacity: 1; transform: none; }
+}
+.pomo-finish-emoji {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 12px;
+  animation: pomoBounce 0.6s cubic-bezier(.34,1.56,.64,1) 0.2s both;
+}
+@keyframes pomoBounce {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+.pomo-finish-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.pomo-finish-sub {
+  font-size: 0.9rem;
+  color: var(--text-2);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.pomo-finish-note-preview {
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  color: var(--text-2);
+  text-align: right;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  line-height: 1.6;
+  display: none;
+}
+.pomo-finish-btns {
+  display: flex;
+  gap: 10px;
+}
+.pomo-finish-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pomo-finish-btn-primary {
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+  color: white;
+  box-shadow: 0 4px 16px rgba(var(--pomo-accent-rgb,59,130,246),0.4);
+}
+.pomo-finish-btn-primary:hover { transform: translateY(-2px); }
+.pomo-finish-btn-secondary {
+  background: var(--bg2);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.pomo-finish-btn-secondary:hover { background: var(--bg3); }
+
+/* ---------- OVERTIME BANNER ---------- */
+.pomo-overtime-banner {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
+  border: 1.5px solid rgba(251,191,36,0.4);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: pomoBannerIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes pomoBannerIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.pomo-overtime-banner .ot-icon { font-size: 1.5rem; }
+.pomo-overtime-banner .ot-text { flex: 1; }
+.pomo-overtime-banner .ot-title {
+  font-size: 0.88rem; font-weight: 800;
+  color: var(--yellow, #fbbf24);
+  margin-bottom: 2px;
+}
+.pomo-overtime-banner .ot-sub {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 420px) {
+  .pomo-clock-wrap { width: 240px; height: 240px; }
+  .pomo-time-display { font-size: 3.4rem; }
+  .pomo-presets { grid-template-columns: repeat(2, 1fr); }
+  .pomo-status-bar { flex-wrap: wrap; }
+  .pomo-stat-card { min-width: calc(50% - 5px); }
+}
+`;
+
+const pomoStyleEl = document.createElement('style');
+pomoStyleEl.textContent = pomoCss;
+document.head.appendChild(pomoStyleEl);
+
+/* ---------- STATE ---------- */
+const POMO_KEY = 'tacky_pomo_v1';
+const POMO_LOG_KEY = 'tacky_pomo_log_v1';
+
+let pomoState = {
+  mode: 'work',        // work | short | long
+  direction: 'down',   // down | up
+  totalSecs: 25 * 60,
+  elapsed: 0,
+  running: false,
+  sessionCount: 0,
+  todayFocusMins: 0,
+  totalFocusMins: 0,
+};
+
+let pomoLog = [];
+let pomoInterval = null;
+let pomoWorker = null;
+let pomoNotified = false;
+let pomoPageOpen = false;
+let pomoLastSaveTs = 0;
+let pomoOvertimeSec = 0;
+let pomoOvertimeActive = false;
+
+const PRESETS = [
+  { label: 'بومودورو', mins: 25, mode: 'work' },
+  { label: 'استراحة قصيرة', mins: 5, mode: 'short' },
+  { label: 'استراحة طويلة', mins: 15, mode: 'long' },
+  { label: 'تركيز عميق', mins: 50, mode: 'work' },
+  { label: 'سريع', mins: 10, mode: 'work' },
+  { label: 'ساعة', mins: 60, mode: 'work' },
+  { label: 'قصير', mins: 3, mode: 'work' },
+  { label: 'مخصص', mins: null, mode: null },
+];
+
+const MODE_META = {
+  work:  { label: 'وقت العمل 🔥', color: '#ef4444', rgb: '239,68,68', emoji: '🍅' },
+  short: { label: 'استراحة قصيرة ☕', color: '#22c55e', rgb: '34,197,94', emoji: '☕' },
+  long:  { label: 'استراحة طويلة 🌿', color: '#3b82f6', rgb: '59,130,246', emoji: '🌿' },
+};
+
+/* ---------- PERSIST ---------- */
+function pomoSave() {
+  try {
+    const s = Object.assign({}, pomoState, { _ts: Date.now() });
+    localStorage.setItem(POMO_KEY, JSON.stringify(s));
+    localStorage.setItem(POMO_LOG_KEY, JSON.stringify(pomoLog.slice(-50)));
+  } catch(e) {}
+}
+function pomoLoad() {
+  try {
+    const raw = localStorage.getItem(POMO_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      // If browser was closed while running, restore state but pause
+      if (s.running) {
+        const elapsed = Math.floor((Date.now() - s._ts) / 1000);
+        s.elapsed = Math.min(s.elapsed + elapsed, s.totalSecs + 3600);
+        s.running = false;
+      }
+      Object.assign(pomoState, s);
+    }
+    const rawLog = localStorage.getItem(POMO_LOG_KEY);
+    if (rawLog) pomoLog = JSON.parse(rawLog);
+  } catch(e) {}
+}
+
+/* ---------- WORKER TIMER (survives tab background) ---------- */
+function pomoStartWorker() {
+  if (pomoWorker) { pomoWorker.terminate(); pomoWorker = null; }
+  const code = `
+    let iv = null;
+    self.onmessage = function(e) {
+      if (e.data === 'start') {
+        clearInterval(iv);
+        iv = setInterval(function(){ self.postMessage('tick'); }, 1000);
+      } else if (e.data === 'stop') {
+        clearInterval(iv); iv = null;
+      }
+    };
+  `;
+  try {
+    const blob = new Blob([code], { type: 'application/javascript' });
+    pomoWorker = new Worker(URL.createObjectURL(blob));
+    pomoWorker.onmessage = function() { pomoTick(); };
+    pomoWorker.postMessage('start');
+  } catch(e) {
+    // Fallback to setInterval
+    pomoInterval = setInterval(pomoTick, 1000);
+  }
+}
+function pomoStopWorker() {
+  if (pomoWorker) { pomoWorker.postMessage('stop'); pomoWorker.terminate(); pomoWorker = null; }
+  if (pomoInterval) { clearInterval(pomoInterval); pomoInterval = null; }
+}
+
+/* ---------- TIMER LOGIC ---------- */
+function pomoTick() {
+  if (!pomoState.running) return;
+  pomoState.elapsed++;
+
+  const finished = pomoState.elapsed >= pomoState.totalSecs;
+
+  if (finished && !pomoOvertimeActive) {
+    // Entered overtime
+    pomoOvertimeActive = true;
+    pomoOvertimeSec = 0;
+    if (!pomoNotified) {
+      pomoNotified = true;
+      pomoPlaySound('finish');
+      pomoSendNotification();
+      if (pomoPageOpen) pomoShowFinishModal();
+    }
+  }
+
+  if (pomoOvertimeActive) {
+    pomoOvertimeSec = pomoState.elapsed - pomoState.totalSecs;
+  }
+
+  // Update focus stats
+  if (pomoState.mode === 'work') {
+    pomoState.todayFocusMins = Math.floor(Math.min(pomoState.elapsed, pomoState.totalSecs) / 60);
+  }
+
+  // Save every 5 ticks
+  if (pomoState.elapsed % 5 === 0) pomoSave();
+
+  if (pomoPageOpen) pomoRender();
+}
+
+function pomoStart() {
+  if (pomoState.running) return;
+  pomoState.running = true;
+  pomoNotified = false;
+  pomoOvertimeActive = pomoState.elapsed >= pomoState.totalSecs;
+  pomoStartWorker();
+  pomoSave();
+  pomoRender();
+}
+
+function pomoStop(record) {
+  if (!pomoState.running && !record) return;
+  pomoStopWorker();
+  if (pomoState.running && record !== false) {
+    const didFinish = pomoState.elapsed >= pomoState.totalSecs;
+    const duration = Math.min(pomoState.elapsed, pomoState.totalSecs);
+    const note = document.getElementById('pomoNoteArea') ? document.getElementById('pomoNoteArea').value.trim() : '';
+    pomoLogEntry(didFinish, duration, note);
+    if (didFinish && pomoState.mode === 'work') {
+      pomoState.sessionCount++;
+      pomoState.totalFocusMins += Math.floor(pomoState.totalSecs / 60);
+      pomoSaveTodayFocus(Math.floor(pomoState.totalSecs / 60));
+    }
+  }
+  pomoState.running = false;
+  pomoState.elapsed = 0;
+  pomoOvertimeActive = false;
+  pomoOvertimeSec = 0;
+  pomoNotified = false;
+  pomoSave();
+  if (pomoPageOpen) pomoRender();
+}
+
+function pomoReset() {
+  pomoStop(false);
+  pomoState.elapsed = 0;
+  pomoOvertimeActive = false;
+  pomoOvertimeSec = 0;
+  pomoNotified = false;
+  pomoSave();
+  if (pomoPageOpen) pomoRender();
+}
+
+function pomoSetMode(mode) {
+  if (pomoState.running) return;
+  pomoState.mode = mode;
+  const mins = mode === 'work' ? 25 : mode === 'short' ? 5 : 15;
+  pomoState.totalSecs = mins * 60;
+  pomoState.elapsed = 0;
+  pomoOvertimeActive = false;
+  pomoSave();
+  pomoRender();
+}
+
+function pomoSetDirection(dir) {
+  pomoState.direction = dir;
+  pomoSave();
+  pomoRender();
+}
+
+function pomoApplyCustom() {
+  const mEl = document.getElementById('pomoCustMin');
+  const sEl = document.getElementById('pomoCustSec');
+  const m = parseInt(mEl ? mEl.value : 0) || 0;
+  const s = parseInt(sEl ? sEl.value : 0) || 0;
+  const total = m * 60 + s;
+  if (total < 5 || total > 7200) { alert('الوقت يجب أن يكون بين 5 ثوانٍ و120 دقيقة'); return; }
+  pomoState.totalSecs = total;
+  pomoState.elapsed = 0;
+  pomoState.running = false;
+  pomoOvertimeActive = false;
+  pomoSave();
+  pomoRender();
+}
+
+function pomoSelectPreset(idx) {
+  const p = PRESETS[idx];
+  if (!p || p.mins === null) return; // custom -> do nothing, user uses inputs
+  pomoState.totalSecs = p.mins * 60;
+  pomoState.elapsed = 0;
+  if (p.mode) pomoState.mode = p.mode;
+  pomoState.running = false;
+  pomoOvertimeActive = false;
+  pomoSave();
+  pomoRender();
+}
+
+/* ---------- LOG ---------- */
+function pomoLogEntry(done, durationSec, note) {
+  const now = new Date();
+  const entry = {
+    ts: now.getTime(),
+    time: now.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' }),
+    mode: pomoState.mode,
+    done,
+    durationSec,
+    note,
+    overtime: pomoOvertimeSec,
+  };
+  pomoLog.unshift(entry);
+  if (pomoLog.length > 50) pomoLog = pomoLog.slice(0, 50);
+  pomoSave();
+}
+
+function pomoClearLog() {
+  if (!confirm('هل تريد مسح سجل الجلسات؟')) return;
+  pomoLog = [];
+  pomoSave();
+  pomoRender();
+}
+
+/* ---------- NOTIFICATIONS ---------- */
+function pomoRequestNotifPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function pomoSendNotification() {
+  const meta = MODE_META[pomoState.mode];
+  try {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('بومودورو ✅', {
+        body: pomoState.mode === 'work' ? 'انتهى وقت العمل! خذ استراحة 🎉' : 'انتهت الاستراحة! عد للعمل 🔥',
+        icon: meta.emoji,
+        silent: false,
+      });
+    }
+  } catch(e) {}
+}
+
+/* ---------- SOUND ---------- */
+function pomoPlaySound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = type === 'finish'
+      ? [523, 659, 784, 1047]   // C E G C — success chord
+      : [523, 494, 440];          // tick down
+    let time = ctx.currentTime;
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, time + i * 0.12);
+      gain.gain.linearRampToValueAtTime(0.22, time + i * 0.12 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + i * 0.12 + 0.35);
+      osc.start(time + i * 0.12);
+      osc.stop(time + i * 0.12 + 0.4);
+    });
+  } catch(e) {}
+}
+
+/* ---------- CELEBRATION ---------- */
+function pomoCelebrate() {
+  const emojis = ['🎉', '⭐', '🏆', '🔥', '✨', '💪', '🎯', '🍅'];
+  const burst = document.createElement('div');
+  burst.className = 'pomo-burst';
+  document.body.appendChild(burst);
+  for (let i = 0; i < 20; i++) {
+    const el = document.createElement('div');
+    el.className = 'pomo-burst-emoji';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const angle = (i / 20) * 360;
+    const dist = 120 + Math.random() * 160;
+    const dx = Math.cos(angle * Math.PI / 180) * dist;
+    const dy = Math.sin(angle * Math.PI / 180) * dist;
+    el.style.cssText = `left:50%;top:50%;transform:translate(-50%,-50%);animation-delay:${Math.random() * 0.2}s;animation-duration:${0.9 + Math.random() * 0.5}s`;
+    el.style.setProperty('--dx', dx + 'px');
+    el.style.setProperty('--dy', dy + 'px');
+    el.animate([
+      { transform: 'translate(-50%,-50%) scale(0)', opacity: 1 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.5) rotate(${Math.random()*360}deg)`, opacity: 1, offset: 0.6 },
+      { transform: `translate(calc(-50% + ${dx * 1.3}px), calc(-50% + ${dy * 1.3}px)) scale(0) rotate(${Math.random()*720}deg)`, opacity: 0 },
+    ], { duration: 1200 + Math.random() * 400, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'forwards', delay: Math.random() * 200 });
+    burst.appendChild(el);
+  }
+  setTimeout(() => burst.remove(), 2000);
+}
+
+/* ---------- FINISH MODAL ---------- */
+let pomoFinishShown = false;
+function pomoShowFinishModal() {
+  if (pomoFinishShown) return;
+  pomoFinishShown = true;
+  pomoCelebrate();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pomo-finish-overlay';
+  const meta = MODE_META[pomoState.mode];
+  const note = document.getElementById('pomoNoteArea') ? document.getElementById('pomoNoteArea').value.trim() : '';
+  const mins = Math.floor(pomoState.totalSecs / 60);
+
+  overlay.innerHTML = `
+    <div class="pomo-finish-card">
+      <span class="pomo-finish-emoji">${meta.emoji}</span>
+      <div class="pomo-finish-title">${pomoState.mode === 'work' ? 'أحسنت! جلسة مكتملة 🎉' : 'الاستراحة انتهت!'}</div>
+      <div class="pomo-finish-sub">
+        ${pomoState.mode === 'work' ? `أكملت ${mins} دقيقة من التركيز المتواصل!` : `انتهت الاستراحة، هيا للعمل مجدداً 🔥`}
+        ${note ? '<br>ملاحظتك محفوظة 📝' : ''}
+      </div>
+      ${note ? `<div class="pomo-finish-note-preview" style="display:block">${note}</div>` : ''}
+      <div class="pomo-finish-btns">
+        <button class="pomo-finish-btn pomo-finish-btn-primary" onclick="pomoCloseModal(this, true)">▶ جلسة جديدة</button>
+        <button class="pomo-finish-btn pomo-finish-btn-secondary" onclick="pomoCloseModal(this, false)">× إغلاق</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay._closeCallback = (startNew) => {
+    document.body.removeChild(overlay);
+    pomoFinishShown = false;
+    if (startNew) {
+      // log and reset
+      const n = document.getElementById('pomoNoteArea') ? document.getElementById('pomoNoteArea').value.trim() : '';
+      pomoLogEntry(true, pomoState.totalSecs, n);
+      if (pomoState.mode === 'work') {
+        pomoState.sessionCount++;
+        pomoState.totalFocusMins += Math.floor(pomoState.totalSecs / 60);
+        pomoSaveTodayFocus(Math.floor(pomoState.totalSecs / 60));
+      }
+      pomoReset();
+    }
+  };
+}
+window.pomoCloseModal = function(btn, startNew) {
+  const overlay = btn.closest('.pomo-finish-overlay');
+  if (overlay && overlay._closeCallback) overlay._closeCallback(startNew);
+};
+
+/* ---------- STATS ---------- */
+function pomoSaveTodayFocus(mins) {
+  try {
+    const key = 'tacky_pomo_focus_' + new Date().toDateString();
+    const cur = parseInt(localStorage.getItem(key) || '0');
+    localStorage.setItem(key, cur + mins);
+  } catch(e) {}
+}
+function pomoGetTodayFocus() {
+  try {
+    const key = 'tacky_pomo_focus_' + new Date().toDateString();
+    return parseInt(localStorage.getItem(key) || '0');
+  } catch(e) { return 0; }
+}
+
+/* ---------- ANIMATED PARTICLES ---------- */
+function pomoCreateParticles() {
+  if (document.getElementById('pomoParticles')) return;
+  const container = document.createElement('div');
+  container.className = 'pomo-particles';
+  container.id = 'pomoParticles';
+  document.getElementById('page-pomodoro').appendChild(container);
+  const colors = ['#ef4444', '#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#a855f7'];
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement('div');
+    el.className = 'pomo-particle';
+    const size = 4 + Math.random() * 8;
+    el.style.cssText = `
+      width: ${size}px; height: ${size}px;
+      background: ${colors[i % colors.length]};
+      left: ${Math.random() * 100}%;
+      animation-duration: ${6 + Math.random() * 10}s;
+      animation-delay: ${Math.random() * 8}s;
+    `;
+    container.appendChild(el);
+  }
+}
+
+/* ---------- RENDER ---------- */
+function pomoRender() {
+  const root = document.getElementById('pomo-root');
+  if (!root) return;
+
+  const meta = MODE_META[pomoState.mode];
+  const totalSecs = pomoState.totalSecs;
+  const elapsed = pomoState.elapsed;
+  const remaining = Math.max(0, totalSecs - elapsed);
+  const isDown = pomoState.direction === 'down';
+  const displaySecs = isDown ? remaining : Math.min(elapsed, totalSecs);
+  const isWarning = remaining > 0 && remaining < totalSecs * 0.2 && pomoState.running;
+  const isOvertime = elapsed > totalSecs;
+  const progress = Math.min(elapsed / totalSecs, 1);
+
+  // Time format
+  const minsDisp = Math.floor(displaySecs / 60);
+  const secsDisp = displaySecs % 60;
+  const timeStr = `${String(minsDisp).padStart(2,'0')}:${String(secsDisp).padStart(2,'0')}`;
+
+  // Overtime display
+  const otMins = Math.floor(pomoOvertimeSec / 60);
+  const otSecs = pomoOvertimeSec % 60;
+  const otStr = `+${String(otMins).padStart(2,'0')}:${String(otSecs).padStart(2,'0')}`;
+
+  // SVG ring
+  const R = 120;
+  const C = 2 * Math.PI * R;
+  const dashOffset = C * (1 - progress);
+
+  // Update title
+  document.title = pomoState.running
+    ? `${isOvertime ? otStr + ' زائد' : timeStr} — TACKY بومودورو`
+    : 'TACKY Habit Tracker Pro ✨';
+
+  // Update root state classes
+  const pageEl = document.getElementById('page-pomodoro');
+  pageEl.classList.toggle('pomo-running', pomoState.running && !isOvertime);
+  pageEl.classList.toggle('pomo-warning', isWarning);
+  pageEl.classList.toggle('pomo-overtime', isOvertime && pomoState.running);
+
+  // Update accent
+  document.documentElement.style.setProperty('--pomo-accent-rgb', meta.rgb);
+
+  root.innerHTML = `
+    <div class="pomo-header">
+      <h2>⏱ بومودورو</h2>
+      <p>مؤقت التركيز — يعمل حتى لو أغلقت التبويب</p>
+    </div>
+
+    <!-- Mode pills -->
+    <div class="pomo-modes">
+      <button class="pomo-mode-btn ${pomoState.mode === 'work' ? 'active' : ''}" onclick="pomoSetMode('work')">🔥 عمل</button>
+      <button class="pomo-mode-btn ${pomoState.mode === 'short' ? 'active' : ''}" onclick="pomoSetMode('short')">☕ استراحة</button>
+      <button class="pomo-mode-btn ${pomoState.mode === 'long' ? 'active' : ''}" onclick="pomoSetMode('long')">🌿 طويلة</button>
+    </div>
+
+    <!-- Clock -->
+    <div class="pomo-clock-wrap">
+      <svg class="pomo-ring-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+        <circle class="pomo-ring-bg" cx="140" cy="140" r="${R}"/>
+        <circle class="pomo-ring-glow" cx="140" cy="140" r="${R}" stroke="${meta.color}" stroke-dasharray="${C}" stroke-dashoffset="${dashOffset}"/>
+        <circle class="pomo-ring-progress" cx="140" cy="140" r="${R}"
+          stroke="${isOvertime ? '#fbbf24' : isWarning ? '#ef4444' : meta.color}"
+          stroke-dasharray="${C}"
+          stroke-dashoffset="${dashOffset}"
+        />
+      </svg>
+      <div class="pomo-clock-face">
+        <div class="pomo-time-display">${isOvertime && pomoState.running ? otStr : timeStr}</div>
+        <div class="pomo-mode-label">${meta.label}</div>
+        <div class="pomo-session-badge">جلسة #${pomoState.sessionCount + 1}</div>
+      </div>
+    </div>
+
+    ${isOvertime && pomoState.running ? `
+    <div class="pomo-overtime-banner">
+      <div class="ot-icon">⏰</div>
+      <div class="ot-text">
+        <div class="ot-title">تجاوزت الوقت — ${otStr}</div>
+        <div class="ot-sub">المؤقت يعمل حتى توقفه. الوقت الزائد لا يُحتسب.</div>
+      </div>
+    </div>
+    ` : ''}
+
+    <!-- Controls -->
+    <div class="pomo-controls">
+      <button class="pomo-btn-sec" onclick="pomoReset()" title="إعادة تعيين">↺</button>
+      <button class="pomo-btn-main" onclick="${pomoState.running ? 'pomoStop(true)' : 'pomoStart()'}" title="${pomoState.running ? 'إيقاف' : 'تشغيل'}">
+        ${pomoState.running ? '⏹' : '▶'}
+      </button>
+      <button class="pomo-btn-sec" onclick="pomoRequestNotifPermission()" title="تفعيل الإشعارات">🔔</button>
+    </div>
+
+    <!-- Direction -->
+    <div class="pomo-direction-wrap">
+      <div class="pomo-direction-icon">${isDown ? '⬇️' : '⬆️'}</div>
+      <div class="pomo-direction-info">
+        <div class="pomo-direction-title">اتجاه المؤقت</div>
+        <div class="pomo-direction-sub">${isDown ? 'تنازلي — يعد من الوقت إلى الصفر' : 'تصاعدي — يعد من الصفر إلى الوقت المحدد'}</div>
+      </div>
+      <div class="pomo-direction-toggle">
+        <button class="pomo-dir-opt ${isDown ? 'active' : ''}" onclick="pomoSetDirection('down')">⬇ تنازلي</button>
+        <button class="pomo-dir-opt ${!isDown ? 'active' : ''}" onclick="pomoSetDirection('up')">⬆ تصاعدي</button>
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div class="pomo-presets-wrap">
+      <div class="pomo-presets-title">⚡ الأوقات المحددة مسبقاً</div>
+      <div class="pomo-presets">
+        ${PRESETS.map((p, i) => `
+          <button class="pomo-preset-btn ${p.mins && p.mins * 60 === totalSecs ? 'active' : ''}"
+            onclick="${p.mins ? `pomoSelectPreset(${i})` : `document.getElementById('pomoCustMin').focus()`}">
+            <span class="pomo-preset-duration">${p.mins ? p.mins + 'د' : '✏️'}</span>
+            ${p.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Custom time -->
+    <div class="pomo-custom-wrap">
+      <div class="pomo-custom-title">✏️ وقت مخصص</div>
+      <div class="pomo-custom-row">
+        <input type="number" class="pomo-custom-input" id="pomoCustMin" placeholder="25" min="0" max="120" value="${Math.floor(totalSecs/60)}">
+        <div class="pomo-custom-sep">:</div>
+        <input type="number" class="pomo-custom-input" id="pomoCustSec" placeholder="00" min="0" max="59" value="${totalSecs%60}">
+        <button class="pomo-custom-apply" onclick="pomoApplyCustom()">تطبيق ✓</button>
+      </div>
+    </div>
+
+    <!-- Note -->
+    <div class="pomo-note-wrap">
+      <div class="pomo-note-title">📝 ملاحظة الجلسة</div>
+      <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="ماذا تعمل الآن؟ هل أنهيت مهمتك؟ سجّل ملاحظاتك هنا...">${(pomoLog.length && pomoLog[0].note) || ''}</textarea>
+    </div>
+
+    <!-- Stats -->
+    <div class="pomo-status-bar">
+      <div class="pomo-stat-card">
+        <div class="pomo-stat-val">${pomoState.sessionCount}</div>
+        <div class="pomo-stat-lbl">جلسات اليوم</div>
+      </div>
+      <div class="pomo-stat-card">
+        <div class="pomo-stat-val">${pomoGetTodayFocus()}</div>
+        <div class="pomo-stat-lbl">دقيقة تركيز</div>
+      </div>
+      <div class="pomo-stat-card">
+        <div class="pomo-stat-val">${pomoState.totalFocusMins}</div>
+        <div class="pomo-stat-lbl">إجمالي دقائق</div>
+      </div>
+    </div>
+
+    <!-- Session log -->
+    <div class="pomo-log-wrap">
+      <div class="pomo-log-title">
+        📋 سجل الجلسات
+        <span onclick="pomoClearLog()">مسح السجل</span>
+      </div>
+      <div class="pomo-log-list">
+        ${pomoLog.length === 0
+          ? `<div style="text-align:center;color:var(--text-3);font-size:0.85rem;padding:20px">لا يوجد سجل بعد — ابدأ جلستك الأولى! 🍅</div>`
+          : pomoLog.slice(0, 10).map(e => {
+              const modeMeta = MODE_META[e.mode] || MODE_META.work;
+              const durMins = Math.floor(e.durationSec / 60);
+              const durSecs = e.durationSec % 60;
+              return `
+                <div class="pomo-log-item">
+                  <div class="pomo-log-emoji">${e.done ? modeMeta.emoji : '❌'}</div>
+                  <div class="pomo-log-info">
+                    <div class="pomo-log-type ${e.done ? 'pomo-log-done' : 'pomo-log-missed'}">
+                      ${e.done ? 'مكتملة ✓' : 'متوقفة'} — ${modeMeta.label.split(' ')[0]}
+                    </div>
+                    <div class="pomo-log-detail">
+                      ${durMins}:${String(durSecs).padStart(2,'0')} دقيقة
+                      ${e.overtime > 0 ? ` (+${Math.floor(e.overtime/60)}:${String(e.overtime%60).padStart(2,'0')} زائد)` : ''}
+                      ${e.note ? ` — ${e.note.slice(0,40)}${e.note.length > 40 ? '...' : ''}` : ''}
+                    </div>
+                  </div>
+                  <div class="pomo-log-time">${e.time}</div>
+                </div>
+              `;
+            }).join('')
+        }
+      </div>
+    </div>
+  `;
+
+  // Restore note text if user was typing
+  // (we set it via innerHTML above, no need to restore)
+}
+
+/* ---------- INIT ---------- */
+function pomoInit() {
+  pomoLoad();
+  pomoCreateParticles();
+  pomoRender();
+  pomoRequestNotifPermission();
+
+  // Intercept showPage to track if pomo page is open
+  const _origShow = window.showPage;
+  window.showPage = function(name) {
+    pomoPageOpen = (name === 'pomodoro');
+    if (name === 'pomodoro') pomoRender();
+    if (_origShow) _origShow(name);
+  };
+
+  // If timer was already running (from another session/worker), keep going
+  if (pomoState.running) {
+    pomoState.running = false; // was paused on load
+  }
+}
+
+// Auto-init when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', pomoInit);
+} else {
+  setTimeout(pomoInit, 300);
+}
+
+})(); // end IIFE
 
 // =========== DRAG & DROP for Habits ===========
 let _habitDragId = null;
