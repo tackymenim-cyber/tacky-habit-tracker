@@ -3848,6 +3848,21 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   /* Mood grid — scrollable */
   .mood-hourly-wrap { padding: 14px; margin-bottom: 12px; overflow: hidden; }
   #moodGridWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* Sticky time-label column for the mood grid — MOBILE ONLY.
+   Desktop keeps its original plain (non-sticky) layout untouched. */
+@media (max-width: 768px) {
+  #moodGridWrap th.mood-time-col,
+  #moodGridWrap td.mood-time-col {
+    position: sticky; right: 0; z-index: 5;
+    background-color: var(--white) !important;
+    border-left: 1px solid var(--border);
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+}
   .mood-cell { width: 26px; height: 26px; font-size: 0.68rem; border-radius: 6px; }
   /* Sleep & water */
   .sleep-days { gap: 5px; flex-wrap: wrap; }
@@ -9687,19 +9702,64 @@ function _scrollTableToToday(force) {
 }
 
 // =========== RENDER MOOD ===========
+function _clampMoodScroll(wrap) {
+  const max = wrap.scrollWidth - wrap.clientWidth;
+  if (max <= 0) return;
+  if (wrap.scrollLeft > 0) wrap.scrollLeft = Math.min(wrap.scrollLeft, max);
+  else if (wrap.scrollLeft < 0) wrap.scrollLeft = Math.max(wrap.scrollLeft, -max);
+}
+function _scrollMoodGridToToday() {
+  // Desktop layout is untouched on purpose — this only applies on mobile,
+  // where the time-label column is sticky (see the mobile-only CSS above).
+  if (!window.matchMedia('(max-width: 768px)').matches) return;
+  if (curY !== today.getFullYear() || curM !== today.getMonth()) return;
+
+  const wrap = document.getElementById('moodGridWrap');
+  if (!wrap) return;
+
+  const doAlign = (behavior) => {
+    const headerCell = wrap.querySelector('th.mood-today-th');
+    const stickyCol = wrap.querySelector('th.mood-time-col');
+    if (!headerCell || !stickyCol) return;
+
+    const wrapRect = wrap.getBoundingClientRect();
+    const cellRect = headerCell.getBoundingClientRect();
+    const stickyRect = stickyCol.getBoundingClientRect();
+    if (cellRect.width === 0 || wrapRect.width === 0) return;
+
+    const stickyW = stickyRect.width;
+    const visibleLeft = wrapRect.left;
+    const visibleWidth = wrapRect.width - stickyW;
+    const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
+    wrap.scrollBy({ left: offset, behavior });
+    _clampMoodScroll(wrap);
+  };
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      doAlign('auto');
+      const realign = () => requestAnimationFrame(() => requestAnimationFrame(() => doAlign('auto')));
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(realign).catch(() => {});
+      if (document.readyState !== 'complete') window.addEventListener('load', realign, { once: true });
+      else setTimeout(realign, 150);
+    });
+  });
+}
+
 function renderMood() {
   const totalDays = daysInMonth(curY, curM);
   let gridHtml = `<table style="border-collapse:collapse;min-width:100%">`;
-  gridHtml += `<tr><th style="padding:4px 8px;font-size:0.65rem;color:var(--text-3);text-align:${currentLang === 'ar' ? 'right' : 'left'};min-width:120px">${currentLang === 'ar' ? 'الوقت / اليوم' : currentLang === 'fr' ? 'Moment / Jour' : 'Time / Day'}</th>`;
+  gridHtml += `<tr><th class="mood-time-col" style="padding:4px 8px;font-size:0.65rem;color:var(--text-3);text-align:${currentLang === 'ar' ? 'right' : 'left'};min-width:120px">${currentLang === 'ar' ? 'الوقت / اليوم' : currentLang === 'fr' ? 'Moment / Jour' : 'Time / Day'}</th>`;
   for (let d = 1; d <= totalDays; d++) {
-    const todayCls = isToday(d) ? 'color:var(--blue-500);font-weight:700' : 'color:var(--text-3)';
-    gridHtml += `<th style="padding:3px 2px;font-size:0.6rem;${todayCls};min-width:30px;text-align:center">${d}</th>`;
+    const isTd = isToday(d);
+    const todayCls = isTd ? 'color:var(--blue-500);font-weight:700' : 'color:var(--text-3)';
+    gridHtml += `<th class="${isTd ? 'mood-today-th' : ''}" style="padding:3px 2px;font-size:0.6rem;${todayCls};min-width:30px;text-align:center">${d}</th>`;
   }
   gridHtml += '</tr>';
   const tr = T[currentLang] || T.ar;
   const hours = tr.hours || HOURS;
   hours.forEach((hour, hi) => {
-    gridHtml += `<tr><td style="padding:3px 8px;font-size:0.68rem;color:var(--text-2);font-weight:600;white-space:nowrap">${hour}</td>`;
+    gridHtml += `<tr><td class="mood-time-col" style="padding:3px 8px;font-size:0.68rem;color:var(--text-2);font-weight:600;white-space:nowrap">${hour}</td>`;
     for (let d = 1; d <= totalDays; d++) {
       const k = moodKey(d, HOUR_KEYS[hi]);
       const m = moodData[k];
@@ -9712,6 +9772,7 @@ function renderMood() {
   });
   gridHtml += '</table>';
   document.getElementById('moodGridWrap').innerHTML = gridHtml;
+  _scrollMoodGridToToday();
 
   const days7 = [];
   for (let i = 6; i >= 0; i--) {
