@@ -4579,7 +4579,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <button class="nav-tab" id="navTabQuotes" onclick="showPage('quotes')">💬 اقتباسات</button>
     <button class="nav-tab" id="navTabJournal" onclick="showPage('journal')"><span id="navJournalTxt">📖 يوميات</span></button>
     <button class="nav-tab" id="navTabAchievements" onclick="showPage('achievements')"><span id="navAchievementsTxt">🏆 إنجازاتي</span></button>
-    <button class="nav-tab" id="navTabPomodoro" onclick="showPage('pomodoro')">🍅 بومودورو</button>
+    <button class="nav-tab" id="navTabPomodoro" onclick="showPage('pomodoro')"><span id="navPomodoroTxt">🍅 بومودورو</span></button>
   </div>
   <div class="nav-right">
     <div class="month-nav">
@@ -4635,7 +4635,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
     <span class="bnav-icon">🏆</span><span id="bnavAchievementsTxt">إنجازاتي</span>
   </button>
   <button class="bottom-nav-btn" id="bnavPomodoro" data-page="pomodoro" onclick="showPage('pomodoro');_syncBottomNav(this)">
-    <span class="bnav-icon">🍅</span><span>بومودورو</span>
+    <span class="bnav-icon">🍅</span><span id="bnavPomodoroTxt">بومودورو</span>
   </button>
 </nav>
 
@@ -5869,7 +5869,7 @@ const T = {
   ar: {
     dir: 'rtl', lang: 'ar',
     navTracker: '📋 العادات', navMood: '🧠 المزاج', navWeekly: '📅 المهام', navGym: '🏋️ الجيم', navQuotes: '💬 اقتباسات',
-    navJournal: '📖 يوميات', navAchievements: '🏆 إنجازاتي', journalHeaderTitle: '📖 يومياتي',
+    navJournal: '📖 يوميات', navAchievements: '🏆 إنجازاتي', navPomodoro: '🍅 بومودورو', journalHeaderTitle: '📖 يومياتي',
     fbsTitle: 'إعداد Firebase', fbsSubtitle: 'اتصل بقاعدة بياناتك السحابية مرة واحدة فقط',
     fbsH2Step1: '🚀 كيف تحصل على بيانات Firebase؟', fbsDescStep1: 'تحتاج إلى إنشاء مشروع مجاني على Firebase Console. اتبع الخطوات:',
     fbsLi1: 'اذهب إلى <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a> وأنشئ مشروعاً جديداً',
@@ -6251,7 +6251,7 @@ const T = {
   fr: {
     dir: 'ltr', lang: 'fr',
     navTracker: '📋 Habitudes', navMood: '🧠 Humeur', navWeekly: '📅 Tâches', navGym: '🏋️ Gym', navQuotes: '💬 Citations',
-    navJournal: '📖 Journal', navAchievements: '🏆 Réussites', journalHeaderTitle: '📖 Mon journal',
+    navJournal: '📖 Journal', navAchievements: '🏆 Réussites', navPomodoro: '🍅 Pomodoro', journalHeaderTitle: '📖 Mon journal',
     fbsTitle: 'Configuration Firebase', fbsSubtitle: 'Connecte ta base de données cloud une seule fois',
     fbsH2Step1: '🚀 Comment obtenir tes données Firebase ?', fbsDescStep1: 'Tu dois créer un projet gratuit sur Firebase Console. Suis les étapes :',
     fbsLi1: 'Va sur <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a> et crée un nouveau projet',
@@ -6636,7 +6636,7 @@ const T = {
   en: {
     dir: 'ltr', lang: 'en',
     navTracker: '📋 Habits', navMood: '🧠 Mood', navWeekly: '📅 Tasks', navGym: '🏋️ Gym', navQuotes: '💬 Quotes',
-    navJournal: '📖 Journal', navAchievements: '🏆 Achievements', journalHeaderTitle: '📖 My Journal',
+    navJournal: '📖 Journal', navAchievements: '🏆 Achievements', navPomodoro: '🍅 Pomodoro', journalHeaderTitle: '📖 My Journal',
     fbsTitle: 'Firebase Setup', fbsSubtitle: 'Connect your cloud database just once',
     fbsH2Step1: '🚀 How to get your Firebase data?', fbsDescStep1: 'You need to create a free project on Firebase Console. Follow these steps:',
     fbsLi1: 'Go to <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a> and create a new project',
@@ -7127,11 +7127,13 @@ function setLang(lang, _skipSave) {
   if (njt) njt.textContent = tr.navJournal;
   const nat = document.getElementById('navAchievementsTxt');
   if (nat) nat.textContent = tr.navAchievements;
+  const npt = document.getElementById('navPomodoroTxt');
+  if (npt) npt.textContent = tr.navPomodoro;
   // Bottom nav (mobile) — id-based, was never wired to translations before
   const bnavMap = {
     bnavTrackerTxt: 'navTracker', bnavMoodTxt: 'navMood', bnavWeeklyTxt: 'navWeekly',
     bnavGymTxt: 'navGym', bnavQuotesTxt: 'navQuotes', bnavJournalTxt: 'navJournal',
-    bnavAchievementsTxt: 'navAchievements',
+    bnavAchievementsTxt: 'navAchievements', bnavPomodoroTxt: 'navPomodoro',
   };
   Object.keys(bnavMap).forEach(id => {
     const el = document.getElementById(id);
@@ -13657,13 +13659,16 @@ window.addEventListener('focus', _checkMidnightRollover);
 /* ---------- CSS ---------- */
 const pomoCss = `
 #page-pomodoro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 24px 16px 80px;
   background: transparent;
   position: relative;
   overflow: hidden;
+}
+#page-pomodoro.active.page-visible,
+#page-pomodoro.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* animated background particles */
