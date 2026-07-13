@@ -7049,6 +7049,7 @@ function setLang(lang) {
   currentLang = lang;
   settings.lang = lang;
   save();
+  try { document.cookie = `hb2_lang=${encodeURIComponent(lang)}; max-age=31536000; path=/`; } catch (e) {}
   const tr = T[lang];
 
   // نوقف انتقال (transition) لوحة الإعدادات مؤقتاً أثناء تبديل اتجاه الصفحة
@@ -7189,6 +7190,12 @@ function setLang(lang) {
   updateAchievementsPageText();
   if (typeof renderThemePicker === 'function') { try { renderThemePicker(); } catch(e) {} }
   renderAll();
+  // renderAll() just rebuilt the habits table with the new language's labels,
+  // which can leave the scroll position wherever the rebuild happened to land.
+  // Force a fresh re-center on today's column instead of waiting for a manual
+  // page refresh to fix it.
+  _tableScrolledOnce = false;
+  if (typeof _scrollTableToToday === 'function') _scrollTableToToday(true);
 }
 
 function updateJournalPageText() {
@@ -7748,8 +7755,26 @@ const _ls = (() => {
   }
 })();
 
-// Settings stay in localStorage (they are device-specific preferences)
-let settings = JSON.parse(_ls.getItem('hb2_settings') || '{}');
+// Settings stay in localStorage (they are device-specific preferences).
+// Wrapped in try/catch: a corrupted/invalid stored value would otherwise
+// throw here and silently reset every setting (including language) back
+// to defaults on the very next load.
+let settings;
+try {
+  settings = JSON.parse(_ls.getItem('hb2_settings') || '{}');
+} catch (e) {
+  console.warn('hb2_settings was corrupted, resetting to defaults:', e);
+  settings = {};
+}
+// Backup for the language preference specifically, via a cookie — in case
+// localStorage isn't persisting reliably on this particular device/browser,
+// this gives us a second place to recover it from.
+if (!settings.lang) {
+  try {
+    const m = document.cookie.match(/(?:^|; )hb2_lang=([^;]+)/);
+    if (m) settings.lang = decodeURIComponent(m[1]);
+  } catch (e) {}
+}
 settings = Object.assign({
   theme: 'light',
   fontSize: 'medium',
