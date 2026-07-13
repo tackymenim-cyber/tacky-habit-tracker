@@ -7743,29 +7743,80 @@ let soundEnabled = false;
 
 
 // Safe localStorage wrapper (works in private/incognito mode)
+// Detects whether localStorage actually PERSISTS (not just whether it throws).
+// Some browsers/extensions allow set/getItem to succeed within the same
+// page load but silently discard the data on the next load (e.g. strict
+// "clear on exit" privacy modes, some in-private/incognito variants, or
+// storage partitioning quirks). A plain try/catch around setItem cannot
+// detect that case — it only catches an outright exception. So in addition
+// to the try/catch, every write is mirrored into a cookie-backed store
+// (see _cookieStore below) that survives refreshes even when localStorage
+// silently fails to persist.
+let _localStorageWritable = true;
 const _ls = (() => {
   try {
     localStorage.setItem('__test__', '1');
     localStorage.removeItem('__test__');
     return localStorage;
   } catch(e) {
-    // Fallback to in-memory store when localStorage is blocked
+    // Fallback to in-memory store when localStorage throws outright.
+    _localStorageWritable = false;
     const _mem = {};
     return { getItem: k => _mem[k] ?? null, setItem: (k,v) => { _mem[k]=v; }, removeItem: k => { delete _mem[k]; } };
   }
 })();
 
-// Settings stay in localStorage (they are device-specific preferences).
-// Wrapped in try/catch: a corrupted/invalid stored value would otherwise
-// throw here and silently reset every setting (including language) back
-// to defaults on the very next load.
+// Cookie-backed store: a second, independent persistence layer for the
+// settings object. Cookies and localStorage are blocked/cleared by
+// different browser mechanisms, so if one silently fails the other is very
+// likely to still work — whichever one has the data on next load wins.
+const _COOKIE_KEY = 'hb2_settings_bak';
+const _cookieStore = {
+  set(value) {
+    try {
+      document.cookie = `${_COOKIE_KEY}=${encodeURIComponent(value)}; max-age=31536000; path=/; SameSite=Lax`;
+    } catch (e) {}
+  },
+  get() {
+    try {
+      const m = document.cookie.match(new RegExp('(?:^|; )' + _COOKIE_KEY + '=([^;]+)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    } catch (e) { return null; }
+  }
+};
+
+// Settings stay in localStorage (they are device-specific preferences),
+// mirrored to a cookie as a fallback. Wrapped in try/catch: a corrupted/
+// invalid stored value would otherwise throw here and silently reset every
+// setting (including language) back to defaults on the very next load.
+//
+// We read BOTH sources and use whichever one actually has data, preferring
+// whichever has the more recent save timestamp — so a silent localStorage
+// failure (empty/stale read) doesn't win just because it's checked first.
 let settings;
+let _settingsFromLS = null;
+let _settingsFromCookie = null;
 try {
-  settings = JSON.parse(_ls.getItem('hb2_settings') || '{}');
+  const raw = _ls.getItem('hb2_settings');
+  if (raw) _settingsFromLS = JSON.parse(raw);
 } catch (e) {
-  console.warn('hb2_settings was corrupted, resetting to defaults:', e);
-  settings = {};
+  console.warn('hb2_settings (localStorage) was corrupted:', e);
 }
+try {
+  const rawCookie = _cookieStore.get();
+  if (rawCookie) _settingsFromCookie = JSON.parse(rawCookie);
+} catch (e) {
+  console.warn('hb2_settings (cookie backup) was corrupted:', e);
+}
+
+if (_settingsFromLS && _settingsFromCookie) {
+  const lsTime = _settingsFromLS._savedAt || 0;
+  const ckTime = _settingsFromCookie._savedAt || 0;
+  settings = ckTime > lsTime ? _settingsFromCookie : _settingsFromLS;
+} else {
+  settings = _settingsFromLS || _settingsFromCookie || {};
+}
+
 // Backup for the language preference specifically, via a cookie — in case
 // localStorage isn't persisting reliably on this particular device/browser,
 // this gives us a second place to recover it from.
@@ -7819,8 +7870,14 @@ let _firestoreUnsubscribe = null;
 let _saveQueue = Promise.resolve();
 
 function save() {
-  // Always save settings locally (device preferences)
-  _ls.setItem('hb2_settings', JSON.stringify(settings));
+  // Always save settings locally (device preferences), to BOTH localStorage
+  // and the cookie backup. Stamping _savedAt lets the next page load figure
+  // out which of the two stores actually persisted the latest write, in
+  // case one of them silently failed.
+  settings._savedAt = Date.now();
+  const _settingsJson = JSON.stringify(settings);
+  _ls.setItem('hb2_settings', _settingsJson);
+  _cookieStore.set(_settingsJson);
 
   // Save data to Firestore if user is logged in
   const user = window._currentUser;
@@ -7900,7 +7957,10 @@ async function _doFirestoreWrite(expectedUid, _retryCount) {
 function _saveImmediate() {
   clearTimeout(_saveDebounceTimer);
   _saveDebounceTimer = null;
-  _ls.setItem('hb2_settings', JSON.stringify(settings));
+  settings._savedAt = Date.now();
+  const _settingsJson = JSON.stringify(settings);
+  _ls.setItem('hb2_settings', _settingsJson);
+  _cookieStore.set(_settingsJson);
   const user = window._currentUser;
   if (user) {
     _saveToFirestore(user.uid, 0).catch(() => {});
