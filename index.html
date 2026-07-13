@@ -13721,6 +13721,11 @@ const pomoCss = `
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+.pomo-clock-wrap-lg {
+  width: 320px;
+  height: 320px;
 }
 .pomo-ring-svg {
   position: absolute;
@@ -13792,7 +13797,11 @@ const pomoCss = `
   color: var(--text);
   letter-spacing: -2px;
   line-height: 1;
-  transition: color 0.4s;
+  transition: color 0.4s, font-size 0.3s;
+}
+.pomo-time-display-sm {
+  font-size: 3.3rem;
+  letter-spacing: -1px;
 }
 .pomo-overtime .pomo-time-display {
   color: var(--yellow, #fbbf24);
@@ -13827,6 +13836,25 @@ const pomoCss = `
   gap: 16px;
   align-items: center;
 }
+.pomo-paused-row {
+  display: flex;
+  justify-content: center;
+  margin-top: -6px;
+}
+.pomo-resume-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 99px;
+  background: var(--green, #22c55e);
+  color: #fff;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.pomo-resume-btn:hover { transform: translateY(-1px); }
+.pomo-resume-btn:active { transform: scale(0.95); }
 .pomo-btn-main {
   width: 72px;
   height: 72px;
@@ -14065,6 +14093,7 @@ const pomoCss = `
 .pomo-note-save-row {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
   margin-top: 8px;
 }
 .pomo-note-save-btn {
@@ -14082,6 +14111,18 @@ const pomoCss = `
 .pomo-note-save-btn:hover { transform: translateY(-1px); }
 .pomo-note-save-btn:active { transform: scale(0.96); }
 .pomo-note-save-btn.saved { background: var(--green, #22c55e); }
+.pomo-note-delete-btn {
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg2);
+  color: var(--text-2);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s, border-color 0.2s;
+}
+.pomo-note-delete-btn:hover { background: var(--red-light, #fee2e2); border-color: var(--red, #ef4444); }
+.pomo-note-delete-btn:active { transform: scale(0.94); }
 
 /* ---------- STATUS + HISTORY ---------- */
 .pomo-status-bar {
@@ -14164,6 +14205,19 @@ const pomoCss = `
 .pomo-log-done { color: var(--green); }
 .pomo-log-missed { color: var(--red); }
 .pomo-log-running { color: var(--yellow, #fbbf24); }
+.pomo-log-del {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-size: 0.85rem; font-weight: 800;
+  color: var(--text-3);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+.pomo-log-del:hover { background: var(--red-light); color: var(--red); }
 
 /* ---------- CELEBRATION BURST ---------- */
 .pomo-burst {
@@ -14387,6 +14441,7 @@ let pomoState = {
   todayFocusMins: 0,
   totalFocusMins: 0,
   currentNote: '',
+  paused: false,
 };
 
 let pomoLog = [];
@@ -14411,6 +14466,8 @@ const POMO_T = {
     overtimeSub: 'المؤقت يعمل حتى توقفه. الوقت الزائد لا يُحتسب.',
     overtimeSuffix: 'زائد',
     resetTitle: 'إعادة تعيين',
+    pauseTitle: 'إيقاف مؤقت',
+    resumeBtn: '▶ استئناف',
     stopTitle: 'إيقاف',
     startTitle: 'تشغيل',
     notifTitle: 'تفعيل الإشعارات',
@@ -14429,9 +14486,12 @@ const POMO_T = {
     noteTitle: '📝 ملاحظة الجلسة',
     notePlaceholder: 'ماذا تعمل الآن؟ هل أنهيت مهمتك؟ سجّل ملاحظاتك هنا...',
     noteSave: '💾 حفظ الملاحظة',
+    noteDelete: 'حذف الملاحظة',
+    noteDeleteConfirm: 'هل تريد حذف الملاحظة؟',
     noteSaved: '✓ تم الحفظ',
     logTitle: '📋 سجل الجلسات',
     logClear: 'مسح السجل',
+    logDeleteEntry: 'حذف الجلسة',
     logEmpty: 'لا يوجد سجل بعد — ابدأ جلستك الأولى! 🍅',
     logDone: 'مكتملة ✓',
     logMissed: 'متوقفة',
@@ -14451,6 +14511,8 @@ const POMO_T = {
     overtimeSub: 'The timer keeps running until you stop it. Extra time is not counted.',
     overtimeSuffix: 'over',
     resetTitle: 'Reset',
+    pauseTitle: 'Pause',
+    resumeBtn: '▶ Resume',
     stopTitle: 'Stop',
     startTitle: 'Start',
     notifTitle: 'Enable notifications',
@@ -14469,9 +14531,12 @@ const POMO_T = {
     noteTitle: '📝 Session note',
     notePlaceholder: 'What are you working on? Did you finish your task? Write your notes here...',
     noteSave: '💾 Save note',
+    noteDelete: 'Delete note',
+    noteDeleteConfirm: 'Do you want to delete the note?',
     noteSaved: '✓ Saved',
     logTitle: '📋 Session log',
     logClear: 'Clear log',
+    logDeleteEntry: 'Delete session',
     logEmpty: 'No sessions yet — start your first one! 🍅',
     logDone: 'Completed ✓',
     logMissed: 'Stopped',
@@ -14491,6 +14556,8 @@ const POMO_T = {
     overtimeSub: "Le minuteur continue jusqu'à l'arrêt. Le temps supplémentaire n'est pas compté.",
     overtimeSuffix: 'de plus',
     resetTitle: 'Réinitialiser',
+    pauseTitle: 'Pause',
+    resumeBtn: '▶ Reprendre',
     stopTitle: 'Arrêter',
     startTitle: 'Démarrer',
     notifTitle: 'Activer les notifications',
@@ -14509,9 +14576,12 @@ const POMO_T = {
     noteTitle: '📝 Note de session',
     notePlaceholder: 'Sur quoi travaillez-vous ? Avez-vous terminé votre tâche ? Notez ici...',
     noteSave: '💾 Enregistrer la note',
+    noteDelete: 'Supprimer la note',
+    noteDeleteConfirm: 'Voulez-vous supprimer la note ?',
     noteSaved: '✓ Enregistré',
     logTitle: '📋 Historique des sessions',
     logClear: "Effacer l'historique",
+    logDeleteEntry: 'Supprimer la session',
     logEmpty: 'Aucune session pour le moment — commencez la première ! 🍅',
     logDone: 'Terminée ✓',
     logMissed: 'Arrêtée',
@@ -14628,12 +14698,18 @@ function pomoTick() {
   // Save every 5 ticks
   if (pomoState.elapsed % 5 === 0) pomoSave();
 
-  if (pomoPageOpen) pomoRender();
+  // Keep the note draft in sync so it's never lost, even if a full re-render
+  // gets triggered (e.g. entering/leaving overtime swaps in the banner).
+  const _noteEl = document.getElementById('pomoNoteArea');
+  if (_noteEl) pomoState.currentNote = _noteEl.value;
+
+  if (pomoPageOpen) pomoRenderTick();
 }
 
 window.pomoStart = function pomoStart() {
   if (pomoState.running) return;
   pomoState.running = true;
+  pomoState.paused = false;
   pomoNotified = false;
   pomoOvertimeActive = pomoState.elapsed >= pomoState.totalSecs;
   pomoStartWorker();
@@ -14641,10 +14717,19 @@ window.pomoStart = function pomoStart() {
   pomoRender();
 }
 
-window.pomoStop = function pomoStop(record) {
-  if (!pomoState.running && !record) return;
+window.pomoPause = function pomoPause() {
+  if (!pomoState.running) return;
   pomoStopWorker();
-  if (pomoState.running && record !== false) {
+  pomoState.running = false;
+  pomoState.paused = true;
+  pomoSave();
+  if (pomoPageOpen) pomoRender();
+}
+
+window.pomoStop = function pomoStop(record) {
+  if (!pomoState.running && !pomoState.paused && !record) return;
+  pomoStopWorker();
+  if ((pomoState.running || pomoState.paused) && record !== false) {
     const didFinish = pomoState.elapsed >= pomoState.totalSecs;
     const duration = Math.min(pomoState.elapsed, pomoState.totalSecs);
     const noteArea = document.getElementById('pomoNoteArea');
@@ -14657,6 +14742,7 @@ window.pomoStop = function pomoStop(record) {
     }
   }
   pomoState.running = false;
+  pomoState.paused = false;
   pomoState.elapsed = 0;
   pomoOvertimeActive = false;
   pomoOvertimeSec = 0;
@@ -14667,6 +14753,7 @@ window.pomoStop = function pomoStop(record) {
 
 window.pomoReset = function pomoReset() {
   pomoStop(false);
+  pomoState.paused = false;
   pomoState.elapsed = 0;
   pomoOvertimeActive = false;
   pomoOvertimeSec = 0;
@@ -14795,6 +14882,18 @@ window.pomoSaveNote = function pomoSaveNote() {
   }
 }
 
+window.pomoDeleteNote = function pomoDeleteNote() {
+  const t = pomoT();
+  const area = document.getElementById('pomoNoteArea');
+  if (!area || (!area.value && !pomoState.currentNote)) return;
+  pomoConfirm(t.noteDeleteConfirm, () => {
+    pomoState.currentNote = '';
+    const a = document.getElementById('pomoNoteArea');
+    if (a) a.value = '';
+    pomoSave();
+  }, '🗑️');
+}
+
 window.pomoClearLog = function pomoClearLog() {
   const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
   const confirmMsg = lang === 'ar' ? 'هل تريد مسح سجل الجلسات؟' : lang === 'fr' ? "Voulez-vous effacer l'historique des sessions ?" : 'Do you want to clear the session log?';
@@ -14805,11 +14904,43 @@ window.pomoClearLog = function pomoClearLog() {
   }, '🗑️');
 }
 
+window.pomoDeleteEntry = function pomoDeleteEntry(ts) {
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  const confirmMsg = lang === 'ar' ? 'هل تريد حذف هذه الجلسة؟' : lang === 'fr' ? 'Voulez-vous supprimer cette session ?' : 'Do you want to delete this session?';
+  pomoConfirm(confirmMsg, () => {
+    pomoLog = pomoLog.filter(e => e.ts !== ts);
+    pomoSave();
+    pomoRender();
+  }, '🗑️');
+}
+
 /* ---------- NOTIFICATIONS ---------- */
 window.pomoRequestNotifPermission = function pomoRequestNotifPermission() {
-  if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission();
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  if (!('Notification' in window)) {
+    const msg = lang === 'ar' ? 'متصفحك لا يدعم الإشعارات' : lang === 'fr' ? 'Votre navigateur ne prend pas en charge les notifications' : 'Your browser does not support notifications';
+    pomoAlert(msg, '🚫');
+    return;
   }
+  if (Notification.permission === 'granted') {
+    const msg = lang === 'ar' ? 'الإشعارات مفعّلة بالفعل ✓' : lang === 'fr' ? 'Les notifications sont déjà activées ✓' : 'Notifications are already enabled ✓';
+    pomoAlert(msg, '🔔');
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    const msg = lang === 'ar' ? 'الإشعارات محظورة من إعدادات المتصفح. فعّلها يدوياً من إعدادات الموقع.' : lang === 'fr' ? "Les notifications sont bloquées dans les paramètres du navigateur. Activez-les manuellement dans les paramètres du site." : 'Notifications are blocked in browser settings. Enable them manually from site settings.';
+    pomoAlert(msg, '🔕');
+    return;
+  }
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      const msg = lang === 'ar' ? 'تم تفعيل الإشعارات بنجاح 🎉' : lang === 'fr' ? 'Notifications activées avec succès 🎉' : 'Notifications enabled successfully 🎉';
+      pomoAlert(msg, '🔔');
+    } else {
+      const msg = lang === 'ar' ? 'لم يتم تفعيل الإشعارات' : lang === 'fr' ? "Les notifications n'ont pas été activées" : 'Notifications were not enabled';
+      pomoAlert(msg, '🔕');
+    }
+  });
 }
 
 function pomoSendNotification() {
@@ -15024,6 +15155,72 @@ function pomoCreateParticles() {
   }
 }
 
+/* ---------- LIGHTWEIGHT TICK RENDER (avoids rebuilding whole page every second) ---------- */
+window.pomoRenderTick = function pomoRenderTick() {
+  const root = document.getElementById('pomo-root');
+  if (!root) return;
+  // If the full structure isn't there yet, do a full render instead.
+  const timeEl = root.querySelector('.pomo-time-display');
+  const ringProgress = root.querySelector('.pomo-ring-progress');
+  const ringGlow = root.querySelector('.pomo-ring-glow');
+  const clockWrap = root.querySelector('.pomo-clock-wrap');
+  if (!timeEl || !ringProgress || !clockWrap) { pomoRender(); return; }
+
+  const t = pomoT();
+  const meta = MODE_META[pomoState.mode];
+  const totalSecs = pomoState.totalSecs;
+  const elapsed = pomoState.elapsed;
+  const remaining = Math.max(0, totalSecs - elapsed);
+  const isDown = pomoState.direction === 'down';
+  const displaySecs = isDown ? remaining : Math.min(elapsed, totalSecs);
+  const isWarning = remaining > 0 && remaining < totalSecs * 0.2 && pomoState.running;
+  const isOvertime = elapsed > totalSecs;
+  const progress = Math.min(elapsed / totalSecs, 1);
+
+  const minsDisp = Math.floor(displaySecs / 60);
+  const secsDisp = displaySecs % 60;
+  const timeStr = `${String(minsDisp).padStart(2,'0')}:${String(secsDisp).padStart(2,'0')}`;
+  const otMins = Math.floor(pomoOvertimeSec / 60);
+  const otSecs = pomoOvertimeSec % 60;
+  const otStr = `+${String(otMins).padStart(2,'0')}:${String(otSecs).padStart(2,'0')}`;
+
+  const R = 120;
+  const C = 2 * Math.PI * R;
+  const dashOffset = C * (1 - progress);
+
+  document.title = pomoState.running
+    ? `${isOvertime ? otStr + ' ' + t.overtimeSuffix : timeStr} — TACKY ${t.title.replace('⏱ ','')}`
+    : 'TACKY Habit Tracker Pro ✨';
+
+  const pageEl = document.getElementById('page-pomodoro');
+  pageEl.classList.toggle('pomo-running', pomoState.running && !isOvertime);
+  pageEl.classList.toggle('pomo-warning', isWarning);
+  pageEl.classList.toggle('pomo-overtime', isOvertime && pomoState.running);
+  document.documentElement.style.setProperty('--pomo-accent-rgb', meta.rgb);
+
+  timeEl.textContent = isOvertime && pomoState.running ? otStr : timeStr;
+  timeEl.classList.toggle('pomo-time-display-sm', minsDisp >= 100);
+  clockWrap.classList.toggle('pomo-clock-wrap-lg', minsDisp >= 100);
+
+  ringProgress.setAttribute('stroke-dasharray', C);
+  ringProgress.setAttribute('stroke-dashoffset', dashOffset);
+  ringProgress.setAttribute('stroke', isOvertime ? '#fbbf24' : isWarning ? '#ef4444' : meta.color);
+  if (ringGlow) {
+    ringGlow.setAttribute('stroke-dasharray', C);
+    ringGlow.setAttribute('stroke-dashoffset', dashOffset);
+  }
+
+  // Overtime banner and controls need the full markup (rare state changes) —
+  // if we just entered/left overtime, do a full render once to swap them in/out.
+  const bannerPresent = !!root.querySelector('.pomo-overtime-banner');
+  const shouldShowBanner = isOvertime && pomoState.running;
+  if (bannerPresent !== shouldShowBanner) { pomoRender(); return; }
+
+  // Stats update in place too (today focus minutes can change every tick)
+  const statVals = root.querySelectorAll('.pomo-stat-card .pomo-stat-val');
+  if (statVals[1]) statVals[1].textContent = pomoGetTodayFocus();
+};
+
 /* ---------- RENDER ---------- */
 window.pomoRender = function pomoRender() {
   const root = document.getElementById('pomo-root');
@@ -15087,7 +15284,7 @@ window.pomoRender = function pomoRender() {
     </div>
 
     <!-- Clock -->
-    <div class="pomo-clock-wrap">
+    <div class="pomo-clock-wrap ${minsDisp >= 100 ? 'pomo-clock-wrap-lg' : ''}">
       <svg class="pomo-ring-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
         <circle class="pomo-ring-bg" cx="140" cy="140" r="${R}"/>
         <circle class="pomo-ring-glow" cx="140" cy="140" r="${R}" stroke="${meta.color}" stroke-dasharray="${C}" stroke-dashoffset="${dashOffset}"/>
@@ -15098,7 +15295,7 @@ window.pomoRender = function pomoRender() {
         />
       </svg>
       <div class="pomo-clock-face">
-        <div class="pomo-time-display">${isOvertime && pomoState.running ? otStr : timeStr}</div>
+        <div class="pomo-time-display ${minsDisp >= 100 ? 'pomo-time-display-sm' : ''}">${isOvertime && pomoState.running ? otStr : timeStr}</div>
         <div class="pomo-mode-label">${modeLabel}</div>
         <div class="pomo-session-badge">${t.session}${pomoState.sessionCount + 1}</div>
       </div>
@@ -15116,12 +15313,19 @@ window.pomoRender = function pomoRender() {
 
     <!-- Controls -->
     <div class="pomo-controls">
-      <button class="pomo-btn-sec" onclick="pomoReset()" title="${t.resetTitle}">↺</button>
-      <button class="pomo-btn-main" onclick="${pomoState.running ? 'pomoStop(true)' : 'pomoStart()'}" title="${pomoState.running ? t.stopTitle : t.startTitle}">
-        ${pomoState.running ? '⏹' : '▶'}
+      <button class="pomo-btn-sec" onclick="${pomoState.running ? 'pomoPause()' : 'pomoReset()'}" title="${pomoState.running ? t.pauseTitle : t.resetTitle}">
+        ${pomoState.running ? '⏸' : '↺'}
+      </button>
+      <button class="pomo-btn-main" onclick="${(pomoState.running || pomoState.paused) ? 'pomoStop(true)' : 'pomoStart()'}" title="${(pomoState.running || pomoState.paused) ? t.stopTitle : t.startTitle}">
+        ${(pomoState.running || pomoState.paused) ? '⏹' : '▶'}
       </button>
       <button class="pomo-btn-sec" onclick="pomoRequestNotifPermission()" title="${t.notifTitle}">🔔</button>
     </div>
+    ${pomoState.paused && !pomoState.running ? `
+    <div class="pomo-paused-row">
+      <button class="pomo-resume-btn" onclick="pomoStart()">${t.resumeBtn}</button>
+    </div>
+    ` : ''}
 
     <!-- Direction -->
     <div class="pomo-direction-wrap">
@@ -15205,6 +15409,7 @@ window.pomoRender = function pomoRender() {
                     </div>
                   </div>
                   <div class="pomo-log-time">${e.time}</div>
+                  <button class="pomo-log-del" onclick="pomoDeleteEntry(${e.ts})" title="${t.logDeleteEntry || 'حذف'}">✕</button>
                 </div>
               `;
             }).join('')
@@ -15217,6 +15422,7 @@ window.pomoRender = function pomoRender() {
       <div class="pomo-note-title">${t.noteTitle}</div>
       <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="${t.notePlaceholder}">${pomoState.currentNote || ''}</textarea>
       <div class="pomo-note-save-row">
+        <button class="pomo-note-delete-btn" id="pomoNoteDeleteBtn" onclick="pomoDeleteNote()" title="${t.noteDelete}">🗑️</button>
         <button class="pomo-note-save-btn" id="pomoNoteSaveBtn" onclick="pomoSaveNote()">${t.noteSave}</button>
       </div>
     </div>
