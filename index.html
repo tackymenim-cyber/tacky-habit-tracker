@@ -1800,7 +1800,27 @@ body.auth-active {
 .streak-badge .fire { color: var(--orange); }
 .streak-badge .num { color: var(--blue-500); font-family: 'JetBrains Mono', monospace; }
 
-/* ===== HABIT TABLE ===== */
+/* WebKit (iOS Safari) computes position:sticky offsets unreliably when the
+   scrolling table itself has direction:rtl — this is what caused the visible
+   tearing/flicker of the sticky column specifically in Arabic and specifically
+   on iOS (English/French tables use direction:ltr natively and never hit it).
+   Fix: force the table's own layout direction to ltr even on the Arabic page,
+   and physically move the sticky column to the end of the row in markup (see
+   renderTable/renderMood JS) so it still lands on the right, visually
+   unchanged — but Safari now runs the same stable ltr sticky path English
+   and French already use. Text/icon order *inside* the sticky cell is
+   restored to rtl separately below so it still reads correctly. */
+[dir="rtl"] .table-wrap,
+[dir="rtl"] .table-wrap table { direction: ltr; }
+[dir="rtl"] .habit-name-inner,
+[dir="rtl"] .week-header-row th.habit-col,
+[dir="rtl"] .daynum-row th.habit-col { direction: rtl; }
+@media (max-width: 768px) {
+  [dir="rtl"] #moodGridWrap,
+  [dir="rtl"] #moodGridWrap table { direction: ltr; }
+  [dir="rtl"] #moodGridWrap th.mood-time-col,
+  [dir="rtl"] #moodGridWrap td.mood-time-col { direction: rtl; }
+}
 .table-wrap {
   background: var(--white);
   border: 1px solid var(--border);
@@ -9647,23 +9667,37 @@ function renderTable() {
   }
   if (curWeek.length) weekGroups.push({ n: wn, days: curWeek });
 
+  // The table itself is now forced to direction:ltr (see CSS) to avoid the
+  // WebKit sticky+rtl tearing bug. To keep the visual layout identical for
+  // Arabic (habit name on the right, day 1 adjacent to it, later days going
+  // left), we physically reverse the week/day order and move the sticky
+  // habit column to the END of each row instead of the start.
+  const isAr = currentLang === 'ar';
+  const renderGroups = isAr
+    ? weekGroups.slice().reverse().map(wg => ({ n: wg.n, days: wg.days.slice().reverse() }))
+    : weekGroups;
+
   let html = '';
-  html += '<tr class="week-header-row"><th class="habit-col">' + (currentLang === 'ar' ? 'عاداتي' : currentLang === 'fr' ? 'Mes Habitudes' : 'My Habits') + '</th>';
-  weekGroups.forEach((wg, wi) => {
-    const isLast = wi === weekGroups.length - 1;
+  const habitColLabel1 = '<th class="habit-col">' + (currentLang === 'ar' ? 'عاداتي' : currentLang === 'fr' ? 'Mes Habitudes' : 'My Habits') + '</th>';
+  let weekCellsHtml = '';
+  renderGroups.forEach((wg, wi) => {
+    const isLast = wi === renderGroups.length - 1;
     const wkLabel = currentLang === 'ar' ? `الأسبوع ${wg.n}` : currentLang === 'fr' ? `Semaine ${wg.n}` : `Week ${wg.n}`;
-    html += `<th colspan="${wg.days.length}" class="${WEEK_COLORS[wi]}${isLast ? '' : ' week-sep'}">${wkLabel}</th>`;
+    weekCellsHtml += `<th colspan="${wg.days.length}" class="${WEEK_COLORS[wi]}${isLast ? '' : ' week-sep'}">${wkLabel}</th>`;
   });
-  html += '</tr><tr class="daynum-row"><th class="habit-col" id="habitColHeader">' + (currentLang === 'ar' ? 'العادة / اليوم' : currentLang === 'fr' ? 'Habitude / Jour' : 'Habit / Day') + '<div class="habit-col-resizer" id="habitColResizer"></div></th>';
-  weekGroups.forEach((wg, wi) => {
-    const isLastWk = wi === weekGroups.length - 1;
+  html += '<tr class="week-header-row">' + (isAr ? weekCellsHtml + habitColLabel1 : habitColLabel1 + weekCellsHtml) + '</tr>';
+
+  const habitColLabel2 = '<th class="habit-col" id="habitColHeader">' + (currentLang === 'ar' ? 'العادة / اليوم' : currentLang === 'fr' ? 'Habitude / Jour' : 'Habit / Day') + '<div class="habit-col-resizer" id="habitColResizer"></div></th>';
+  let dayCellsHtml = '';
+  renderGroups.forEach((wg, wi) => {
+    const isLastWk = wi === renderGroups.length - 1;
     wg.days.forEach((d, di) => {
       const isLastDay = di === wg.days.length - 1;
       const todayCls = isToday(d) ? ' today-th' : '';
-      html += `<th class="${todayCls}${isLastDay && !isLastWk ? ' week-sep' : ''}"><span class="dayname">${DAY_SHORT[dayOfWeek(curY, curM, d)]}</span>${d}</th>`;
+      dayCellsHtml += `<th class="${todayCls}${isLastDay && !isLastWk ? ' week-sep' : ''}"><span class="dayname">${DAY_SHORT[dayOfWeek(curY, curM, d)]}</span>${d}</th>`;
     });
   });
-  html += '</tr>';
+  html += '<tr class="daynum-row">' + (isAr ? dayCellsHtml + habitColLabel2 : habitColLabel2 + dayCellsHtml) + '</tr>';
 
   if (habits.length === 0) {
     html += `<tr><td class="habit-name-cell" colspan="100" style="padding:30px;text-align:center;color:var(--text-3);font-size:0.9rem">${currentLang === 'ar' ? 'لا توجد عادات بعد — أضف عادتك الأولى أعلاه ✨' : currentLang === 'fr' ? 'Pas encore d\'habitudes — ajoutez votre première habitude ci-dessus ✨' : 'No habits yet — add your first habit above ✨'}</td></tr>`;
@@ -9675,13 +9709,14 @@ function renderTable() {
     for (let d = sd; d >= 1; d--) { if (isFuture(d)) continue; if (!isHabitActiveOn(h, d)) continue; if (checks[chkKey(h.id, d)]) streak++;
       else break; }
     const nameHtml = `<span class="habit-text" title="${escAttr(h.name)}" ondblclick="startEditHabit(${h.id})">${escAttr(h.name)}</span>`;
-    html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}" data-hname="${escAttr(h.name)}"><td class="habit-name-cell"><div class="habit-name-inner">
+    const nameCellHtml = `<td class="habit-name-cell"><div class="habit-name-inner">
       <button class="del-btn" onclick="deleteHabit(${h.id})" title="${currentLang === 'ar' ? 'حذف' : currentLang === 'fr' ? 'Supprimer' : 'Delete'}">✕</button>
       <button class="edit-btn" onclick="startEditHabit(${h.id})" title="${currentLang === 'ar' ? 'تعديل الاسم' : currentLang === 'fr' ? 'Modifier' : 'Edit name'}">✎</button>
       <button type="button" class="habit-reorder-btn" onclick="event.stopPropagation();openHabitReorderMenu(${h.id})" title="${currentLang === 'ar' ? 'تغيير الترتيب' : currentLang === 'fr' ? 'Réorganiser' : 'Reorder'}">⠿</button>
       ${streak > 1 ? `<span class="streak-mini">🔥${streak}</span>` : ''}${nameHtml}<span class="habit-emoji">${h.emoji}</span></div></td>`;
-    weekGroups.forEach((wg, wi) => {
-      const isLastWk = wi === weekGroups.length - 1;
+    let dayCellsRow = '';
+    renderGroups.forEach((wg, wi) => {
+      const isLastWk = wi === renderGroups.length - 1;
       wg.days.forEach((d, di) => {
         const isLastDay = di === wg.days.length - 1;
         const k = chkKey(h.id, d);
@@ -9696,10 +9731,10 @@ function renderTable() {
         else if (isTodayCell) { cls = ''; symbol = ''; } // still today — no verdict yet, plain empty box
         else { cls = 'missed-day'; symbol = '✕'; } // scheduled, already passed, never checked
         const title = !scheduled ? (currentLang === 'ar' ? 'غير مجدولة لهذا اليوم' : currentLang === 'fr' ? 'Non prévue ce jour' : 'Not scheduled this day') : '';
-        html += `<td style="${isLastDay && !isLastWk ? 'border-right:2px solid var(--border)' : ''}"><button class="chk ${cls}" ${title ? `title="${title}"` : ''} onclick="${clickable ? 'toggleCheck(' + h.id + ',' + d + ')' : ''}">${symbol}</button></td>`;
+        dayCellsRow += `<td style="${isLastDay && !isLastWk ? 'border-right:2px solid var(--border)' : ''}"><button class="chk ${cls}" ${title ? `title="${title}"` : ''} onclick="${clickable ? 'toggleCheck(' + h.id + ',' + d + ')' : ''}">${symbol}</button></td>`;
       });
     });
-    html += '</tr>';
+    html += `<tr class="habit-row" data-hid="${h.id}" data-hidx="${hIdx}" data-hname="${escAttr(h.name)}">` + (isAr ? dayCellsRow + nameCellHtml : nameCellHtml + dayCellsRow) + '</tr>';
   });
 
   const rowDefs = [
@@ -9714,15 +9749,16 @@ function renderTable() {
       const nd = sc - dc; return isFuture(d) ? '<span style="color:var(--text-3)">—</span>' : `<span style="color:var(--red);font-weight:700">${nd}</span>`; } },
   ];
   rowDefs.forEach(rd => {
-    html += `<tr class="prog-row"><td class="label">${rd.label}</td>`;
-    weekGroups.forEach((wg, wi) => {
-      const isLastWk = wi === weekGroups.length - 1;
+    let cellsRow = '';
+    renderGroups.forEach((wg, wi) => {
+      const isLastWk = wi === renderGroups.length - 1;
       wg.days.forEach((d, di) => {
         const isLastDay = di === wg.days.length - 1;
-        html += `<td style="${isLastDay && !isLastWk ? 'border-right:2px solid var(--border)' : ''}">${rd.fn(d)}</td>`;
+        cellsRow += `<td style="${isLastDay && !isLastWk ? 'border-right:2px solid var(--border)' : ''}">${rd.fn(d)}</td>`;
       });
     });
-    html += '</tr>';
+    const labelCell = `<td class="label">${rd.label}</td>`;
+    html += '<tr class="prog-row">' + (isAr ? cellsRow + labelCell : labelCell + cellsRow) + '</tr>';
   });
 
   requestAnimationFrame(() => {
@@ -9922,27 +9958,33 @@ function _scrollMoodGridToToday(force) {
 
 function renderMood() {
   const totalDays = daysInMonth(curY, curM);
+  const isArMobile = currentLang === 'ar' && window.matchMedia('(max-width: 768px)').matches;
+  const dayRange = isArMobile
+    ? Array.from({ length: totalDays }, (_, i) => totalDays - i)
+    : Array.from({ length: totalDays }, (_, i) => i + 1);
   let gridHtml = `<table style="border-collapse:collapse;min-width:100%">`;
-  gridHtml += `<tr><th class="mood-time-col" style="padding:4px 8px;font-size:0.65rem;color:var(--text-3);text-align:${currentLang === 'ar' ? 'right' : 'left'};min-width:120px">${currentLang === 'ar' ? 'الوقت / اليوم' : currentLang === 'fr' ? 'Moment / Jour' : 'Time / Day'}</th>`;
-  for (let d = 1; d <= totalDays; d++) {
+  const timeHeaderCell = `<th class="mood-time-col" style="padding:4px 8px;font-size:0.65rem;color:var(--text-3);text-align:${currentLang === 'ar' ? 'right' : 'left'};min-width:120px">${currentLang === 'ar' ? 'الوقت / اليوم' : currentLang === 'fr' ? 'Moment / Jour' : 'Time / Day'}</th>`;
+  let dayHeaderCells = '';
+  dayRange.forEach(d => {
     const isTd = isToday(d);
     const todayCls = isTd ? 'color:var(--blue-500);font-weight:700' : 'color:var(--text-3)';
-    gridHtml += `<th class="${isTd ? 'mood-today-th' : ''}" style="padding:3px 2px;font-size:0.6rem;${todayCls};min-width:30px;text-align:center">${d}</th>`;
-  }
-  gridHtml += '</tr>';
+    dayHeaderCells += `<th class="${isTd ? 'mood-today-th' : ''}" style="padding:3px 2px;font-size:0.6rem;${todayCls};min-width:30px;text-align:center">${d}</th>`;
+  });
+  gridHtml += '<tr>' + (isArMobile ? dayHeaderCells + timeHeaderCell : timeHeaderCell + dayHeaderCells) + '</tr>';
   const tr = T[currentLang] || T.ar;
   const hours = tr.hours || HOURS;
   hours.forEach((hour, hi) => {
-    gridHtml += `<tr><td class="mood-time-col" style="padding:3px 8px;font-size:0.68rem;color:var(--text-2);font-weight:600;white-space:nowrap">${hour}</td>`;
-    for (let d = 1; d <= totalDays; d++) {
+    const timeCell = `<td class="mood-time-col" style="padding:3px 8px;font-size:0.68rem;color:var(--text-2);font-weight:600;white-space:nowrap">${hour}</td>`;
+    let dayCells = '';
+    dayRange.forEach(d => {
       const k = moodKey(d, HOUR_KEYS[hi]);
       const m = moodData[k];
       const bg = m ? MOOD_COLORS[m] : 'var(--bg)';
       const opacity = m ? '1' : '0.6';
       const fut = isFuture(d);
-      gridHtml += `<td style="padding:2px"><div class="mood-cell" data-d="${d}" data-slot="${HOUR_KEYS[hi]}" style="background:${bg};opacity:${opacity};${fut ? 'cursor:default;opacity:0.3' : ''}" ${fut ? '' : 'onclick="setMood(parseInt(this.dataset.d), this.dataset.slot)"'}>${m ? MOOD_EMOJIS[m] : ''}</div></td>`;
-    }
-    gridHtml += '</tr>';
+      dayCells += `<td style="padding:2px"><div class="mood-cell" data-d="${d}" data-slot="${HOUR_KEYS[hi]}" style="background:${bg};opacity:${opacity};${fut ? 'cursor:default;opacity:0.3' : ''}" ${fut ? '' : 'onclick="setMood(parseInt(this.dataset.d), this.dataset.slot)"'}>${m ? MOOD_EMOJIS[m] : ''}</div></td>`;
+    });
+    gridHtml += '<tr>' + (isArMobile ? dayCells + timeCell : timeCell + dayCells) + '</tr>';
   });
   gridHtml += '</table>';
   document.getElementById('moodGridWrap').innerHTML = gridHtml;
