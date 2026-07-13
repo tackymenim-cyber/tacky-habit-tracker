@@ -8058,6 +8058,8 @@ async function _loadFromFirestore(user, _retryCount) {
   if (serverConfirmedNew) {
     habits      = JSON.parse(JSON.stringify(DEFAULT_HABITS));
     weeklyTasks = JSON.parse(JSON.stringify(DEFAULT_WEEKLY));
+    // FIX: re-apply saved language before rendering to prevent reset to Arabic
+    try { setLang(settings.lang || currentLang || 'ar'); } catch(e) {}
     try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
     try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
     try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
@@ -8071,6 +8073,8 @@ async function _loadFromFirestore(user, _retryCount) {
     // Small delay lets the app UI finish revealing before the popup appears.
     setTimeout(() => { try { showFirstTimeWelcome(user); } catch(e) {} }, 700);
   } else if (!serverCheckFailed) {
+    // FIX: re-apply saved language before rendering to prevent reset to Arabic
+    try { setLang(settings.lang || currentLang || 'ar'); } catch(e) {}
     try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
     try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
     try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
@@ -8096,6 +8100,8 @@ async function _loadFromFirestore(user, _retryCount) {
           _applyFirestoreData(d);
           const _after = JSON.stringify({ habits, checks, weeklyTasks });
           if (isFirstSnapshot || _before !== _after) {
+            // FIX: re-apply saved language before rendering to prevent reset to Arabic
+            try { setLang(settings.lang || currentLang || 'ar'); } catch(e) {}
             try { renderAll(); } catch(e) { console.error('renderAll error:', e); }
             try { renderQuickTasks(); } catch(e) { console.error('renderQuickTasks error:', e); }
             try { updateQuickTasksText(); } catch(e) { console.error('updateQuickTasksText error:', e); }
