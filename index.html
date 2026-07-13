@@ -14059,6 +14059,26 @@ const pomoCss = `
 }
 .pomo-note-area:focus { border-color: var(--blue-500); }
 .pomo-note-area::placeholder { color: var(--text-3); }
+.pomo-note-save-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.pomo-note-save-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--pomo-accent, #3b82f6), var(--pomo-accent, #1d4ed8));
+  color: #fff;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.pomo-note-save-btn:hover { transform: translateY(-1px); }
+.pomo-note-save-btn:active { transform: scale(0.96); }
+.pomo-note-save-btn.saved { background: var(--green, #22c55e); }
 
 /* ---------- STATUS + HISTORY ---------- */
 .pomo-status-bar {
@@ -14311,6 +14331,7 @@ let pomoState = {
   sessionCount: 0,
   todayFocusMins: 0,
   totalFocusMins: 0,
+  currentNote: '',
 };
 
 let pomoLog = [];
@@ -14428,7 +14449,7 @@ function pomoTick() {
   if (pomoPageOpen) pomoRender();
 }
 
-function pomoStart() {
+window.pomoStart = function pomoStart() {
   if (pomoState.running) return;
   pomoState.running = true;
   pomoNotified = false;
@@ -14438,13 +14459,14 @@ function pomoStart() {
   pomoRender();
 }
 
-function pomoStop(record) {
+window.pomoStop = function pomoStop(record) {
   if (!pomoState.running && !record) return;
   pomoStopWorker();
   if (pomoState.running && record !== false) {
     const didFinish = pomoState.elapsed >= pomoState.totalSecs;
     const duration = Math.min(pomoState.elapsed, pomoState.totalSecs);
-    const note = document.getElementById('pomoNoteArea') ? document.getElementById('pomoNoteArea').value.trim() : '';
+    const noteArea = document.getElementById('pomoNoteArea');
+    const note = noteArea ? noteArea.value.trim() : (pomoState.currentNote || '');
     pomoLogEntry(didFinish, duration, note);
     if (didFinish && pomoState.mode === 'work') {
       pomoState.sessionCount++;
@@ -14461,7 +14483,7 @@ function pomoStop(record) {
   if (pomoPageOpen) pomoRender();
 }
 
-function pomoReset() {
+window.pomoReset = function pomoReset() {
   pomoStop(false);
   pomoState.elapsed = 0;
   pomoOvertimeActive = false;
@@ -14471,7 +14493,7 @@ function pomoReset() {
   if (pomoPageOpen) pomoRender();
 }
 
-function pomoSetMode(mode) {
+window.pomoSetMode = function pomoSetMode(mode) {
   if (pomoState.running) return;
   pomoState.mode = mode;
   const mins = mode === 'work' ? 25 : mode === 'short' ? 5 : 15;
@@ -14482,13 +14504,13 @@ function pomoSetMode(mode) {
   pomoRender();
 }
 
-function pomoSetDirection(dir) {
+window.pomoSetDirection = function pomoSetDirection(dir) {
   pomoState.direction = dir;
   pomoSave();
   pomoRender();
 }
 
-function pomoApplyCustom() {
+window.pomoApplyCustom = function pomoApplyCustom() {
   const mEl = document.getElementById('pomoCustMin');
   const sEl = document.getElementById('pomoCustSec');
   const m = parseInt(mEl ? mEl.value : 0) || 0;
@@ -14503,7 +14525,7 @@ function pomoApplyCustom() {
   pomoRender();
 }
 
-function pomoSelectPreset(idx) {
+window.pomoSelectPreset = function pomoSelectPreset(idx) {
   const p = PRESETS[idx];
   if (!p || p.mins === null) return; // custom -> do nothing, user uses inputs
   pomoState.totalSecs = p.mins * 60;
@@ -14532,7 +14554,23 @@ function pomoLogEntry(done, durationSec, note) {
   pomoSave();
 }
 
-function pomoClearLog() {
+window.pomoSaveNote = function pomoSaveNote() {
+  const area = document.getElementById('pomoNoteArea');
+  const btn = document.getElementById('pomoNoteSaveBtn');
+  if (!area) return;
+  pomoState.currentNote = area.value;
+  pomoSave();
+  if (btn) {
+    btn.textContent = '✓ تم الحفظ';
+    btn.classList.add('saved');
+    setTimeout(() => {
+      btn.textContent = '💾 حفظ الملاحظة';
+      btn.classList.remove('saved');
+    }, 1500);
+  }
+}
+
+window.pomoClearLog = function pomoClearLog() {
   if (!confirm('هل تريد مسح سجل الجلسات؟')) return;
   pomoLog = [];
   pomoSave();
@@ -14540,7 +14578,7 @@ function pomoClearLog() {
 }
 
 /* ---------- NOTIFICATIONS ---------- */
-function pomoRequestNotifPermission() {
+window.pomoRequestNotifPermission = function pomoRequestNotifPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
   }
@@ -14830,12 +14868,6 @@ function pomoRender() {
       </div>
     </div>
 
-    <!-- Note -->
-    <div class="pomo-note-wrap">
-      <div class="pomo-note-title">📝 ملاحظة الجلسة</div>
-      <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="ماذا تعمل الآن؟ هل أنهيت مهمتك؟ سجّل ملاحظاتك هنا...">${(pomoLog.length && pomoLog[0].note) || ''}</textarea>
-    </div>
-
     <!-- Stats -->
     <div class="pomo-status-bar">
       <div class="pomo-stat-card">
@@ -14849,6 +14881,15 @@ function pomoRender() {
       <div class="pomo-stat-card">
         <div class="pomo-stat-val">${pomoState.totalFocusMins}</div>
         <div class="pomo-stat-lbl">إجمالي دقائق</div>
+      </div>
+    </div>
+
+    <!-- Note -->
+    <div class="pomo-note-wrap">
+      <div class="pomo-note-title">📝 ملاحظة الجلسة</div>
+      <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="ماذا تعمل الآن؟ هل أنهيت مهمتك؟ سجّل ملاحظاتك هنا...">${pomoState.currentNote || ''}</textarea>
+      <div class="pomo-note-save-row">
+        <button class="pomo-note-save-btn" id="pomoNoteSaveBtn" onclick="pomoSaveNote()">💾 حفظ الملاحظة</button>
       </div>
     </div>
 
