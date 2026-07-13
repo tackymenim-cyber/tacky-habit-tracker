@@ -1853,7 +1853,7 @@ table { border-collapse: collapse; min-width: 100%; }
 [data-theme="dark"] .habit-row td { border-bottom-color: rgba(42,51,82,0.7); }
 .habit-row td.habit-name-cell {
   text-align: end; padding-inline: 20px 8px;
-  position: sticky; inset-inline-start: 0; right: 0;
+  position: sticky; right: 0;
   background-color: var(--white); opacity: 1; isolation: isolate;
   z-index: 5;
   border-inline-end: 1px solid var(--border);
@@ -1868,7 +1868,7 @@ table { border-collapse: collapse; min-width: 100%; }
 .habit-row:hover td.habit-name-cell { background: var(--blue-50); }
 .week-header-row th.habit-col,
 .daynum-row th.habit-col {
-  position: sticky; inset-inline-start: 0; right: 0; background-color: var(--white); z-index: 5;
+  position: sticky; right: 0; background-color: var(--white); z-index: 5;
   border-inline-end: 1px solid var(--border);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -1879,7 +1879,7 @@ table { border-collapse: collapse; min-width: 100%; }
 [dir="ltr"] .week-header-row th.habit-col,
 [dir="ltr"] .daynum-row th.habit-col { right: auto; left: 0; }
 .prog-row td.label {
-  position: sticky; inset-inline-start: 0; right: 0; background: var(--bg); z-index: 2;
+  position: sticky; right: 0; background: var(--bg); z-index: 2;
   border-inline-end: 1px solid var(--border);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -3857,7 +3857,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 @media (max-width: 768px) {
   #moodGridWrap th.mood-time-col,
   #moodGridWrap td.mood-time-col {
-    position: sticky; inset-inline-start: 0; right: 0; z-index: 5;
+    position: sticky; right: 0; z-index: 5;
     background-color: var(--white) !important;
     border-inline-end: 1px solid var(--border);
     transform: translateZ(0);
@@ -9755,12 +9755,20 @@ function renderTable() {
 // =========== AUTO-SCROLL TABLE TO TODAY'S COLUMN ===========
 let _tableScrolledOnce = false;
 // Keeps scrollLeft inside the real scrollable range so a stale/early
-// measurement can never push the table past its edges.
+// measurement can never push the table past its edges. Written to be
+// agnostic to which RTL scrollLeft convention the browser engine uses
+// (WebKit reports negative values that grow toward -max; some other
+// engines report 0..max measured from the opposite edge) — clamping
+// against an assumed convention that turns out wrong is what caused a
+// visible flicker specifically in Arabic (RTL) on iPhone, since Android/
+// Chrome happened to match the assumption and English/French have no
+// RTL ambiguity to trigger it at all.
 function _clampTableScroll(wrap) {
   const max = wrap.scrollWidth - wrap.clientWidth;
   if (max <= 0) return;
-  if (wrap.scrollLeft > 0) wrap.scrollLeft = Math.min(wrap.scrollLeft, max);
-  else if (wrap.scrollLeft < 0) wrap.scrollLeft = Math.max(wrap.scrollLeft, -max);
+  const sl = wrap.scrollLeft;
+  if (sl > max) wrap.scrollLeft = max;
+  else if (sl < -max) wrap.scrollLeft = -max;
 }
 // Bumped every time the user touches/scrolls/wheels the table. Any
 // in-flight realign chain — even one scheduled by an earlier, unrelated
