@@ -1831,16 +1831,7 @@ body.auth-active {
   touch-action: pan-x;
   transition: var(--transition);
 }
-.today-jump-btn {
-  position: absolute; top: 10px; z-index: 6;
-  right: 10px;
-  background: var(--blue-500); color: #fff; border: none;
-  border-radius: 99px; padding: 6px 14px; font-size: 0.75rem; font-weight: 700;
-  cursor: pointer; box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-  display: flex; align-items: center; gap: 4px;
-}
-[dir="ltr"] .today-jump-btn { right: auto; left: 10px; }
-.today-jump-btn:active { transform: scale(0.96); }
+
 table { border-collapse: collapse; min-width: 100%; }
 .week-header-row th {
   padding: 10px 0; font-size: 0.68rem; font-weight: 800;
@@ -4715,7 +4706,6 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   </div>
 
   <div class="table-wrap fade-up" style="position:relative">
-    <button class="today-jump-btn" id="tableTodayJumpBtn" onclick="jumpToTodayTable()" title="اذهب لليوم">📍 اليوم</button>
     <table><tbody id="tableBody"></tbody></table>
   </div>
 </div>
@@ -4736,7 +4726,6 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 
   <div class="mood-hourly-wrap fade-up" style="position:relative">
     <div class="card-title" id="moodGridTitle">🕐 شبكة المزاج: الأيام × الأوقات</div>
-    <button class="today-jump-btn" id="moodTodayJumpBtn" onclick="jumpToTodayMood()" title="اذهب لليوم">📍 اليوم</button>
     <div id="moodGridWrap" style="overflow-x:auto"></div>
   </div>
 
@@ -8740,6 +8729,13 @@ function showPage(p) {
   const bBtn = document.querySelector(`.bottom-nav-btn[data-page="${p}"]`);
   if (bBtn) _syncBottomNav(bBtn);
 
+  // Force a fresh re-center on today's column every time this tab is opened —
+  // not just on the very first visit of the session. This is what makes the
+  // behavior match Android: today always ends up in the middle whenever you
+  // come back to look at these tables, even days later.
+  if (p === 'tracker') _tableScrolledOnce = false;
+  if (p === 'mood') _moodGridScrolledOnce = false;
+
   // ── Render content synchronously FIRST ──────────────────────────────────
   // Content must exist before we reveal the page — this eliminates the blank
   // flash entirely. renderAll is fast enough (< 16 ms on typical data sets).
@@ -8771,27 +8767,6 @@ function changeMonth(d) {
   _tableScrolledOnce = false; // re-center on today whenever the visible month changes
   _moodGridScrolledOnce = false;
   renderAll();
-}
-
-// Jump straight to today's column, on demand — brings the current month back
-// into view first (if the user had navigated away) then force-centers.
-function jumpToTodayTable() {
-  const needsMonthReset = curY !== today.getFullYear() || curM !== today.getMonth();
-  if (needsMonthReset) {
-    curY = today.getFullYear();
-    curM = today.getMonth();
-    renderAll();
-  }
-  _scrollTableToToday(true);
-}
-function jumpToTodayMood() {
-  const needsMonthReset = curY !== today.getFullYear() || curM !== today.getMonth();
-  if (needsMonthReset) {
-    curY = today.getFullYear();
-    curM = today.getMonth();
-    renderAll();
-  }
-  _scrollMoodGridToToday(true);
 }
 
 // =========== QUOTES ===========
