@@ -1817,7 +1817,7 @@ table { border-collapse: collapse; min-width: 100%; }
   letter-spacing: 1px; text-transform: uppercase; text-align: center;
   border-bottom: 1px solid var(--border);
 }
-.week-header-row th.habit-col { text-align: right; padding-right: 20px; min-width: 185px; color: var(--text-3); }
+.week-header-row th.habit-col { text-align: end; padding-inline-end: 20px; min-width: 185px; color: var(--text-3); }
 /* تثبيت رأس الجدول أثناء التمرير — يُفعّل من الإعدادات */
 /* تم إلغاء ميزة "تثبيت رأس الجدول" لأنها كانت تجعل صف الأيام يتموضع فوق خانة العادة/اليوم أثناء التمرير */
 .w1-header { background: #eff6ff; color: #1d4ed8; }
@@ -1852,11 +1852,11 @@ table { border-collapse: collapse; min-width: 100%; }
 }
 [data-theme="dark"] .habit-row td { border-bottom-color: rgba(42,51,82,0.7); }
 .habit-row td.habit-name-cell {
-  text-align: right; padding: 0 8px 0 20px;
-  position: sticky; right: 0;
+  text-align: end; padding-inline: 20px 8px;
+  position: sticky; inset-inline-start: 0;
   background-color: var(--white); opacity: 1; isolation: isolate;
   z-index: 5;
-  border-left: 1px solid var(--border);
+  border-inline-end: 1px solid var(--border);
   white-space: nowrap;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -1867,8 +1867,8 @@ table { border-collapse: collapse; min-width: 100%; }
 .habit-row:hover td.habit-name-cell { background: var(--blue-50); }
 .week-header-row th.habit-col,
 .daynum-row th.habit-col {
-  position: sticky; right: 0; background-color: var(--white); z-index: 5;
-  border-left: 1px solid var(--border);
+  position: sticky; inset-inline-start: 0; background-color: var(--white); z-index: 5;
+  border-inline-end: 1px solid var(--border);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   will-change: transform;
@@ -1876,8 +1876,8 @@ table { border-collapse: collapse; min-width: 100%; }
   -webkit-backface-visibility: hidden;
 }
 .prog-row td.label {
-  position: sticky; right: 0; background: var(--bg); z-index: 2;
-  border-left: 1px solid var(--border);
+  position: sticky; inset-inline-start: 0; background: var(--bg); z-index: 2;
+  border-inline-end: 1px solid var(--border);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   will-change: transform;
@@ -1988,7 +1988,7 @@ table { border-collapse: collapse; min-width: 100%; }
   border-top: 2px solid var(--border); background: var(--bg);
 }
 .prog-row td.label {
-  text-align: right; padding-right: 20px;
+  text-align: end; padding-inline-end: 20px;
   font-family: 'Tajawal', sans-serif; font-size: 0.72rem;
   color: var(--text-3); font-weight: 700;
 }
@@ -3805,7 +3805,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
   }
   table { min-width: max-content; }
   .week-header-row th { font-size: 0.52rem; padding: 5px 2px; letter-spacing: 0; }
-  .week-header-row th.habit-col { min-width: var(--habit-col-w, 148px); width: var(--habit-col-w, 148px); max-width: none; padding-right: 6px; }
+  .week-header-row th.habit-col { min-width: var(--habit-col-w, 148px); width: var(--habit-col-w, 148px); max-width: none; padding-inline-end: 6px; }
   .daynum-row th { min-width: 26px; font-size: 0.5rem; padding: 4px 0 5px; }
   .daynum-row .dayname { font-size: 0.45rem; }
   .habit-row td { height: 36px; padding: 1px 2px; }
@@ -3853,9 +3853,9 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 @media (max-width: 768px) {
   #moodGridWrap th.mood-time-col,
   #moodGridWrap td.mood-time-col {
-    position: sticky; right: 0; z-index: 5;
+    position: sticky; inset-inline-start: 0; z-index: 5;
     background-color: var(--white) !important;
-    border-left: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     will-change: transform;
@@ -4250,64 +4250,75 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
 /* --- Heatmap --- */
 .heatmap-legend-row {
   display: flex; align-items: center; gap: 8px;
-  margin-bottom: 12px; font-size: 0.72rem; color: var(--text-3);
+  margin-bottom: 14px; font-size: 0.72rem; color: var(--text-3);
 }
 .heatmap-legend-cells { display: flex; gap: 4px; }
-.hmc { width: 14px; height: 14px; border-radius: 3px; }
+.hmc { width: 15px; height: 15px; border-radius: 4px; }
 .hmc-0 { background: var(--bg2); }
 .hmc-1 { background: #bbf7d0; } [data-theme="dark"] .hmc-1 { background: #052e16; }
 .hmc-2 { background: #86efac; } [data-theme="dark"] .hmc-2 { background: #14532d; }
 .hmc-3 { background: #4ade80; } [data-theme="dark"] .hmc-3 { background: #166534; }
-.hmc-4 { background: #16a34a; } [data-theme="dark"] .hmc-4 { background: #15803d; }
+.hmc-4 { background: #16a34a; box-shadow: 0 0 6px rgba(22,163,74,0.5); } [data-theme="dark"] .hmc-4 { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.55); }
 
-.heatmap-scroll-wrap { overflow-x: auto; padding-bottom: 6px; }
+.heatmap-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px; }
 .heatmap-month-labels {
-  display: flex; gap: 0;
+  position: relative;
+  height: 18px;
   font-size: 0.68rem; color: var(--text-3);
-  font-weight: 700; letter-spacing: 0.3px;
-  margin-bottom: 4px;
-  padding-right: 34px;
+  font-weight: 800; letter-spacing: 0.3px;
+  margin-bottom: 6px;
 }
-.heatmap-month-label { text-align: left; white-space: nowrap; }
-.heatmap-grid-wrap { display: flex; gap: 6px; }
+.heatmap-month-label {
+  position: absolute; top: 0; white-space: nowrap;
+}
+.heatmap-grid-wrap { display: flex; gap: 8px; }
 .heatmap-day-labels {
-  display: flex; flex-direction: column; gap: 2px;
-  font-size: 0.6rem; color: var(--text-3);
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 0.62rem; color: var(--text-3); font-weight: 600;
   padding-top: 2px; min-width: 30px;
   align-items: flex-end;
 }
-.heatmap-day-labels span { height: 14px; display: flex; align-items: center; line-height: 1; }
+.heatmap-day-labels span { height: 16px; display: flex; align-items: center; line-height: 1; }
 .heatmap-grid {
-  display: flex; gap: 3px;
+  display: flex; gap: 4px;
 }
-.heatmap-col { display: flex; flex-direction: column; gap: 2px; }
+.heatmap-col { display: flex; flex-direction: column; gap: 4px; }
 .heatmap-cell {
-  width: 14px; height: 14px;
-  border-radius: 3px;
+  width: 16px; height: 16px;
+  border-radius: 5px;
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
+  animation: hmPopIn 0.35s ease both;
 }
-.heatmap-cell:hover { transform: scale(1.35); z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+@keyframes hmPopIn { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+.heatmap-cell:hover, .heatmap-cell:active { transform: scale(1.4); z-index: 10; box-shadow: 0 3px 10px rgba(0,0,0,0.25); }
 .heatmap-cell.hm-0 { background: var(--bg2); }
 .heatmap-cell.hm-1 { background: #bbf7d0; } [data-theme="dark"] .heatmap-cell.hm-1 { background: #052e16; }
 .heatmap-cell.hm-2 { background: #86efac; } [data-theme="dark"] .heatmap-cell.hm-2 { background: #14532d; }
 .heatmap-cell.hm-3 { background: #4ade80; } [data-theme="dark"] .heatmap-cell.hm-3 { background: #166534; }
-.heatmap-cell.hm-4 { background: #16a34a; } [data-theme="dark"] .heatmap-cell.hm-4 { background: #15803d; }
+.heatmap-cell.hm-4 { background: #16a34a; box-shadow: 0 0 8px rgba(22,163,74,0.55); } [data-theme="dark"] .heatmap-cell.hm-4 { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.6); }
 .heatmap-cell.hm-future { background: transparent; border: 1px dashed var(--border); opacity: 0.3; cursor: default; }
 
+@media (max-width: 768px) {
+  .hmc, .heatmap-cell { width: 14px; height: 14px; }
+  .heatmap-day-labels span { height: 14px; }
+}
+
 .heatmap-stats-row {
-  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px;
 }
 .hm-stat {
   flex: 1; min-width: 90px;
-  background: var(--bg);
+  background: linear-gradient(155deg, var(--bg2), var(--bg));
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 14px;
+  padding: 12px 12px;
   text-align: center;
+  transition: transform 0.15s ease;
 }
-.hm-stat-val { font-size: 1.3rem; font-weight: 900; color: var(--blue-500); font-family: 'JetBrains Mono', monospace; }
+.hm-stat:hover { transform: translateY(-2px); }
+.hm-stat-val { font-size: 1.4rem; font-weight: 900; color: var(--blue-500); font-family: 'JetBrains Mono', monospace; }
 .hm-stat-label { font-size: 0.68rem; color: var(--text-3); margin-top: 2px; }
 
 /* --- Level card in achievements --- */
@@ -9667,7 +9678,11 @@ function _scrollTableToToday(force) {
     if (cellRect.width === 0 || wrapRect.width === 0) return; // detached/not laid out yet — skip this pass
 
     const stickyW = stickyRect.width;
-    const visibleLeft = wrapRect.left;
+    // The sticky panel sits on the RIGHT for RTL (Arabic) and on the LEFT
+    // for LTR (English/French) — the visible scroll area for day columns
+    // must exclude it from whichever side it's actually on.
+    const isRtl = document.documentElement.getAttribute('dir') !== 'ltr';
+    const visibleLeft = isRtl ? wrapRect.left : wrapRect.left + stickyW;
     const visibleWidth = wrapRect.width - stickyW;
     // Center today's column within the visible (non-sticky) scroll area.
     const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
@@ -9728,7 +9743,11 @@ function _scrollMoodGridToToday() {
     if (cellRect.width === 0 || wrapRect.width === 0) return;
 
     const stickyW = stickyRect.width;
-    const visibleLeft = wrapRect.left;
+    // The sticky panel sits on the RIGHT for RTL (Arabic) and on the LEFT
+    // for LTR (English/French) — the visible scroll area for day columns
+    // must exclude it from whichever side it's actually on.
+    const isRtl = document.documentElement.getAttribute('dir') !== 'ltr';
+    const visibleLeft = isRtl ? wrapRect.left : wrapRect.left + stickyW;
     const visibleWidth = wrapRect.width - stickyW;
     const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
     wrap.scrollBy({ left: offset, behavior });
@@ -13244,9 +13263,14 @@ function renderHeatmap() {
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
 
-  // Build 365-day window ending today
+  // On mobile, showing a full 365-day strip makes every cell tiny and the
+  // month labels crowd/overlap each other. Show a shorter, more legible
+  // window instead — plenty to see a real pattern without feeling cramped.
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const windowDays = isMobile ? 119 : 365; // ~17 weeks on mobile vs full year on desktop
+
   const days = [];
-  for (let i = 364; i >= 0; i--) {
+  for (let i = windowDays - 1; i >= 0; i--) {
     const d = new Date(todayDate);
     d.setDate(d.getDate() - i);
     days.push(d);
@@ -13302,27 +13326,33 @@ function renderHeatmap() {
     return 'hm-4';
   }
 
-  // Render month labels
-  // Each col is (14px wide + 3px gap) = 17px
-  const colW = 17;
+  // Render month labels — positioned absolutely by real pixel offset so a
+  // long month name can never crowd/overlap the label after it.
+  const cellSize = isMobile ? 14 : 16;
+  const colW = cellSize + 4; // matches .heatmap-col gap in CSS
   let labHtml = '';
-  monthLabels.forEach((ml, i) => {
-    const next = monthLabels[i + 1];
-    const widthCols = next ? (next.col - ml.col) : (cols.length - ml.col);
-    labHtml += `<div class="heatmap-month-label" style="width:${widthCols * colW}px">${ml.label}</div>`;
+  monthLabels.forEach(ml => {
+    const leftPx = currentLang === 'ar' ? '' : `left:${ml.col * colW}px;`;
+    const rightPx = currentLang === 'ar' ? `right:${ml.col * colW}px;` : '';
+    labHtml += `<div class="heatmap-month-label" style="${leftPx}${rightPx}">${ml.label}</div>`;
   });
   monthLabelsEl.innerHTML = labHtml;
+  monthLabelsEl.style.paddingRight = currentLang === 'ar' ? '0' : '34px';
+  monthLabelsEl.style.paddingLeft = currentLang === 'ar' ? '34px' : '0';
 
-  // Render grid
+  // Render grid — each cell gets a tiny staggered delay for a pleasant pop-in
+  let cellIndex = 0;
   grid.innerHTML = cols.map(col => {
     return `<div class="heatmap-col">${col.map(dayObj => {
       const pct = getDayPct(dayObj);
       const cls = pctToClass(pct);
-      if (!dayObj) return `<div class="heatmap-cell" style="background:transparent;cursor:default"></div>`;
+      const delay = (cellIndex++ * 4) % 600;
+      if (!dayObj) return `<div class="heatmap-cell" style="background:transparent;cursor:default;animation:none"></div>`;
       const dayStr = `${dayObj.getFullYear()}-${dayObj.getMonth() + 1}-${dayObj.getDate()}`;
       const pctStr = pct >= 0 ? Math.round(pct * 100) + '%' : '';
-      return `<div class="heatmap-cell ${cls}" data-date="${dayStr}" data-pct="${pctStr}"
-        onmouseenter="showHmTooltip(event,this)" onmouseleave="hideHmTooltip()"></div>`;
+      return `<div class="heatmap-cell ${cls}" data-date="${dayStr}" data-pct="${pctStr}" style="animation-delay:${delay}ms"
+        onmouseenter="showHmTooltip(event,this)" onmouseleave="hideHmTooltip()"
+        onclick="showHmTooltip(event,this); setTimeout(hideHmTooltip, 1800)"></div>`;
     }).join('')}</div>`;
   }).join('');
 
@@ -13343,7 +13373,7 @@ function renderHeatmap() {
     { val: activeDays, label: t('achStatActiveDay') },
     { val: perfectDays, label: t('achStatPerfectDay') },
     { val: totalChecked, label: t('achStatLoggedAch') },
-    { val: Math.round(activeDays / 365 * 100) + '%', label: t('achStatConsistency') },
+    { val: Math.round(activeDays / windowDays * 100) + '%', label: t('achStatConsistency') },
   ].map(s => `<div class="hm-stat"><div class="hm-stat-val">${s.val}</div><div class="hm-stat-label">${s.label}</div></div>`).join('');
 }
 
