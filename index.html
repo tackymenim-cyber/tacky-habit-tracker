@@ -7190,6 +7190,7 @@ function setLang(lang, _skipSave) {
   updateJournalPageText();
   updateAchievementsPageText();
   if (typeof renderThemePicker === 'function') { try { renderThemePicker(); } catch(e) {} }
+  if (typeof pomoRender === 'function') { try { pomoRender(); } catch(e) {} }
   renderAll();
   // renderAll() just rebuilt the habits table with the new language's labels,
   // which can leave the scroll position wherever the rebuild happened to land.
@@ -14304,6 +14305,83 @@ const pomoCss = `
   color: var(--text-3);
 }
 
+/* ---------- ANIMATIONS ---------- */
+.pomo-anim-in {
+  animation: pomoFadeUp 0.5s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--pomo-d, 0) * 0.06s);
+}
+@keyframes pomoFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.pomo-anim-pop {
+  animation: pomoBannerIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* Mode pill press feedback */
+.pomo-mode-btn, .pomo-dir-opt, .pomo-preset-btn, .pomo-btn-sec, .pomo-custom-apply, .pomo-note-save-btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.pomo-mode-btn:active, .pomo-dir-opt:active, .pomo-preset-btn:active, .pomo-btn-sec:active, .pomo-custom-apply:active {
+  transform: scale(0.94);
+}
+.pomo-mode-btn.active {
+  animation: pomoPillPop 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pomoPillPop {
+  0% { transform: scale(0.9); }
+  60% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Clock ring pulse while running */
+.pomo-running .pomo-clock-wrap {
+  animation: pomoClockPulse 2.4s ease-in-out infinite;
+}
+@keyframes pomoClockPulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(var(--pomo-accent-rgb,59,130,246), 0)); }
+  50% { filter: drop-shadow(0 0 18px rgba(var(--pomo-accent-rgb,59,130,246), 0.35)); }
+}
+
+/* Time display tick */
+.pomo-time-display {
+  animation: pomoTimeTick 1s ease-in-out;
+}
+@keyframes pomoTimeTick {
+  0% { opacity: 0.7; transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Warning shake */
+.pomo-warning .pomo-clock-face .pomo-time-display {
+  animation: pomoWarnPulse 1s ease-in-out infinite;
+}
+@keyframes pomoWarnPulse {
+  0%, 100% { color: var(--text); }
+  50% { color: #ef4444; }
+}
+
+/* Log items slide in */
+.pomo-log-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pomo-log-item:hover {
+  transform: translateX(-2px);
+}
+[dir="ltr"] .pomo-log-item:hover {
+  transform: translateX(2px);
+}
+
+/* Note save button pop */
+.pomo-note-save-btn.saved {
+  animation: pomoSavedPop 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pomoSavedPop {
+  0% { transform: scale(0.9); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 420px) {
   .pomo-clock-wrap { width: 240px; height: 240px; }
@@ -14343,21 +14421,148 @@ let pomoLastSaveTs = 0;
 let pomoOvertimeSec = 0;
 let pomoOvertimeActive = false;
 
+const POMO_T = {
+  ar: {
+    dir: 'rtl',
+    title: '⏱ بومودورو',
+    subtitle: 'مؤقت التركيز — يعمل حتى لو أغلقت التبويب',
+    modeWork: '🔥 عمل',
+    modeShort: '☕ استراحة',
+    modeLong: '🌿 طويلة',
+    session: 'جلسة #',
+    overtimeTitle: 'تجاوزت الوقت — ',
+    overtimeSub: 'المؤقت يعمل حتى توقفه. الوقت الزائد لا يُحتسب.',
+    overtimeSuffix: 'زائد',
+    resetTitle: 'إعادة تعيين',
+    stopTitle: 'إيقاف',
+    startTitle: 'تشغيل',
+    notifTitle: 'تفعيل الإشعارات',
+    directionTitle: 'اتجاه المؤقت',
+    directionDown: 'تنازلي — يعد من الوقت إلى الصفر',
+    directionUp: 'تصاعدي — يعد من الصفر إلى الوقت المحدد',
+    dirOptDown: '⬇ تنازلي',
+    dirOptUp: '⬆ تصاعدي',
+    presetsTitle: '⚡ الأوقات المحددة مسبقاً',
+    minUnit: 'د',
+    customTitle: '✏️ وقت مخصص',
+    applyBtn: 'تطبيق ✓',
+    statSessions: 'جلسات اليوم',
+    statFocusMin: 'دقيقة تركيز',
+    statTotalMin: 'إجمالي دقائق',
+    noteTitle: '📝 ملاحظة الجلسة',
+    notePlaceholder: 'ماذا تعمل الآن؟ هل أنهيت مهمتك؟ سجّل ملاحظاتك هنا...',
+    noteSave: '💾 حفظ الملاحظة',
+    noteSaved: '✓ تم الحفظ',
+    logTitle: '📋 سجل الجلسات',
+    logClear: 'مسح السجل',
+    logEmpty: 'لا يوجد سجل بعد — ابدأ جلستك الأولى! 🍅',
+    logDone: 'مكتملة ✓',
+    logMissed: 'متوقفة',
+    logMinUnit: 'دقيقة',
+    presetLabels: ['بومودورو', 'استراحة قصيرة', 'استراحة طويلة', 'تركيز عميق', 'سريع', 'ساعة', 'قصير', 'مخصص'],
+    modeLabels: { work: 'وقت العمل 🔥', short: 'استراحة قصيرة ☕', long: 'استراحة طويلة 🌿' },
+  },
+  en: {
+    dir: 'ltr',
+    title: '⏱ Pomodoro',
+    subtitle: 'Focus timer — keeps running even if you close the tab',
+    modeWork: '🔥 Work',
+    modeShort: '☕ Break',
+    modeLong: '🌿 Long',
+    session: 'Session #',
+    overtimeTitle: 'Overtime — ',
+    overtimeSub: 'The timer keeps running until you stop it. Extra time is not counted.',
+    overtimeSuffix: 'over',
+    resetTitle: 'Reset',
+    stopTitle: 'Stop',
+    startTitle: 'Start',
+    notifTitle: 'Enable notifications',
+    directionTitle: 'Timer direction',
+    directionDown: 'Countdown — counts down from the set time to zero',
+    directionUp: 'Count up — counts up from zero to the set time',
+    dirOptDown: '⬇ Countdown',
+    dirOptUp: '⬆ Count up',
+    presetsTitle: '⚡ Presets',
+    minUnit: 'm',
+    customTitle: '✏️ Custom time',
+    applyBtn: 'Apply ✓',
+    statSessions: 'Sessions today',
+    statFocusMin: 'Focus minutes',
+    statTotalMin: 'Total minutes',
+    noteTitle: '📝 Session note',
+    notePlaceholder: 'What are you working on? Did you finish your task? Write your notes here...',
+    noteSave: '💾 Save note',
+    noteSaved: '✓ Saved',
+    logTitle: '📋 Session log',
+    logClear: 'Clear log',
+    logEmpty: 'No sessions yet — start your first one! 🍅',
+    logDone: 'Completed ✓',
+    logMissed: 'Stopped',
+    logMinUnit: 'min',
+    presetLabels: ['Pomodoro', 'Short break', 'Long break', 'Deep focus', 'Quick', 'Hour', 'Short', 'Custom'],
+    modeLabels: { work: 'Work time 🔥', short: 'Short break ☕', long: 'Long break 🌿' },
+  },
+  fr: {
+    dir: 'ltr',
+    title: '⏱ Pomodoro',
+    subtitle: "Minuteur de concentration — continue même si vous fermez l'onglet",
+    modeWork: '🔥 Travail',
+    modeShort: '☕ Pause',
+    modeLong: '🌿 Longue',
+    session: 'Session #',
+    overtimeTitle: 'Dépassement — ',
+    overtimeSub: "Le minuteur continue jusqu'à l'arrêt. Le temps supplémentaire n'est pas compté.",
+    overtimeSuffix: 'de plus',
+    resetTitle: 'Réinitialiser',
+    stopTitle: 'Arrêter',
+    startTitle: 'Démarrer',
+    notifTitle: 'Activer les notifications',
+    directionTitle: 'Sens du minuteur',
+    directionDown: 'Décompte — compte à rebours jusqu\'à zéro',
+    directionUp: 'Compte croissant — compte de zéro jusqu\'au temps défini',
+    dirOptDown: '⬇ Décompte',
+    dirOptUp: '⬆ Croissant',
+    presetsTitle: '⚡ Préréglages',
+    minUnit: 'min',
+    customTitle: '✏️ Temps personnalisé',
+    applyBtn: 'Appliquer ✓',
+    statSessions: "Sessions aujourd'hui",
+    statFocusMin: 'Minutes de focus',
+    statTotalMin: 'Minutes totales',
+    noteTitle: '📝 Note de session',
+    notePlaceholder: 'Sur quoi travaillez-vous ? Avez-vous terminé votre tâche ? Notez ici...',
+    noteSave: '💾 Enregistrer la note',
+    noteSaved: '✓ Enregistré',
+    logTitle: '📋 Historique des sessions',
+    logClear: "Effacer l'historique",
+    logEmpty: 'Aucune session pour le moment — commencez la première ! 🍅',
+    logDone: 'Terminée ✓',
+    logMissed: 'Arrêtée',
+    logMinUnit: 'min',
+    presetLabels: ['Pomodoro', 'Pause courte', 'Pause longue', 'Concentration profonde', 'Rapide', 'Heure', 'Courte', 'Personnalisé'],
+    modeLabels: { work: 'Temps de travail 🔥', short: 'Pause courte ☕', long: 'Pause longue 🌿' },
+  },
+};
+function pomoT() {
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  return POMO_T[lang];
+}
+
 const PRESETS = [
-  { label: 'بومودورو', mins: 25, mode: 'work' },
-  { label: 'استراحة قصيرة', mins: 5, mode: 'short' },
-  { label: 'استراحة طويلة', mins: 15, mode: 'long' },
-  { label: 'تركيز عميق', mins: 50, mode: 'work' },
-  { label: 'سريع', mins: 10, mode: 'work' },
-  { label: 'ساعة', mins: 60, mode: 'work' },
-  { label: 'قصير', mins: 3, mode: 'work' },
-  { label: 'مخصص', mins: null, mode: null },
+  { key: 0, mins: 25, mode: 'work' },
+  { key: 1, mins: 5, mode: 'short' },
+  { key: 2, mins: 15, mode: 'long' },
+  { key: 3, mins: 50, mode: 'work' },
+  { key: 4, mins: 10, mode: 'work' },
+  { key: 5, mins: 60, mode: 'work' },
+  { key: 6, mins: 3, mode: 'work' },
+  { key: 7, mins: null, mode: null },
 ];
 
 const MODE_META = {
-  work:  { label: 'وقت العمل 🔥', color: '#ef4444', rgb: '239,68,68', emoji: '🍅' },
-  short: { label: 'استراحة قصيرة ☕', color: '#22c55e', rgb: '34,197,94', emoji: '☕' },
-  long:  { label: 'استراحة طويلة 🌿', color: '#3b82f6', rgb: '59,130,246', emoji: '🌿' },
+  work:  { color: '#ef4444', rgb: '239,68,68', emoji: '🍅' },
+  short: { color: '#22c55e', rgb: '34,197,94', emoji: '☕' },
+  long:  { color: '#3b82f6', rgb: '59,130,246', emoji: '🌿' },
 };
 
 /* ---------- PERSIST ---------- */
@@ -14557,21 +14762,25 @@ function pomoLogEntry(done, durationSec, note) {
 window.pomoSaveNote = function pomoSaveNote() {
   const area = document.getElementById('pomoNoteArea');
   const btn = document.getElementById('pomoNoteSaveBtn');
+  const t = pomoT();
   if (!area) return;
   pomoState.currentNote = area.value;
   pomoSave();
   if (btn) {
-    btn.textContent = '✓ تم الحفظ';
+    btn.textContent = t.noteSaved;
     btn.classList.add('saved');
     setTimeout(() => {
-      btn.textContent = '💾 حفظ الملاحظة';
+      btn.textContent = t.noteSave;
       btn.classList.remove('saved');
     }, 1500);
   }
 }
 
 window.pomoClearLog = function pomoClearLog() {
-  if (!confirm('هل تريد مسح سجل الجلسات؟')) return;
+  const t = pomoT();
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  const confirmMsg = lang === 'ar' ? 'هل تريد مسح سجل الجلسات؟' : lang === 'fr' ? "Voulez-vous effacer l'historique des sessions ?" : 'Do you want to clear the session log?';
+  if (!confirm(confirmMsg)) return;
   pomoLog = [];
   pomoSave();
   pomoRender();
@@ -14586,10 +14795,16 @@ window.pomoRequestNotifPermission = function pomoRequestNotifPermission() {
 
 function pomoSendNotification() {
   const meta = MODE_META[pomoState.mode];
+  const t = pomoT();
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  const notifTitle = lang === 'ar' ? 'بومودورو ✅' : lang === 'fr' ? 'Pomodoro ✅' : 'Pomodoro ✅';
+  const notifBody = pomoState.mode === 'work'
+    ? (lang === 'ar' ? 'انتهى وقت العمل! خذ استراحة 🎉' : lang === 'fr' ? 'Temps de travail terminé ! Faites une pause 🎉' : 'Work time is over! Take a break 🎉')
+    : (lang === 'ar' ? 'انتهت الاستراحة! عد للعمل 🔥' : lang === 'fr' ? 'La pause est terminée ! Retour au travail 🔥' : 'Break is over! Back to work 🔥');
   try {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('بومودورو ✅', {
-        body: pomoState.mode === 'work' ? 'انتهى وقت العمل! خذ استراحة 🎉' : 'انتهت الاستراحة! عد للعمل 🔥',
+      new Notification(notifTitle, {
+        body: notifBody,
         icon: meta.emoji,
         silent: false,
       });
@@ -14660,19 +14875,29 @@ function pomoShowFinishModal() {
   const meta = MODE_META[pomoState.mode];
   const note = document.getElementById('pomoNoteArea') ? document.getElementById('pomoNoteArea').value.trim() : '';
   const mins = Math.floor(pomoState.totalSecs / 60);
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+  const fTitle = pomoState.mode === 'work'
+    ? (lang === 'ar' ? 'أحسنت! جلسة مكتملة 🎉' : lang === 'fr' ? 'Bravo ! Session terminée 🎉' : 'Well done! Session complete 🎉')
+    : (lang === 'ar' ? 'الاستراحة انتهت!' : lang === 'fr' ? 'La pause est terminée !' : 'Break is over!');
+  const fSub = pomoState.mode === 'work'
+    ? (lang === 'ar' ? `أكملت ${mins} دقيقة من التركيز المتواصل!` : lang === 'fr' ? `Vous avez terminé ${mins} minutes de concentration continue !` : `You completed ${mins} minutes of continuous focus!`)
+    : (lang === 'ar' ? 'انتهت الاستراحة، هيا للعمل مجدداً 🔥' : lang === 'fr' ? 'La pause est finie, retour au travail 🔥' : 'Break is over, back to work 🔥');
+  const fNoteSaved = lang === 'ar' ? 'ملاحظتك محفوظة 📝' : lang === 'fr' ? 'Votre note est enregistrée 📝' : 'Your note is saved 📝';
+  const fNewSession = lang === 'ar' ? '▶ جلسة جديدة' : lang === 'fr' ? '▶ Nouvelle session' : '▶ New session';
+  const fClose = lang === 'ar' ? '× إغلاق' : lang === 'fr' ? '× Fermer' : '× Close';
 
   overlay.innerHTML = `
     <div class="pomo-finish-card">
       <span class="pomo-finish-emoji">${meta.emoji}</span>
-      <div class="pomo-finish-title">${pomoState.mode === 'work' ? 'أحسنت! جلسة مكتملة 🎉' : 'الاستراحة انتهت!'}</div>
+      <div class="pomo-finish-title">${fTitle}</div>
       <div class="pomo-finish-sub">
-        ${pomoState.mode === 'work' ? `أكملت ${mins} دقيقة من التركيز المتواصل!` : `انتهت الاستراحة، هيا للعمل مجدداً 🔥`}
-        ${note ? '<br>ملاحظتك محفوظة 📝' : ''}
+        ${fSub}
+        ${note ? `<br>${fNoteSaved}` : ''}
       </div>
       ${note ? `<div class="pomo-finish-note-preview" style="display:block">${note}</div>` : ''}
       <div class="pomo-finish-btns">
-        <button class="pomo-finish-btn pomo-finish-btn-primary" onclick="pomoCloseModal(this, true)">▶ جلسة جديدة</button>
-        <button class="pomo-finish-btn pomo-finish-btn-secondary" onclick="pomoCloseModal(this, false)">× إغلاق</button>
+        <button class="pomo-finish-btn pomo-finish-btn-primary" onclick="pomoCloseModal(this, true)">${fNewSession}</button>
+        <button class="pomo-finish-btn pomo-finish-btn-secondary" onclick="pomoCloseModal(this, false)">${fClose}</button>
       </div>
     </div>
   `;
@@ -14737,11 +14962,15 @@ function pomoCreateParticles() {
 }
 
 /* ---------- RENDER ---------- */
-function pomoRender() {
+window.pomoRender = function pomoRender() {
   const root = document.getElementById('pomo-root');
   if (!root) return;
 
+  const t = pomoT();
+  const lang = (typeof currentLang !== 'undefined' && POMO_T[currentLang]) ? currentLang : 'ar';
+
   const meta = MODE_META[pomoState.mode];
+  const modeLabel = t.modeLabels[pomoState.mode];
   const totalSecs = pomoState.totalSecs;
   const elapsed = pomoState.elapsed;
   const remaining = Math.max(0, totalSecs - elapsed);
@@ -14768,7 +14997,7 @@ function pomoRender() {
 
   // Update title
   document.title = pomoState.running
-    ? `${isOvertime ? otStr + ' زائد' : timeStr} — TACKY بومودورو`
+    ? `${isOvertime ? otStr + ' ' + t.overtimeSuffix : timeStr} — TACKY ${t.title.replace('⏱ ','')}`
     : 'TACKY Habit Tracker Pro ✨';
 
   // Update root state classes
@@ -14776,25 +15005,26 @@ function pomoRender() {
   pageEl.classList.toggle('pomo-running', pomoState.running && !isOvertime);
   pageEl.classList.toggle('pomo-warning', isWarning);
   pageEl.classList.toggle('pomo-overtime', isOvertime && pomoState.running);
+  pageEl.setAttribute('dir', t.dir);
 
   // Update accent
   document.documentElement.style.setProperty('--pomo-accent-rgb', meta.rgb);
 
   root.innerHTML = `
-    <div class="pomo-header">
-      <h2>⏱ بومودورو</h2>
-      <p>مؤقت التركيز — يعمل حتى لو أغلقت التبويب</p>
+    <div class="pomo-header pomo-anim-in" style="--pomo-d:0">
+      <h2>${t.title}</h2>
+      <p>${t.subtitle}</p>
     </div>
 
     <!-- Mode pills -->
-    <div class="pomo-modes">
-      <button class="pomo-mode-btn ${pomoState.mode === 'work' ? 'active' : ''}" onclick="pomoSetMode('work')">🔥 عمل</button>
-      <button class="pomo-mode-btn ${pomoState.mode === 'short' ? 'active' : ''}" onclick="pomoSetMode('short')">☕ استراحة</button>
-      <button class="pomo-mode-btn ${pomoState.mode === 'long' ? 'active' : ''}" onclick="pomoSetMode('long')">🌿 طويلة</button>
+    <div class="pomo-modes pomo-anim-in" style="--pomo-d:1">
+      <button class="pomo-mode-btn ${pomoState.mode === 'work' ? 'active' : ''}" onclick="pomoSetMode('work')">${t.modeWork}</button>
+      <button class="pomo-mode-btn ${pomoState.mode === 'short' ? 'active' : ''}" onclick="pomoSetMode('short')">${t.modeShort}</button>
+      <button class="pomo-mode-btn ${pomoState.mode === 'long' ? 'active' : ''}" onclick="pomoSetMode('long')">${t.modeLong}</button>
     </div>
 
     <!-- Clock -->
-    <div class="pomo-clock-wrap">
+    <div class="pomo-clock-wrap pomo-anim-in" style="--pomo-d:2">
       <svg class="pomo-ring-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
         <circle class="pomo-ring-bg" cx="140" cy="140" r="${R}"/>
         <circle class="pomo-ring-glow" cx="140" cy="140" r="${R}" stroke="${meta.color}" stroke-dasharray="${C}" stroke-dashoffset="${dashOffset}"/>
@@ -14806,116 +15036,117 @@ function pomoRender() {
       </svg>
       <div class="pomo-clock-face">
         <div class="pomo-time-display">${isOvertime && pomoState.running ? otStr : timeStr}</div>
-        <div class="pomo-mode-label">${meta.label}</div>
-        <div class="pomo-session-badge">جلسة #${pomoState.sessionCount + 1}</div>
+        <div class="pomo-mode-label">${modeLabel}</div>
+        <div class="pomo-session-badge">${t.session}${pomoState.sessionCount + 1}</div>
       </div>
     </div>
 
     ${isOvertime && pomoState.running ? `
-    <div class="pomo-overtime-banner">
+    <div class="pomo-overtime-banner pomo-anim-pop">
       <div class="ot-icon">⏰</div>
       <div class="ot-text">
-        <div class="ot-title">تجاوزت الوقت — ${otStr}</div>
-        <div class="ot-sub">المؤقت يعمل حتى توقفه. الوقت الزائد لا يُحتسب.</div>
+        <div class="ot-title">${t.overtimeTitle}${otStr}</div>
+        <div class="ot-sub">${t.overtimeSub}</div>
       </div>
     </div>
     ` : ''}
 
     <!-- Controls -->
-    <div class="pomo-controls">
-      <button class="pomo-btn-sec" onclick="pomoReset()" title="إعادة تعيين">↺</button>
-      <button class="pomo-btn-main" onclick="${pomoState.running ? 'pomoStop(true)' : 'pomoStart()'}" title="${pomoState.running ? 'إيقاف' : 'تشغيل'}">
+    <div class="pomo-controls pomo-anim-in" style="--pomo-d:3">
+      <button class="pomo-btn-sec" onclick="pomoReset()" title="${t.resetTitle}">↺</button>
+      <button class="pomo-btn-main" onclick="${pomoState.running ? 'pomoStop(true)' : 'pomoStart()'}" title="${pomoState.running ? t.stopTitle : t.startTitle}">
         ${pomoState.running ? '⏹' : '▶'}
       </button>
-      <button class="pomo-btn-sec" onclick="pomoRequestNotifPermission()" title="تفعيل الإشعارات">🔔</button>
+      <button class="pomo-btn-sec" onclick="pomoRequestNotifPermission()" title="${t.notifTitle}">🔔</button>
     </div>
 
     <!-- Direction -->
-    <div class="pomo-direction-wrap">
+    <div class="pomo-direction-wrap pomo-anim-in" style="--pomo-d:4">
       <div class="pomo-direction-icon">${isDown ? '⬇️' : '⬆️'}</div>
       <div class="pomo-direction-info">
-        <div class="pomo-direction-title">اتجاه المؤقت</div>
-        <div class="pomo-direction-sub">${isDown ? 'تنازلي — يعد من الوقت إلى الصفر' : 'تصاعدي — يعد من الصفر إلى الوقت المحدد'}</div>
+        <div class="pomo-direction-title">${t.directionTitle}</div>
+        <div class="pomo-direction-sub">${isDown ? t.directionDown : t.directionUp}</div>
       </div>
       <div class="pomo-direction-toggle">
-        <button class="pomo-dir-opt ${isDown ? 'active' : ''}" onclick="pomoSetDirection('down')">⬇ تنازلي</button>
-        <button class="pomo-dir-opt ${!isDown ? 'active' : ''}" onclick="pomoSetDirection('up')">⬆ تصاعدي</button>
+        <button class="pomo-dir-opt ${isDown ? 'active' : ''}" onclick="pomoSetDirection('down')">${t.dirOptDown}</button>
+        <button class="pomo-dir-opt ${!isDown ? 'active' : ''}" onclick="pomoSetDirection('up')">${t.dirOptUp}</button>
       </div>
     </div>
 
     <!-- Presets -->
-    <div class="pomo-presets-wrap">
-      <div class="pomo-presets-title">⚡ الأوقات المحددة مسبقاً</div>
+    <div class="pomo-presets-wrap pomo-anim-in" style="--pomo-d:5">
+      <div class="pomo-presets-title">${t.presetsTitle}</div>
       <div class="pomo-presets">
         ${PRESETS.map((p, i) => `
           <button class="pomo-preset-btn ${p.mins && p.mins * 60 === totalSecs ? 'active' : ''}"
             onclick="${p.mins ? `pomoSelectPreset(${i})` : `document.getElementById('pomoCustMin').focus()`}">
-            <span class="pomo-preset-duration">${p.mins ? p.mins + 'د' : '✏️'}</span>
-            ${p.label}
+            <span class="pomo-preset-duration">${p.mins ? p.mins + t.minUnit : '✏️'}</span>
+            ${t.presetLabels[i]}
           </button>
         `).join('')}
       </div>
     </div>
 
     <!-- Custom time -->
-    <div class="pomo-custom-wrap">
-      <div class="pomo-custom-title">✏️ وقت مخصص</div>
+    <div class="pomo-custom-wrap pomo-anim-in" style="--pomo-d:6">
+      <div class="pomo-custom-title">${t.customTitle}</div>
       <div class="pomo-custom-row">
         <input type="number" class="pomo-custom-input" id="pomoCustMin" placeholder="25" min="0" max="120" value="${Math.floor(totalSecs/60)}">
         <div class="pomo-custom-sep">:</div>
         <input type="number" class="pomo-custom-input" id="pomoCustSec" placeholder="00" min="0" max="59" value="${totalSecs%60}">
-        <button class="pomo-custom-apply" onclick="pomoApplyCustom()">تطبيق ✓</button>
+        <button class="pomo-custom-apply" onclick="pomoApplyCustom()">${t.applyBtn}</button>
       </div>
     </div>
 
     <!-- Stats -->
-    <div class="pomo-status-bar">
+    <div class="pomo-status-bar pomo-anim-in" style="--pomo-d:7">
       <div class="pomo-stat-card">
         <div class="pomo-stat-val">${pomoState.sessionCount}</div>
-        <div class="pomo-stat-lbl">جلسات اليوم</div>
+        <div class="pomo-stat-lbl">${t.statSessions}</div>
       </div>
       <div class="pomo-stat-card">
         <div class="pomo-stat-val">${pomoGetTodayFocus()}</div>
-        <div class="pomo-stat-lbl">دقيقة تركيز</div>
+        <div class="pomo-stat-lbl">${t.statFocusMin}</div>
       </div>
       <div class="pomo-stat-card">
         <div class="pomo-stat-val">${pomoState.totalFocusMins}</div>
-        <div class="pomo-stat-lbl">إجمالي دقائق</div>
+        <div class="pomo-stat-lbl">${t.statTotalMin}</div>
       </div>
     </div>
 
     <!-- Note -->
-    <div class="pomo-note-wrap">
-      <div class="pomo-note-title">📝 ملاحظة الجلسة</div>
-      <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="ماذا تعمل الآن؟ هل أنهيت مهمتك؟ سجّل ملاحظاتك هنا...">${pomoState.currentNote || ''}</textarea>
+    <div class="pomo-note-wrap pomo-anim-in" style="--pomo-d:8">
+      <div class="pomo-note-title">${t.noteTitle}</div>
+      <textarea class="pomo-note-area" id="pomoNoteArea" placeholder="${t.notePlaceholder}">${pomoState.currentNote || ''}</textarea>
       <div class="pomo-note-save-row">
-        <button class="pomo-note-save-btn" id="pomoNoteSaveBtn" onclick="pomoSaveNote()">💾 حفظ الملاحظة</button>
+        <button class="pomo-note-save-btn" id="pomoNoteSaveBtn" onclick="pomoSaveNote()">${t.noteSave}</button>
       </div>
     </div>
 
     <!-- Session log -->
-    <div class="pomo-log-wrap">
+    <div class="pomo-log-wrap pomo-anim-in" style="--pomo-d:9">
       <div class="pomo-log-title">
-        📋 سجل الجلسات
-        <span onclick="pomoClearLog()">مسح السجل</span>
+        ${t.logTitle}
+        <span onclick="pomoClearLog()">${t.logClear}</span>
       </div>
       <div class="pomo-log-list">
         ${pomoLog.length === 0
-          ? `<div style="text-align:center;color:var(--text-3);font-size:0.85rem;padding:20px">لا يوجد سجل بعد — ابدأ جلستك الأولى! 🍅</div>`
-          : pomoLog.slice(0, 10).map(e => {
+          ? `<div style="text-align:center;color:var(--text-3);font-size:0.85rem;padding:20px">${t.logEmpty}</div>`
+          : pomoLog.slice(0, 10).map((e, idx) => {
               const modeMeta = MODE_META[e.mode] || MODE_META.work;
+              const eModeLabel = (t.modeLabels[e.mode] || t.modeLabels.work).split(' ')[0];
               const durMins = Math.floor(e.durationSec / 60);
               const durSecs = e.durationSec % 60;
               return `
-                <div class="pomo-log-item">
+                <div class="pomo-log-item pomo-anim-in" style="--pomo-d:${10 + idx}">
                   <div class="pomo-log-emoji">${e.done ? modeMeta.emoji : '❌'}</div>
                   <div class="pomo-log-info">
                     <div class="pomo-log-type ${e.done ? 'pomo-log-done' : 'pomo-log-missed'}">
-                      ${e.done ? 'مكتملة ✓' : 'متوقفة'} — ${modeMeta.label.split(' ')[0]}
+                      ${e.done ? t.logDone : t.logMissed} — ${eModeLabel}
                     </div>
                     <div class="pomo-log-detail">
-                      ${durMins}:${String(durSecs).padStart(2,'0')} دقيقة
-                      ${e.overtime > 0 ? ` (+${Math.floor(e.overtime/60)}:${String(e.overtime%60).padStart(2,'0')} زائد)` : ''}
+                      ${durMins}:${String(durSecs).padStart(2,'0')} ${t.logMinUnit}
+                      ${e.overtime > 0 ? ` (+${Math.floor(e.overtime/60)}:${String(e.overtime%60).padStart(2,'0')} ${t.overtimeSuffix})` : ''}
                       ${e.note ? ` — ${e.note.slice(0,40)}${e.note.length > 40 ? '...' : ''}` : ''}
                     </div>
                   </div>
