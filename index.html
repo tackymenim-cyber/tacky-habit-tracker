@@ -6073,6 +6073,7 @@ const T = {
     catLabels: { chest:'💪 صدر', back:'🔙 ظهر', legs:'🦵 أرجل', shoulders:'🤷 أكتاف', arms:'💪 أذرع', core:'🔥 كور', cardio:'🏃 كارديو' },
     catOptLabels: { chest:'🏋️ صدر', back:'💪 ظهر', legs:'🦵 أرجل', shoulders:'🤷 أكتاف', arms:'💪 أذرع', core:'🔥 كور', cardio:'🏃 كارديو' },
     settingsTitle: 'الإعدادات', settingsDesc: 'خصّص تجربتك كاملاً',
+    tooltipSettings: 'الإعدادات', tooltipTheme: 'وضع ليلي / نهاري', tooltipSignOut: 'تسجيل الخروج',
     settingsBtnClose: '✕',
     secAppearance: '🎨 المظهر والواجهة',
     darkMode: 'الوضع الليلي', darkModeDesc: 'تقليل إجهاد العين ليلاً',
@@ -6192,6 +6193,7 @@ const T = {
     confirmSignOut: 'هل تريد تسجيل الخروج؟',
     signingOutBtn: '... جارٍ الخروج',
     signOutBtn: '🚪 تسجيل خروج',
+    settingsSignOut: '🚪 تسجيل الخروج',
     signOutFail: '⚠️ فشل تسجيل الخروج، حاول مرة أخرى',
     // SIGN OUT CONFIRM MODAL
     soTitle: 'تسجيل الخروج؟',
@@ -6458,6 +6460,7 @@ const T = {
     catLabels: { chest:'💪 Poitrine', back:'🔙 Dos', legs:'🦵 Jambes', shoulders:'🤷 Épaules', arms:'💪 Bras', core:'🔥 Core', cardio:'🏃 Cardio' },
     catOptLabels: { chest:'🏋️ Poitrine', back:'💪 Dos', legs:'🦵 Jambes', shoulders:'🤷 Épaules', arms:'💪 Bras', core:'🔥 Core', cardio:'🏃 Cardio' },
     settingsTitle: 'Paramètres', settingsDesc: 'Personnalisez votre expérience',
+    tooltipSettings: 'Paramètres', tooltipTheme: 'Mode nuit / jour', tooltipSignOut: 'Se déconnecter',
     settingsBtnClose: '✕',
     secAppearance: '🎨 Apparence',
     darkMode: 'Mode nuit', darkModeDesc: 'Réduire la fatigue oculaire',
@@ -6578,6 +6581,7 @@ const T = {
     confirmSignOut: 'Voulez-vous vous déconnecter ?',
     signingOutBtn: '... Déconnexion en cours',
     signOutBtn: '⬡ Déconnexion',
+    settingsSignOut: '🚪 Se déconnecter',
     signOutFail: '⚠️ Échec de la déconnexion, réessayez',
     // SIGN OUT CONFIRM MODAL
     soTitle: 'Déconnexion ?',
@@ -6844,6 +6848,7 @@ const T = {
     catLabels: { chest:'💪 Chest', back:'🔙 Back', legs:'🦵 Legs', shoulders:'🤷 Shoulders', arms:'💪 Arms', core:'🔥 Core', cardio:'🏃 Cardio' },
     catOptLabels: { chest:'🏋️ Chest', back:'💪 Back', legs:'🦵 Legs', shoulders:'🤷 Shoulders', arms:'💪 Arms', core:'🔥 Core', cardio:'🏃 Cardio' },
     settingsTitle: 'Settings', settingsDesc: 'Customize your experience',
+    tooltipSettings: 'Settings', tooltipTheme: 'Dark / Light mode', tooltipSignOut: 'Sign Out',
     settingsBtnClose: '✕',
     secAppearance: '🎨 Appearance',
     darkMode: 'Dark Mode', darkModeDesc: 'Reduce eye strain at night',
@@ -6964,6 +6969,7 @@ const T = {
     confirmSignOut: 'Do you want to sign out?',
     signingOutBtn: '... Signing out',
     signOutBtn: '⬡ Sign out',
+    settingsSignOut: '🚪 Sign Out',
     signOutFail: '⚠️ Sign-out failed, please try again',
     // SIGN OUT CONFIRM MODAL
     soTitle: 'Sign out?',
@@ -7207,6 +7213,8 @@ function setLang(lang, _skipSave) {
   if (lockEm) lockEm.textContent = tr.lockEmail;
   const lockOut = document.getElementById('lockLogoutBtnText');
   if (lockOut) lockOut.textContent = tr.lockLogoutBtn;
+  const settingsOut = document.getElementById('settingsSignOutBtn');
+  if (settingsOut) settingsOut.textContent = tr.settingsSignOut || tr.signOutBtn;
   const navSO = document.getElementById('navSignOutBtn');
   const navSOTxt = document.getElementById('navSignOutTxt');
   if (navSO && !navSO.disabled) {
@@ -7260,6 +7268,13 @@ function setLang(lang, _skipSave) {
   if (sh) sh.textContent = tr.settingsTitle;
   const sp = document.querySelector('.settings-header p');
   if (sp) sp.textContent = tr.settingsDesc;
+  // Update button tooltips
+  const btnSettings = document.getElementById('settingsNavBtn');
+  if (btnSettings && tr.tooltipSettings) btnSettings.title = tr.tooltipSettings;
+  const btnTheme = document.getElementById('themeBtn');
+  if (btnTheme && tr.tooltipTheme) btnTheme.title = tr.tooltipTheme;
+  const btnSignOut = document.getElementById('navSignOutBtn');
+  if (btnSignOut && tr.tooltipSignOut) btnSignOut.title = tr.tooltipSignOut;
   updateSettingsText();
   const hi = document.getElementById('newHabitInput');
   if (hi) hi.placeholder = tr.addHabitPlaceholder;
@@ -7665,7 +7680,7 @@ function updateSettingsText() {
     secAppearance: tr.secAppearance, secGoals: tr.secGoals,
     secNotif: tr.secNotif, secStats: tr.secStats,
     secAccount: tr.secAccount, secData: tr.secData,
-    secAbout: 'ℹ️ حول التطبيق'
+    secAbout: tr.secAbout
   };
   Object.entries(secMap).forEach(([id, val]) => { const el = document.getElementById(id); if (el && val) el.textContent = val; });
 
