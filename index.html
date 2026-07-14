@@ -9849,10 +9849,20 @@ function _scrollTableToToday(force) {
     // for LTR (English/French) — the visible scroll area for day columns
     // must exclude it from whichever side it's actually on.
     const isRtl = document.documentElement.getAttribute('dir') !== 'ltr';
-    const visibleLeft = isRtl ? wrapRect.left : wrapRect.left + stickyW;
+    // In RTL Arabic, the table's own direction is forced to ltr by CSS (to fix
+    // iOS Safari sticky flicker). This means the table scrolls left-to-right
+    // physically even though the page is RTL. We detect this "forced ltr" case
+    // by checking the computed direction on the wrap element itself.
+    const tableDir = window.getComputedStyle(wrap).direction;
+    const tableIsForceLtr = isRtl && tableDir === 'ltr';
+    // When the table is forced ltr (RTL page, WebKit/iOS), the sticky column is
+    // physically on the RIGHT end of the scroll container even though visually
+    // it appears on the right (which matches LTR left in forced-ltr space).
+    // In this layout, available scroll area starts from the left of the wrap.
+    const visibleLeft = tableIsForceLtr ? wrapRect.left : (isRtl ? wrapRect.left : wrapRect.left + stickyW);
     const visibleWidth = wrapRect.width - stickyW;
     // Center today's column within the visible (non-sticky) scroll area.
-    const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
+    let offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
     // Programmatic scroll — bump the generation ourselves too so this
     // doesn't look like a "user scroll" and cancel the next queued pass.
     _tableScrollGen = myGen;
@@ -9941,7 +9951,11 @@ function _scrollMoodGridToToday(force) {
     // for LTR (English/French) — the visible scroll area for day columns
     // must exclude it from whichever side it's actually on.
     const isRtl = document.documentElement.getAttribute('dir') !== 'ltr';
-    const visibleLeft = isRtl ? wrapRect.left : wrapRect.left + stickyW;
+    // In RTL Arabic, the mood grid's direction is forced to ltr by CSS (to fix
+    // iOS Safari sticky flicker). Detect this and adjust accordingly.
+    const moodDir = window.getComputedStyle(wrap).direction;
+    const moodIsForceLtr = isRtl && moodDir === 'ltr';
+    const visibleLeft = moodIsForceLtr ? wrapRect.left : (isRtl ? wrapRect.left : wrapRect.left + stickyW);
     const visibleWidth = wrapRect.width - stickyW;
     const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
     _moodScrollGen = myGen;
