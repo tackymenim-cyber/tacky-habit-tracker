@@ -1398,7 +1398,7 @@ body.auth-active {
   border-bottom: 1px solid var(--border);
   position: relative;
   z-index: 200;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
   transition: background 0.3s, border-color 0.3s;
   display: flex;
   flex-direction: column;
@@ -1414,10 +1414,14 @@ body.auth-active {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 50px;
-  gap: 12px;
+  padding: 0 28px;
+  height: 58px;
+  gap: 16px;
   border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--white) 0%, color-mix(in srgb, var(--blue-500) 4%, var(--white)) 100%);
+}
+[data-theme="dark"] .nav-topbar {
+  background: linear-gradient(135deg, var(--white) 0%, color-mix(in srgb, var(--blue-500) 8%, var(--white)) 100%);
 }
 
 /* ── Tabs row ── */
@@ -1425,58 +1429,94 @@ body.auth-active {
   display: flex;
   align-items: center;
   padding: 0 16px;
-  height: 36px;
-  gap: 2px;
+  height: 46px;
+  gap: 4px;
   overflow-x: auto;
   scrollbar-width: none;
-  background: var(--bg);
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  border-top: 1px solid var(--border);
+  position: relative;
+}
+.nav-tabsbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--blue-500) 15%, transparent), transparent);
+  pointer-events: none;
 }
 .nav-tabsbar::-webkit-scrollbar { display: none; }
 
 .nav-right-divider {
-  width: 1px; height: 20px;
+  width: 1px; height: 22px;
   background: var(--border);
-  margin: 0 4px;
+  margin: 0 6px;
   flex-shrink: 0;
+  opacity: 0.7;
 }
 
-.nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-logo { display: flex; align-items: center; gap: 11px; flex-shrink: 0; }
 .nav-logo-icon {
-  width: 34px; height: 34px;
+  width: 38px; height: 38px;
   background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
-  border-radius: 10px;
+  border-radius: 11px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1rem;
-  box-shadow: 0 3px 10px rgba(59,130,246,0.3);
+  font-size: 1.1rem;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.35);
   transition: var(--transition);
   flex-shrink: 0;
 }
-.nav-logo-icon:hover { transform: rotate(-10deg) scale(1.08); }
-.nav-logo-text { font-size: 1rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; white-space: nowrap; }
+.nav-logo-icon:hover { transform: rotate(-10deg) scale(1.1); }
+.nav-logo-text {
+  font-size: 1.05rem; font-weight: 900; color: var(--text);
+  letter-spacing: -0.5px; white-space: nowrap;
+  line-height: 1;
+}
 .nav-logo-text span { color: var(--blue-500); }
+.nav-logo-sub {
+  font-size: 0.62rem; font-weight: 600; color: var(--text-3);
+  letter-spacing: 0.5px; margin-top: 2px;
+}
 
-/* nav-tabs is now just a passthrough container; nav-tabsbar does the layout */
+/* nav-tabs is just a passthrough; nav-tabsbar does the layout */
 .nav-tabs { display: contents; }
 .nav-tab {
-  padding: 4px 14px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  background: var(--white);
   color: var(--text-2);
   font-family: 'Tajawal', sans-serif;
-  font-size: 0.83rem;
+  font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
   white-space: nowrap;
   flex-shrink: 0;
-  height: 26px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
+  gap: 5px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.nav-tab:hover { background: var(--white); color: var(--blue-500); }
-.nav-tab.active { background: var(--blue-500); color: white; box-shadow: 0 2px 8px rgba(59,130,246,0.25); }
-[data-theme="dark"] .nav-tab.active { color: #0f172a; }
+.nav-tab:hover {
+  background: color-mix(in srgb, var(--blue-500) 8%, var(--white));
+  border-color: color-mix(in srgb, var(--blue-500) 30%, transparent);
+  color: var(--blue-500);
+  box-shadow: 0 2px 8px rgba(59,130,246,0.15);
+  transform: translateY(-1px);
+}
+.nav-tab.active {
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+  color: white;
+  border-color: var(--blue-600);
+  box-shadow: 0 3px 12px rgba(59,130,246,0.35);
+  font-weight: 700;
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .nav-tab { background: var(--bg3); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+[data-theme="dark"] .nav-tab.active { color: #fff; }
 
 .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
@@ -4630,6 +4670,7 @@ body[data-fontsize="large"] .mood-cell { width: 36px; height: 36px; }
             <div class="nav-user-avatar-placeholder" id="navUserAvatar">?</div>
             <div class="nav-user-name" id="navUserName">...</div>
           </div>
+          <button class="nav-signout-btn" onclick="doSignOut()" id="navSignOutBtn" title="تسجيل الخروج">🚪 <span id="navSignOutTxt">تسجيل خروج</span></button>
         </div>
       </div>
     </div>
@@ -6149,7 +6190,7 @@ const T = {
     netOffline: '⚠️ الإنترنت منقطع — البيانات محفوظة محلياً',
     confirmSignOut: 'هل تريد تسجيل الخروج؟',
     signingOutBtn: '... جارٍ الخروج',
-    signOutBtn: '⬡ خروج',
+    signOutBtn: '🚪 تسجيل خروج',
     signOutFail: '⚠️ فشل تسجيل الخروج، حاول مرة أخرى',
     // SIGN OUT CONFIRM MODAL
     soTitle: 'تسجيل الخروج؟',
@@ -7164,7 +7205,11 @@ function setLang(lang, _skipSave) {
   const lockOut = document.getElementById('lockLogoutBtnText');
   if (lockOut) lockOut.textContent = tr.lockLogoutBtn;
   const navSO = document.getElementById('navSignOutBtn');
-  if (navSO && !navSO.disabled) navSO.textContent = tr.signOutBtn;
+  const navSOTxt = document.getElementById('navSignOutTxt');
+  if (navSO && !navSO.disabled) {
+    if (navSOTxt) navSOTxt.textContent = tr.signOutBtn.replace(/^[^\s]+\s/, '');
+    else navSO.textContent = tr.signOutBtn;
+  }
   const lockChk = document.getElementById('lockCheckingMsg');
   if (lockChk) lockChk.textContent = tr.lockChecking;
   const tabs = document.querySelectorAll('.nav-tab');
@@ -7659,9 +7704,8 @@ function updateSettingsText() {
     opts.forEach((k, i) => { if (fss.options[i]) fss.options[i].text = tr[k] || ''; });
   }
 
-  const settingsBtns = document.querySelectorAll('.settings-btn');
-  const btnKeys = ['exportJSON', 'importData', 'exportCSV', 'clearData'];
-  btnKeys.forEach((k, i) => { if (settingsBtns[i]) settingsBtns[i].textContent = tr[k] || ''; });
+  const btnMap = { exportJSONBtn: 'exportJSON', importDataBtn: 'importData', exportCSVBtn: 'exportCSV', clearDataBtn: 'clearData' };
+  Object.entries(btnMap).forEach(([id, k]) => { const el = document.getElementById(id); if (el) el.textContent = tr[k] || ''; });
 
   const sfv = document.querySelectorAll('.settings-version');
   if (sfv[1]) sfv[1].textContent = tr.footerData;
