@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -9840,34 +9839,42 @@ function _scrollTableToToday(force) {
     const stickyCol = document.querySelector('.table-wrap th.habit-col');
     if (!headerCell || !stickyCol) return;
 
-    const wrapRect = wrap.getBoundingClientRect();
-    const cellRect = headerCell.getBoundingClientRect();
-    const stickyRect = stickyCol.getBoundingClientRect();
-    if (cellRect.width === 0 || wrapRect.width === 0) return; // detached/not laid out yet — skip this pass
+    const cellW = headerCell.offsetWidth;
+    const wrapW = wrap.clientWidth;
+    const stickyW = stickyCol.offsetWidth;
+    if (cellW === 0 || wrapW === 0) return; // not laid out yet
 
-    const stickyW = stickyRect.width;
-    // The sticky panel sits on the RIGHT for RTL (Arabic) and on the LEFT
-    // for LTR (English/French) — the visible scroll area for day columns
-    // must exclude it from whichever side it's actually on.
+    // Use offsetLeft relative to the scrollable container (table) rather than
+    // getBoundingClientRect, which is sensitive to current scroll position and
+    // behaves differently between iOS Safari and Android Chrome in RTL.
+    // Walk up from the cell to find its offset inside the scroll container.
+    let cellOffset = 0;
+    let el = headerCell;
+    while (el && el !== wrap) {
+      cellOffset += el.offsetLeft;
+      el = el.offsetParent;
+    }
+
+    // The visible (non-sticky) scroll area width, and its start offset
+    // The sticky column is physically at the END of the row in Arabic (forced
+    // ltr layout), so the usable scroll area starts at scrollLeft=0 and its
+    // width is wrapW - stickyW. In LTR languages the sticky is at the START,
+    // so the usable area starts at stickyW.
     const isRtl = document.documentElement.getAttribute('dir') !== 'ltr';
-    // In RTL Arabic, the table's own direction is forced to ltr by CSS (to fix
-    // iOS Safari sticky flicker). This means the table scrolls left-to-right
-    // physically even though the page is RTL. We detect this "forced ltr" case
-    // by checking the computed direction on the wrap element itself.
-    const tableDir = window.getComputedStyle(wrap).direction;
-    const tableIsForceLtr = isRtl && tableDir === 'ltr';
-    // When the table is forced ltr (RTL page, WebKit/iOS), the sticky column is
-    // physically on the RIGHT end of the scroll container even though visually
-    // it appears on the right (which matches LTR left in forced-ltr space).
-    // In this layout, available scroll area starts from the left of the wrap.
-    const visibleLeft = tableIsForceLtr ? wrapRect.left : (isRtl ? wrapRect.left : wrapRect.left + stickyW);
-    const visibleWidth = wrapRect.width - stickyW;
-    // Center today's column within the visible (non-sticky) scroll area.
-    let offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
-    // Programmatic scroll — bump the generation ourselves too so this
-    // doesn't look like a "user scroll" and cancel the next queued pass.
+    const usableWidth = wrapW - stickyW;
+    const usableStart = isRtl ? 0 : stickyW;
+
+    // Target scrollLeft = cellOffset - usableStart - (usableWidth/2) + (cellW/2)
+    // This puts today's column in the center of the usable area.
+    const targetScroll = cellOffset - usableStart - (usableWidth / 2) + (cellW / 2);
+
     _tableScrollGen = myGen;
-    wrap.scrollBy({ left: offset, behavior });
+    const currentScroll = wrap.scrollLeft;
+    if (behavior === 'auto') {
+      wrap.scrollLeft = targetScroll;
+    } else {
+      wrap.scrollBy({ left: targetScroll - currentScroll, behavior });
+    }
     _clampTableScroll(wrap);
   };
 
@@ -9942,25 +9949,32 @@ function _scrollMoodGridToToday(force) {
     const stickyCol = wrap.querySelector('th.mood-time-col');
     if (!headerCell || !stickyCol) return;
 
-    const wrapRect = wrap.getBoundingClientRect();
-    const cellRect = headerCell.getBoundingClientRect();
-    const stickyRect = stickyCol.getBoundingClientRect();
-    if (cellRect.width === 0 || wrapRect.width === 0) return;
+    const cellW = headerCell.offsetWidth;
+    const wrapW = wrap.clientWidth;
+    const stickyW = stickyCol.offsetWidth;
+    if (cellW === 0 || wrapW === 0) return;
 
-    const stickyW = stickyRect.width;
-    // The sticky panel sits on the RIGHT for RTL (Arabic) and on the LEFT
-    // for LTR (English/French) — the visible scroll area for day columns
-    // must exclude it from whichever side it's actually on.
+    // Use offsetLeft instead of getBoundingClientRect for cross-browser RTL reliability.
+    let cellOffset = 0;
+    let el = headerCell;
+    while (el && el !== wrap) {
+      cellOffset += el.offsetLeft;
+      el = el.offsetParent;
+    }
+
     const isRtl = document.documentElement.getAttribute('dir') !== 'ltr';
-    // In RTL Arabic, the mood grid's direction is forced to ltr by CSS (to fix
-    // iOS Safari sticky flicker). Detect this and adjust accordingly.
-    const moodDir = window.getComputedStyle(wrap).direction;
-    const moodIsForceLtr = isRtl && moodDir === 'ltr';
-    const visibleLeft = moodIsForceLtr ? wrapRect.left : (isRtl ? wrapRect.left : wrapRect.left + stickyW);
-    const visibleWidth = wrapRect.width - stickyW;
-    const offset = (cellRect.left - visibleLeft) - (visibleWidth / 2) + (cellRect.width / 2);
+    const usableWidth = wrapW - stickyW;
+    // In Arabic (forced ltr table), sticky is at the END → usable area starts at 0.
+    // In LTR, sticky is at the START → usable area starts at stickyW.
+    const usableStart = isRtl ? 0 : stickyW;
+    const targetScroll = cellOffset - usableStart - (usableWidth / 2) + (cellW / 2);
+
     _moodScrollGen = myGen;
-    wrap.scrollBy({ left: offset, behavior });
+    if (behavior === 'auto') {
+      wrap.scrollLeft = targetScroll;
+    } else {
+      wrap.scrollBy({ left: targetScroll - wrap.scrollLeft, behavior });
+    }
     _clampMoodScroll(wrap);
   };
 
