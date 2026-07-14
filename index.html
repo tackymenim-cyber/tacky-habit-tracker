@@ -7659,8 +7659,8 @@ function updateMoodPageText() {
 function updateSettingsText() {
   const tr = T[currentLang] || T.ar;
   const secTitles = document.querySelectorAll('.settings-section-title');
-  const secKeys = ['secAppearance', 'secGoals', 'secNotif', 'secStats', 'secData', 'secAbout'];
-  secKeys.forEach((k, i) => { if (secTitles[i]) secTitles[i].textContent = tr[k] || ''; });
+  const secKeys = ['secAppearance', 'secGoals', 'secNotif', 'secStats', 'secData', null];
+  secKeys.forEach((k, i) => { if (k && secTitles[i]) secTitles[i].textContent = tr[k] || ''; });
 
   // Mapped by element id -> translation key (NOT DOM position), so adding or
   // reordering settings items can never misalign a translation onto the wrong label again.
