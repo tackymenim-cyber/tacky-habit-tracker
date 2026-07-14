@@ -6094,6 +6094,7 @@ const T = {
     confetti: 'تأثيرات الاحتفال', confettiDesc: 'كونفيتي عند إكمال كل العادات',
     sound: 'صوت عند الإنجاز', soundDesc: 'صوت قصير عند تحديد عادة',
     secStats: '📊 الإحصائيات العامة',
+    secAccount: '👤 الحساب',
     secData: '💾 البيانات والنسخ الاحتياطي',
     exportJSON: '📤 تصدير البيانات (JSON)', importData: '📥 استيراد بيانات',
     exportCSV: '📊 تصدير إحصائيات (CSV)', clearData: '🗑️ مسح جميع البيانات',
@@ -6478,6 +6479,7 @@ const T = {
     confetti: 'Effets de célébration', confettiDesc: 'Confettis pour les réussites',
     sound: 'Son de réussite', soundDesc: 'Son court lors de la validation',
     secStats: '📊 Statistiques',
+    secAccount: '👤 Compte',
     secData: '💾 Données',
     exportJSON: '📤 Exporter (JSON)', importData: '📥 Importer',
     exportCSV: '📊 Exporter (CSV)', clearData: '🗑️ Tout effacer',
@@ -6863,6 +6865,7 @@ const T = {
     confetti: 'Celebration Effects', confettiDesc: 'Confetti when all habits are completed',
     sound: 'Sound on Achievement', soundDesc: 'Short sound when marking a habit',
     secStats: '📊 General Statistics',
+    secAccount: '👤 Account',
     secData: '💾 Data & Backup',
     exportJSON: '📤 Export Data (JSON)', importData: '📥 Import Data',
     exportCSV: '📊 Export Statistics (CSV)', clearData: '🗑️ Clear All Data',
@@ -7658,9 +7661,13 @@ function updateMoodPageText() {
 
 function updateSettingsText() {
   const tr = T[currentLang] || T.ar;
-  const secTitles = document.querySelectorAll('.settings-section-title');
-  const secKeys = ['secAppearance', 'secGoals', 'secNotif', 'secStats', 'secData', null];
-  secKeys.forEach((k, i) => { if (k && secTitles[i]) secTitles[i].textContent = tr[k] || ''; });
+  const secMap = {
+    secAppearance: tr.secAppearance, secGoals: tr.secGoals,
+    secNotif: tr.secNotif, secStats: tr.secStats,
+    secAccount: tr.secAccount, secData: tr.secData,
+    secAbout: 'ℹ️ حول التطبيق'
+  };
+  Object.entries(secMap).forEach(([id, val]) => { const el = document.getElementById(id); if (el && val) el.textContent = val; });
 
   // Mapped by element id -> translation key (NOT DOM position), so adding or
   // reordering settings items can never misalign a translation onto the wrong label again.
@@ -7705,7 +7712,10 @@ function updateSettingsText() {
   }
 
   const btnMap = { exportJSONBtn: 'exportJSON', importDataBtn: 'importData', exportCSVBtn: 'exportCSV', clearDataBtn: 'clearData' };
-  Object.entries(btnMap).forEach(([id, k]) => { const el = document.getElementById(id); if (el) el.textContent = tr[k] || ''; });
+  Object.entries(btnMap).forEach(([id, k]) => {
+    const el = document.getElementById(id);
+    if (el && tr[k]) el.textContent = tr[k];
+  });
 
   const sfv = document.querySelectorAll('.settings-version');
   if (sfv[1]) sfv[1].textContent = tr.footerData;
