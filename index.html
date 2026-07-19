@@ -7999,6 +7999,13 @@ let _saveDebounceTimer = null;
 // disrupt active typing every time our own save round-trips back to us.
 const _sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9) + '_' + Math.random().toString(36).slice(2, 9);
 let _firestoreUnsubscribe = null;
+// Set to true the moment the user makes an edit (via save()), and cleared
+// once that edit has actually been written to Firestore. Lets the initial
+// server existence-check in _loadFromFirestore (which can take a second or
+// more to resolve) detect if the user typed something WHILE it was in
+// flight, so it doesn't blindly overwrite those fresh local edits with the
+// older data it fetched from the server.
+let _pendingLocalEdit = false;
 // Every save fully overwrites the cloud document, so if two saves are ever
 // in flight at once (e.g. deleting two tasks back-to-back), nothing stops
 // the network from delivering their responses out of order — the OLDER
@@ -8022,6 +8029,7 @@ function save() {
   const user = window._currentUser;
   if (!user) return;
 
+  _pendingLocalEdit = true;
   const scheduledUid = user.uid;
   clearTimeout(_saveDebounceTimer);
   _saveDebounceTimer = setTimeout(() => {
@@ -8072,6 +8080,7 @@ async function _doFirestoreWrite(expectedUid, _retryCount) {
       updatedAt:        new Date().toISOString(),
       _writerId:        _sessionId,
     });
+    _pendingLocalEdit = false;
   } catch(e) {
     // Log full diagnostics — the Firestore error `code` (e.g. "unavailable",
     // "permission-denied", "resource-exhausted", "invalid-argument") tells
@@ -8179,10 +8188,25 @@ async function _loadFromFirestore(user, _retryCount) {
   // Step 1 — resolve existence from the SERVER, not the cache.
   let serverConfirmedNew = false;
   let serverCheckFailed = false;
+  // Snapshot this BEFORE the await — if it's already true, the user made an
+  // edit even before this load started (e.g. offline edit not yet flushed),
+  // and the fetch we're about to await is guaranteed to be stale.
+  const _hadPendingEditBeforeFetch = _pendingLocalEdit;
   try {
     const serverSnap = await window._fbGetDocFromServer(docRef);
     if (serverSnap.exists()) {
-      _applyFirestoreData(serverSnap.data());
+      // If the user edited something WHILE this server round-trip was in
+      // flight (or before it even started), this fetch reflects the OLD
+      // cloud state — applying it now would silently erase the fresh
+      // edits sitting in memory (and about to be written by the pending
+      // debounce timer). Skip applying it; the debounced save already in
+      // flight will push the correct, newer state to the server, and the
+      // realtime listener attached below will pick up that write.
+      if (_hadPendingEditBeforeFetch || _pendingLocalEdit) {
+        console.warn('Skipped applying server data fetched during a pending local edit — local edit wins.');
+      } else {
+        _applyFirestoreData(serverSnap.data());
+      }
     } else {
       serverConfirmedNew = true;
     }
